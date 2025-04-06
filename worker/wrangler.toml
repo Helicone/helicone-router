@@ -1,9 +1,0 @@
-name = "llm-proxy"
-main = "build/worker/shim.mjs"
-compatibility_date = "2025-03-29"
-
-[build]
-command = "cargo install -q worker-build && worker-build --release"
-
-[vars]
-ANTHROPIC_API_KEY = "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"
