@@ -1,18 +1,29 @@
 use std::{convert::Infallible, str::FromStr, sync::Arc};
 
-use http_body_util::BodyExt;
 use rama::{
+    Layer, Service,
     http::{
-        client::EasyHttpWebClient, layer::{
-            auth::AsyncRequireAuthorizationLayer, compress_adapter::CompressAdaptLayer, map_response_body::MapResponseBodyLayer, remove_header::{
+        Body, HeaderName, HeaderValue, Request, Response,
+        client::{EasyHttpWebClient, TlsConnectorConfig},
+        layer::{
+            auth::AsyncRequireAuthorizationLayer,
+            compress_adapter::CompressAdaptLayer,
+            map_response_body::MapResponseBodyLayer,
+            remove_header::{
                 RemoveRequestHeaderLayer, RemoveResponseHeaderLayer,
-            }, required_header::AddRequiredRequestHeadersLayer
-        }, Body, HeaderName, HeaderValue, Request, Response
-    }, layer::ConsumeErrLayer, Layer, Service
+            },
+            required_header::AddRequiredRequestHeadersLayer,
+        },
+    },
+    layer::ConsumeErrLayer,
+    tls::rustls::client::TlsConnectorData,
 };
 
 use crate::{
-    app::{AppState, Context}, error::{api::Error, internal::InternalError}, middleware::auth::AuthService, types::{provider::Provider, request::RequestContext}
+    app::{AppState, Context},
+    error::{api::Error, internal::InternalError},
+    middleware::auth::AuthService,
+    types::{provider::Provider, request::RequestContext},
 };
 
 pub trait AiProviderDispatcher:
@@ -39,10 +50,9 @@ impl AiProviderDispatcher for Dispatcher {
 
 impl Dispatcher {
     pub fn new(_ctx: Context, provider: Provider) -> Self {
+        let tls = TlsConnectorData::new_http_auto().unwrap();
         let client = EasyHttpWebClient::default()
-            // for tls later, get config to load cert files from paths in config
-            // from Context
-            .maybe_with_tls_connector_config(None);
+            .with_tls_connector_config(TlsConnectorConfig::Rustls(Some(tls)));
         Self { client, provider }
     }
 
@@ -160,24 +170,6 @@ impl Dispatcher {
             .serve(ctx, req)
             .await
             .map_err(InternalError::RequestClientError)?;
-        let resp_headers = response.headers().clone();
-        tracing::info!(headers = ?resp_headers, "Response headers");
-        let status = response.status();
-        let body = response.collect().await.unwrap();
-        let json = String::from_utf8(body.to_bytes().to_vec()).unwrap();
-        tracing::info!(status = %status, json = ?json, "Response body");
-        let mut response_builder = Response::builder()
-            .status(status);
-
-        for (key, value) in resp_headers {
-            response_builder = response_builder.header(key.unwrap(), value);
-        }
-
-        // let response = response_builder
-            // .body(body)
-            // .unwrap();
-        let new_body = rama::http::Body::from(json);
-        let response = response_builder.body(new_body).unwrap();
         Ok(response)
     }
 }

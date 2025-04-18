@@ -65,7 +65,9 @@ where
         req: &mut Request,
     ) -> Result<RequestContext, Error> {
         // AuthContext is set by the auth middleware
-        let auth_context = ctx.remove::<AuthContext>().ok_or(InternalError::ExtensionNotFound("AuthContext"))?;
+        let auth_context = ctx
+            .remove::<AuthContext>()
+            .ok_or(InternalError::ExtensionNotFound("AuthContext"))?;
         let app_state = ctx.state();
         // TODO: we need to have a layer to normalize request paths like slashes
         // at the end eg remove last slash in https://router.helicone.ai/router/foo123/

@@ -7,11 +7,8 @@
 use std::time::Duration;
 
 use rama::{
-    Layer,
-    error::ErrorContext,
-    http::server::HttpServer,
-    net::stream::layer::http::BodyLimitLayer,
-    rt::Executor,
+    Layer, error::ErrorContext, http::server::HttpServer,
+    net::stream::layer::http::BodyLimitLayer, rt::Executor,
     tcp::server::TcpListener,
 };
 use rama_helicone_router::{

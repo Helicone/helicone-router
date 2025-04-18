@@ -124,10 +124,16 @@ impl App {
 }
 
 impl Service<AppState, Request> for App {
-    type Response = Response<ResponseBody<Body, NeverClassifyEos<ServerErrorsFailureClass>, (), ()>>;
+    type Response = Response<
+        ResponseBody<Body, NeverClassifyEos<ServerErrorsFailureClass>, (), ()>,
+    >;
     type Error = Infallible;
 
-    async fn serve(&self, ctx: Context, req: Request) -> Result<Self::Response, Self::Error> {
+    async fn serve(
+        &self,
+        ctx: Context,
+        req: Request,
+    ) -> Result<Self::Response, Self::Error> {
         self.service.serve(ctx, req).await
     }
 }
