@@ -1,23 +1,30 @@
-//! A [`Load`] implementation which implements weighting on top of an inner  [`Load`].
+//! A [`Load`] implementation which implements weighting on top of an inner
+//! [`Load`].
 //!
-//! This can be useful in such cases as canary deployments, where it is desirable for a
-//! particular service to receive less than its fair share of load than other services.
+//! This can be useful in such cases as canary deployments, where it is
+//! desirable for a particular service to receive less than its fair share of
+//! load than other services.
 
-use futures::{ready, Stream};
-use tower::{Service, load::Load, discover::{Change, Discover}};
+use std::{
+    ops,
+    pin::Pin,
+    task::{Context, Poll},
+};
+
+use futures::{Stream, ready};
 use pin_project_lite::pin_project;
-use std::pin::Pin;
-
-use std::ops;
-use std::task::{Context, Poll};
-
+use tower::{
+    Service,
+    discover::{Change, Discover},
+    load::Load,
+};
 
 /// A weight on [0.0, ∞].
 ///
 /// Lesser-weighted nodes receive less traffic than heavier-weighted nodes.
 ///
-/// This is represented internally as an integer, rather than a float, so that it can implement
-/// `Hash` and `Eq`.
+/// This is represented internally as an integer, rather than a float, so that
+/// it can implement `Hash` and `Eq`.
 #[derive(Copy, Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Hash)]
 pub struct Weight(u32);
 
@@ -81,8 +88,8 @@ impl ops::Div<Weight> for usize {
     }
 }
 
-/// Measures the load of the underlying service by weighting that service's load by a constant
-/// weighting factor.
+/// Measures the load of the underlying service by weighting that service's load
+/// by a constant weighting factor.
 #[derive(Clone, Debug, PartialEq, PartialOrd)]
 pub struct Weighted<S> {
     inner: S,
@@ -90,7 +97,8 @@ pub struct Weighted<S> {
 }
 
 impl<S> Weighted<S> {
-    /// Wraps an `S`-typed service so that its load is weighted by the given weight.
+    /// Wraps an `S`-typed service so that its load is weighted by the given
+    /// weight.
     pub fn new<W: Into<Weight>>(inner: S, w: W) -> Self {
         let weight = w.into();
         Self { inner, weight }
@@ -115,7 +123,10 @@ impl<R, S: Service<R>> Service<R> for Weighted<S> {
     type Error = S::Error;
     type Future = S::Future;
 
-    fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
+    fn poll_ready(
+        &mut self,
+        cx: &mut Context<'_>,
+    ) -> Poll<Result<(), Self::Error>> {
         self.inner.poll_ready(cx)
     }
 
@@ -140,8 +151,8 @@ impl<D> WeightedDiscover<D> {
     }
 }
 
-/// Allows [`Discover::Key`] to expose a weight, so that they can be included in a discover
-/// stream
+/// Allows [`Discover::Key`] to expose a weight, so that they can be included in
+/// a discover stream
 pub trait HasWeight {
     /// Returns the [`Weight`]
     fn weight(&self) -> Weight;
@@ -167,18 +178,22 @@ where
 {
     type Item = Result<Change<D::Key, Weighted<D::Service>>, D::Error>;
 
-    fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
+    fn poll_next(
+        self: Pin<&mut Self>,
+        cx: &mut Context<'_>,
+    ) -> Poll<Option<Self::Item>> {
         use self::Change::*;
 
         let this = self.project();
-        let change = match ready!(this.discover.poll_discover(cx)).transpose()? {
-            None => return Poll::Ready(None),
-            Some(Insert(k, svc)) => {
-                let w = k.weight();
-                Insert(k, Weighted::new(svc, w))
-            }
-            Some(Remove(k)) => Remove(k),
-        };
+        let change =
+            match ready!(this.discover.poll_discover(cx)).transpose()? {
+                None => return Poll::Ready(None),
+                Some(Insert(k, svc)) => {
+                    let w = k.weight();
+                    Insert(k, Weighted::new(svc, w))
+                }
+                Some(Remove(k)) => Remove(k),
+            };
 
         Poll::Ready(Some(Ok(change)))
     }

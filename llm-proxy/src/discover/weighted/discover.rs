@@ -1,39 +1,25 @@
-pub mod provider;
-pub mod weighted;
-
 use std::{
     convert::Infallible,
     pin::Pin,
-    sync::Arc,
     task::{Context, Poll},
 };
 
 use futures::Stream;
+use nonempty_collections::NEVec;
 use pin_project::pin_project;
 use tokio::sync::mpsc::Receiver;
 use tower::discover::Change;
 
+use super::WeightedKey;
 use crate::{
     app::AppState,
-    config::{DeploymentTarget, router::RouterConfig},
-    discover::provider::config::ConfigDiscovery,
+    config::{DeploymentTarget, router::BalanceTarget},
+    discover::weighted::config::ConfigDiscovery,
     dispatcher::DispatcherService,
     error::init::InitError,
-    types::provider::Provider,
 };
 
-#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
-pub struct Key {
-    pub provider: Provider,
-}
-
-impl Key {
-    pub fn new(provider: Provider) -> Self {
-        Self { provider }
-    }
-}
-
-/// Discover endpoints keyed by [`Key`].
+/// WeightedDiscover endpoints keyed by [`Key`].
 #[derive(Debug)]
 #[pin_project(project = DiscoveryProj)]
 pub enum Discovery {
@@ -43,14 +29,14 @@ pub enum Discovery {
 impl Discovery {
     pub fn new(
         app_state: AppState,
-        router_config: Arc<RouterConfig>,
-        rx: Receiver<Change<Key, DispatcherService>>,
+        weighted_balance_targets: NEVec<BalanceTarget>,
+        rx: Receiver<Change<WeightedKey, DispatcherService>>,
     ) -> Result<Self, InitError> {
         // TODO: currently we also have a separate discovery_mode.
         // we should consolidate.
         match app_state.0.config.deployment_target {
             DeploymentTarget::SelfHosted => Ok(Self::Config(
-                ConfigDiscovery::new(app_state, router_config, rx)?,
+                ConfigDiscovery::new(app_state, weighted_balance_targets, rx)?,
             )),
             DeploymentTarget::Cloud | DeploymentTarget::Sidecar => {
                 todo!("cloud and sidecar not supported yet")
@@ -60,7 +46,7 @@ impl Discovery {
 }
 
 impl Stream for Discovery {
-    type Item = Result<Change<Key, DispatcherService>, Infallible>;
+    type Item = Result<Change<WeightedKey, DispatcherService>, Infallible>;
 
     fn poll_next(
         self: Pin<&mut Self>,

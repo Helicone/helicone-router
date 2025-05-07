@@ -61,6 +61,7 @@ tower-http = { workspace = true, features = ['default', 'auth', 'catch-panic', '
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true, features = ['env-filter', 'std'] }
 typed-builder = { workspace = true }
+weighted-balance = { workspace = true }
 url = { workspace = true, features = ['serde'] }
 utoipa = { workspace = true }
 uuid = { workspace = true, features = ["serde", "v7"] }

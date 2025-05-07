@@ -1,5 +1,5 @@
 //! Copyright (c) 2019 Tower Contributors
-//! 
+//!
 //! Permission is hereby granted, free of charge, to any
 //! person obtaining a copy of this software and associated
 //! documentation files (the "Software"), to deal in the
@@ -9,11 +9,11 @@
 //! the Software, and to permit persons to whom the Software
 //! is furnished to do so, subject to the following
 //! conditions:
-//! 
+//!
 //! The above copyright notice and this permission notice
 //! shall be included in all copies or substantial portions
 //! of the Software.
-//! 
+//!
 //! THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
 //! ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
 //! TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
@@ -23,21 +23,27 @@
 //! OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 //! IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 //! DEALINGS IN THE SOFTWARE.
+pub mod make;
 
-use rand::rngs::ThreadRng;
-use tower::discover::{Change, Discover};
-use tower::load::Load;
-use tower::ready_cache::{error::Failed, ReadyCache};
-use futures::ready;
-use futures::future::{self, TryFutureExt};
-use std::hash::Hash;
-use std::marker::PhantomData;
 use std::{
     fmt,
+    hash::Hash,
+    marker::PhantomData,
     pin::Pin,
     task::{Context, Poll},
 };
-use tower::Service;
+
+use futures::{
+    future::{self, TryFutureExt},
+    ready,
+};
+use rand::rngs::ThreadRng;
+use tower::{
+    Service,
+    discover::{Change, Discover},
+    load::Load,
+    ready_cache::{ReadyCache, error::Failed},
+};
 use tracing::{debug, trace};
 
 use crate::load::weight::{HasWeight, Weight};
@@ -52,9 +58,10 @@ pub enum Error {
 ///
 /// See the [module-level documentation](..) for details.
 ///
-/// Note that [`WeightedBalance`] requires that the [`Discover`] you use is [`Unpin`] in order to implement
-/// [`Service`]. This is because it needs to be accessed from [`Service::poll_ready`], which takes
-/// `&mut self`. You can achieve this easily by wrapping your [`Discover`] in [`Box::pin`] before you
+/// Note that [`WeightedBalance`] requires that the [`Discover`] you use is
+/// [`Unpin`] in order to implement [`Service`]. This is because it needs to be
+/// accessed from [`Service::poll_ready`], which takes `&mut self`. You can
+/// achieve this easily by wrapping your [`Discover`] in [`Box::pin`] before you
 /// construct the [`WeightedBalance`] instance. For more details, see [#319].
 ///
 /// [`Box::pin`]: std::boxed::Box::pin()
@@ -125,8 +132,10 @@ where
     D::Key: Hash + Clone + HasWeight,
     D::Error: Into<tower::BoxError>,
     D::Service: Service<Req> + Load,
-    <D::Service as Load>::Metric: std::ops::Div<Weight, Output = <D::Service as Load>::Metric> + std::fmt::Debug,
+    <D::Service as Load>::Metric: std::ops::Div<Weight> + std::fmt::Debug,
     <D::Service as Service<Req>>::Error: Into<tower::BoxError>,
+    <<D::Service as Load>::Metric as std::ops::Div<Weight>>::Output:
+        PartialOrd + std::fmt::Debug,
 {
     /// Polls `discover` for updates, adding new items to `not_ready`.
     ///
@@ -191,10 +200,19 @@ where
             len => {
                 // todo: remove unwraps
                 let sample_fn = |idx| {
-                    let (key, _service) = self.services.get_ready_index(idx).expect("invalid index");
+                    let (key, _service) = self
+                        .services
+                        .get_ready_index(idx)
+                        .expect("invalid index");
                     key.weight()
                 };
-                let sample = rand::seq::index::sample_weighted(&mut self.rng, len, sample_fn, 2).unwrap();
+                let sample = rand::seq::index::sample_weighted(
+                    &mut self.rng,
+                    len,
+                    sample_fn,
+                    2,
+                )
+                .unwrap();
                 let aidx = sample.index(0);
                 let bidx = sample.index(1);
 
@@ -216,8 +234,9 @@ where
     }
 
     /// Accesses a ready endpoint by index and returns its current load.
-    fn ready_index_load(&self, index: usize) -> <D::Service as Load>::Metric {
-        let (key, svc) = self.services.get_ready_index(index).expect("invalid index");
+    fn ready_index_load(&self, index: usize) -> <<<D as tower::discover::Discover>::Service as Load>::Metric as std::ops::Div<Weight>>::Output{
+        let (key, svc) =
+            self.services.get_ready_index(index).expect("invalid index");
         let weight = key.weight();
         svc.load() / weight
     }
@@ -229,8 +248,10 @@ where
     D::Key: Hash + Clone + HasWeight,
     D::Error: Into<tower::BoxError>,
     D::Service: Service<Req> + Load,
-    <D::Service as Load>::Metric: std::ops::Div<Weight, Output = <D::Service as Load>::Metric> + std::fmt::Debug,
+    <D::Service as Load>::Metric: std::ops::Div<Weight> + std::fmt::Debug,
     <D::Service as Service<Req>>::Error: Into<tower::BoxError>,
+    <<D::Service as Load>::Metric as std::ops::Div<Weight>>::Output:
+        PartialOrd + std::fmt::Debug,
 {
     type Response = <D::Service as Service<Req>>::Response;
     type Error = tower::BoxError;
@@ -239,7 +260,10 @@ where
         fn(<D::Service as Service<Req>>::Error) -> tower::BoxError,
     >;
 
-    fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
+    fn poll_ready(
+        &mut self,
+        cx: &mut Context<'_>,
+    ) -> Poll<Result<(), Self::Error>> {
         tracing::trace!("WeightedBalance::poll_ready");
         // `ready_index` may have already been set by a prior invocation. These
         // updates cannot disturb the order of existing ready services.
@@ -261,7 +285,8 @@ where
                         return Poll::Ready(Ok(()));
                     }
                     Ok(false) => {
-                        // The service is no longer ready. Try to find a new one.
+                        // The service is no longer ready. Try to find a new
+                        // one.
                         trace!("ready service became unavailable");
                     }
                     Err(Failed(_, error)) => {

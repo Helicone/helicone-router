@@ -56,7 +56,7 @@ impl ProviderKeys {
         let mut keys = IndexMap::new();
         let providers: Vec<Provider> = match balance_config {
             BalanceConfig::Weighted { targets } => {
-                targets.iter().map(|t| t.key.provider).collect()
+                targets.iter().map(|t| t.provider).collect()
             }
             BalanceConfig::P2C { targets } => targets.iter().copied().collect(),
         };

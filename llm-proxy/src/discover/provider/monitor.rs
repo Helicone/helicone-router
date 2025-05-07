@@ -7,8 +7,7 @@ use tower::discover::Change;
 use tracing::info;
 
 use crate::{
-    discover::Key, dispatcher::DispatcherService, error::runtime,
-    types::router::RouterId,
+    dispatcher::DispatcherService, error::runtime, types::router::RouterId,
 };
 
 /// Could monitor health from URLs like:
@@ -16,27 +15,27 @@ use crate::{
 /// https://status.openai.com/proxy/status.openai.com
 ///
 /// or more creative methods if required.
-pub struct ProviderMonitor {
-    _tx: Sender<Change<Key, DispatcherService>>,
+pub struct ProviderMonitor<K> {
+    _tx: Sender<Change<K, DispatcherService>>,
 }
 
-impl ProviderMonitor {
-    pub fn new(tx: Sender<Change<Key, DispatcherService>>) -> Self {
+impl<K> ProviderMonitor<K> {
+    pub fn new(tx: Sender<Change<K, DispatcherService>>) -> Self {
         Self { _tx: tx }
     }
 }
 
-pub struct ProviderMonitors {
-    _txs: HashMap<RouterId, ProviderMonitor>,
+pub struct ProviderMonitors<K> {
+    _txs: HashMap<RouterId, ProviderMonitor<K>>,
 }
 
-impl ProviderMonitors {
-    pub fn new(txs: HashMap<RouterId, ProviderMonitor>) -> Self {
+impl<K> ProviderMonitors<K> {
+    pub fn new(txs: HashMap<RouterId, ProviderMonitor<K>>) -> Self {
         Self { _txs: txs }
     }
 }
 
-impl meltdown::Service for ProviderMonitors {
+impl<K: Send + 'static> meltdown::Service for ProviderMonitors<K> {
     type Future = BoxFuture<'static, Result<(), runtime::RuntimeError>>;
 
     fn run(self, token: Token) -> Self::Future {
