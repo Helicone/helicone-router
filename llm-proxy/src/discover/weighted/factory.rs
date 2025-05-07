@@ -7,8 +7,8 @@ use std::{
 use tokio::sync::mpsc::Receiver;
 use tower::{Service, discover::Change};
 use weighted_balance::load::{
-    constant::Constant,
-    weight::{Weight, WeightedDiscover},
+    constant::{Constant, ConstantLoad},
+    weight::WeightedDiscover,
 };
 
 use crate::{
@@ -66,8 +66,10 @@ impl Service<Receiver<Change<WeightedKey, DispatcherService>>>
             Ok(discovery) => discovery,
             Err(e) => return ready(Err(e)),
         };
-        let discovery =
-            WeightedDiscover::new(Constant::new(discovery, Weight::UNIT));
+        let discovery = WeightedDiscover::new(Constant::new(
+            discovery,
+            ConstantLoad::from(1),
+        ));
         ready(Ok(discovery))
     }
 }

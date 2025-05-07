@@ -14,7 +14,7 @@ use tower::discover::Change;
 use crate::{
     app::AppState,
     config::router::RouterConfig,
-    discover::Key,
+    discover::provider::Key,
     dispatcher::{Dispatcher, DispatcherService},
     error::init::InitError,
 };
@@ -59,7 +59,7 @@ impl ConfigDiscovery {
             service_map.insert(key, dispatcher);
         }
 
-        tracing::trace!("Created config discovery");
+        tracing::debug!("Created config provider discovery");
         Ok(Self {
             initial: ServiceMap::new(service_map),
             events,
@@ -101,7 +101,7 @@ fn handle_change(
             Poll::Ready(Some(Change::Insert(key, service)))
         }
         Change::Remove(key) => {
-            tracing::trace!(key = ?key, "Removed provider");
+            tracing::debug!(key = ?key, "Removed provider");
             Poll::Ready(Some(Change::Remove(key)))
         }
     }

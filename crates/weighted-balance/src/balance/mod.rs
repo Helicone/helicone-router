@@ -37,7 +37,7 @@ use futures::{
     future::{self, TryFutureExt},
     ready,
 };
-use rand::rngs::ThreadRng;
+use rand::{SeedableRng, rngs::SmallRng};
 use tower::{
     Service,
     discover::{Change, Discover},
@@ -76,7 +76,7 @@ where
     services: ReadyCache<D::Key, D::Service, Req>,
     ready_index: Option<usize>,
 
-    rng: ThreadRng,
+    rng: SmallRng,
 
     _req: PhantomData<Req>,
 }
@@ -102,11 +102,10 @@ where
     D::Service: Service<Req>,
     <D::Service as Service<Req>>::Error: Into<tower::BoxError>,
 {
-    /// Constructs a load balancer that uses operating system entropy.
     pub fn new(discover: D) -> Self {
         tracing::trace!("WeightedBalance::new");
         Self {
-            rng: rand::rng(),
+            rng: SmallRng::from_rng(&mut rand::rng()),
             discover,
             services: ReadyCache::default(),
             ready_index: None,
@@ -206,6 +205,9 @@ where
                         .expect("invalid index");
                     key.weight()
                 };
+                // TODO: decide ideal impl
+                // alternatively we could use rand::distributions::WeightedIndex
+                // and just sample a single index?
                 let sample = rand::seq::index::sample_weighted(
                     &mut self.rng,
                     len,

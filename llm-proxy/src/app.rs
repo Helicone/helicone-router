@@ -172,7 +172,6 @@ impl App {
         config: Config,
     ) -> Result<(Self, ProviderMonitors), InitError> {
         tracing::info!(config = ?config, "creating app");
-        tracing::info!(access_key = %config.minio.access_key.0, "access key");
         let minio = Minio::new(config.minio.clone())?;
         let unauthed_rate_limit =
             Arc::new(config.rate_limit.unauthed_limiter());
@@ -180,8 +179,7 @@ impl App {
         let pg_config =
             sqlx::postgres::PgPoolOptions::from(config.database.clone());
         let pg_pool = pg_config
-            .connect(&config.database.url.0)
-            .await
+            .connect_lazy(&config.database.url.0)
             .map_err(error::init::InitError::DatabaseConnection)?;
         let balance_config = &config
             .routers

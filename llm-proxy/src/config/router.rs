@@ -69,36 +69,34 @@ impl RouterConfig {
     pub fn validate(&self) -> Result<(), ProviderError> {
         // TODO: when we add support for weighted balancing, we need to validate
         // it adds up to 100%
-        // let unsupported_provider = match &self.balance {
-        //     BalanceConfig::Weighted { targets } => targets
-        //         .iter()
-        //         .find(|target|
-        // !self.providers.contains(&target.key.provider))
-        //         .map(|target| &target.key.provider),
-        //     BalanceConfig::P2C { targets } => {
-        //         targets.iter().find(|target_provider| {
-        //             !self.providers.contains(target_provider)
-        //         })
-        //     }
-        // };
-        // if let Some(provider) = unsupported_provider {
-        //     return Err(ProviderError::ProviderNotConfigured(*provider));
-        // }
+        let unsupported_provider = match &self.balance {
+            BalanceConfig::Weighted { targets } => targets
+                .iter()
+                .find(|target| !self.providers.contains(&target.provider))
+                .map(|target| &target.provider),
+            BalanceConfig::P2C { targets } => {
+                targets.iter().find(|target_provider| {
+                    !self.providers.contains(target_provider)
+                })
+            }
+        };
+        if let Some(provider) = unsupported_provider {
+            return Err(ProviderError::ProviderNotConfigured(*provider));
+        }
 
         // check that all providers in the fallback config are in the providers
         // list
-        // if let Some(fallback_config) = &self.fallback {
-        //     if let Some(unsupported_provider) = fallback_config
-        //         .order
-        //         .iter()
-        //         .find(|target| !self.providers.contains(&target.provider))
-        //     {
-        //         return Err(ProviderError::ProviderNotConfigured(
-        //             unsupported_provider.provider,
-        //         ));
-        //     }
-        // }
-        todo!();
+        if let Some(fallback_config) = &self.fallback {
+            if let Some(unsupported_provider) = fallback_config
+                .order
+                .iter()
+                .find(|target| !self.providers.contains(&target.provider))
+            {
+                return Err(ProviderError::ProviderNotConfigured(
+                    unsupported_provider.provider,
+                ));
+            }
+        }
 
         Ok(())
     }

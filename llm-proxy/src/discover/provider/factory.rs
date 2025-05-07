@@ -10,7 +10,7 @@ use tower::{Service, discover::Change, load::PeakEwmaDiscover};
 use crate::{
     app::AppState,
     config::router::RouterConfig,
-    discover::{Discovery, Key},
+    discover::provider::{Key, discover::Discovery},
     dispatcher::DispatcherService,
     error::init::InitError,
 };

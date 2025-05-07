@@ -53,6 +53,7 @@ impl ProviderKeys {
     pub fn from_env(
         balance_config: &BalanceConfig,
     ) -> Result<Self, ProviderError> {
+        tracing::debug!("Discovering provider keys");
         let mut keys = IndexMap::new();
         let providers: Vec<Provider> = match balance_config {
             BalanceConfig::Weighted { targets } => {

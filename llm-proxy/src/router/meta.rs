@@ -51,7 +51,7 @@ impl MetaRouter {
                 ));
             }
         }?;
-        tracing::trace!(
+        tracing::info!(
             num_routers = meta_router.0.inner.len(),
             "meta router created"
         );

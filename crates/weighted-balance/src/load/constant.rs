@@ -42,6 +42,12 @@ use super::weight::Weight;
 #[derive(Copy, Clone, Debug, PartialEq, PartialOrd)]
 pub struct ConstantLoad(usize);
 
+impl From<usize> for ConstantLoad {
+    fn from(value: usize) -> Self {
+        Self(value)
+    }
+}
+
 impl std::ops::Div<Weight> for ConstantLoad {
     type Output = f64;
 
