@@ -85,7 +85,8 @@ serial_test = "3.2.0"
 sqlx = "0.8.5"
 strum = "0.27.1"
 # TODO @tom: Open PR, message maintainers, and link it here.
-stubr = { git = "https://github.com/tomharmon/stubr" }
+#stubr = { git = "https://github.com/tomharmon/stubr" }
+stubr = { path = "/Users/thomasharmon/code/stubr/lib" }
 thiserror = "2.0.12"
 tokio = { version = "1.44.2", features = ['full'] }
 tokio-stream = "0.1.17"

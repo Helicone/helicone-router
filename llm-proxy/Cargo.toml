@@ -81,3 +81,7 @@ required-features = ["testing"]
 [[test]]
 name = "logger"
 required-features = ["testing"]
+
+[[test]]
+name = "weighted"
+required-features = ["testing"]

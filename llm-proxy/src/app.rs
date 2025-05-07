@@ -135,8 +135,10 @@ pub struct InnerAppState {
 ///      `Arc<RequestContext>`
 /// - `Arc<RequestContext>`
 ///   - Added by the request context layer
-/// - `Key`
+///   - Used by many layers
+/// - `Provider`
 ///   - Added by the AddExtensionLayer in the dispatcher service stack
+///   - Used by the Mapper layer
 /// - `PathAndQuery`
 ///   - Added by the MetaRouter
 ///   - Used by the Mapper layer
