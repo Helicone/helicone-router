@@ -25,8 +25,10 @@ impl AuthService {
 
 #[derive(Debug, Deserialize)]
 struct WhoamiResponse {
-    userId: String,
-    organizationId: String,
+    #[serde(rename = "userId")]
+    user_id: String,
+    #[serde(rename = "organizationId")]
+    organization_id: String,
 }
 
 // Specific implementation for axum_core::body::Body
@@ -63,10 +65,7 @@ impl AsyncAuthorizeRequest<axum_core::body::Body> for AuthService {
             .join("/v1/router/control-plane/whoami")
             .unwrap();
 
-        // For development, always authenticate without requiring AppState
         Box::pin(async move {
-            // Try to make the request, but don't rely on the response
-
             let whoami_result = app_state
                 .0
                 .jawn_client
@@ -78,8 +77,8 @@ impl AsyncAuthorizeRequest<axum_core::body::Body> for AuthService {
             if let Ok(response) = whoami_result {
                 if let Ok(body) = response.json::<WhoamiResponse>().await {
                     println!("body: {:?}", body);
-                    let org_id = Uuid::from_str(&body.organizationId).unwrap();
-                    let user_id = Uuid::from_str(&body.userId).unwrap();
+                    let org_id = Uuid::from_str(&body.organization_id).unwrap();
+                    let user_id = Uuid::from_str(&body.user_id).unwrap();
                     let auth_ctx = AuthContext {
                         api_key: api_key.replace("Bearer ", ""),
                         user_id: UserId::new(user_id),
@@ -92,26 +91,10 @@ impl AsyncAuthorizeRequest<axum_core::body::Body> for AuthService {
                 warn!("Error making whoami request: {:?}", e);
             }
 
-            warn!(
-                "Using hardcoded auth values - this should only happen in \
-                 development"
-            );
-            let org_id =
-                Uuid::from_str("545d62a5-5efc-4260-ac21-ded2d5b95f71").unwrap();
-            let user_id =
-                Uuid::from_str("35cc8ca0-c655-4bf7-a089-0c8a68e81dc5").unwrap();
-            let api_key = std::env::var("HELICONE_API_KEY")
-                .unwrap_or_else(|_| "mock-api-key".to_string());
-
-            let auth_ctx = AuthContext {
-                api_key,
-                user_id: UserId::new(user_id),
-                org_id: OrgId::new(org_id),
-            };
-
-            // Set `auth_ctx` as a request extension
-            request.extensions_mut().insert(auth_ctx);
-            Ok(request)
+            Err(http::Response::builder()
+                .status(StatusCode::UNAUTHORIZED)
+                .body(axum_core::body::Body::empty())
+                .unwrap())
         })
     }
 }
