@@ -106,7 +106,7 @@ where
             router_config,
             proxy_context,
             helicone,
-            auth_context: auth_context,
+            auth_context,
             request_id: Uuid::new_v4(),
             country_code: CountryCode::USA,
             start_time: Utc::now(),

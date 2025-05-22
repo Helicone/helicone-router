@@ -45,7 +45,8 @@ impl LoggerService {
         request_body: Bytes,
         response_body: Bytes,
     ) -> Result<(), LoggerError> {
-        let auth_ctx = (&req_ctx.auth_context)
+        let auth_ctx = req_ctx
+            .auth_context
             .as_ref()
             .ok_or(LoggerError::NoAuthContextSet)?;
 
@@ -84,7 +85,9 @@ impl LoggerService {
     #[allow(clippy::cast_precision_loss)]
     pub async fn log(mut self) -> Result<(), LoggerError> {
         tracing::trace!("logging request");
-        let auth_ctx = (&self.req_ctx.auth_context)
+        let auth_ctx = self
+            .req_ctx
+            .auth_context
             .as_ref()
             .ok_or(LoggerError::NoAuthContextSet)?;
         let response_body = self
