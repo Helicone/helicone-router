@@ -21,7 +21,7 @@ pub struct AuthService {
 
 impl AuthService {
     pub fn new(app_state: AppState) -> Self {
-        Self { 
+                Self {
             app_state: Arc::new(app_state)
         }
     }
@@ -83,10 +83,10 @@ impl AsyncAuthorizeRequest<axum_core::body::Body> for AuthService {
         &mut self,
         mut request: Request<axum_core::body::Body>,
     ) -> Self::Future {
-        // NOTE: 
+        // NOTE:
         // this is a temporary solution, when we get the control plane up and running, we will actively be pushing the config to the router
         // rather than fetching it from the control plane each time
-        
+
         tracing::trace!("Auth middleware for axum body");
         let api_key = request
             .headers()
