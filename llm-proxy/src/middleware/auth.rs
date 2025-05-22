@@ -1,4 +1,5 @@
 use std::str::FromStr;
+use std::sync::Arc;
 
 use futures::future::BoxFuture;
 use http::{HeaderValue, Request, StatusCode};
@@ -9,17 +10,52 @@ use uuid::Uuid;
 
 use crate::{
     app::AppState,
+    error::auth::AuthError,
     types::{org::OrgId, request::AuthContext, user::UserId},
 };
 
 #[derive(Clone)]
 pub struct AuthService {
-    app_state: AppState,
+    app_state: Arc<AppState>,
 }
 
 impl AuthService {
     pub fn new(app_state: AppState) -> Self {
-        Self { app_state }
+        Self { 
+            app_state: Arc::new(app_state)
+        }
+    }
+
+    // Private helper function for authentication
+    async fn authenticate_request_inner(app_state: &AppState, api_key: String) -> Result<AuthContext, AuthError> {
+        let whoami_url = app_state
+            .0
+            .config
+            .helicone
+            .base_url
+            .join("/v1/router/control-plane/whoami")
+            .map_err(|_| AuthError::InvalidCredentials)?;
+
+        let whoami_result = app_state
+            .0
+            .jawn_client
+            .get(whoami_url)
+            .header("authorization", api_key.clone())
+            .send()
+            .await?;
+
+        let body = whoami_result.json::<WhoamiResponse>().await?;
+        
+        let org_id = Uuid::from_str(&body.organization_id)
+            .map_err(|_| AuthError::InvalidCredentials)?;
+        let user_id = Uuid::from_str(&body.user_id)
+            .map_err(|_| AuthError::InvalidCredentials)?;
+
+        Ok(AuthContext {
+            api_key: api_key.replace("Bearer ", ""),
+            user_id: UserId::new(user_id),
+            org_id: OrgId::new(org_id),
+        })
     }
 }
 
@@ -47,6 +83,10 @@ impl AsyncAuthorizeRequest<axum_core::body::Body> for AuthService {
         &mut self,
         mut request: Request<axum_core::body::Body>,
     ) -> Self::Future {
+        // NOTE: 
+        // this is a temporary solution, when we get the control plane up and running, we will actively be pushing the config to the router
+        // rather than fetching it from the control plane each time
+        
         tracing::trace!("Auth middleware for axum body");
         let api_key = request
             .headers()
@@ -55,46 +95,24 @@ impl AsyncAuthorizeRequest<axum_core::body::Body> for AuthService {
             .to_str()
             .unwrap_or_default()
             .to_string();
-        let app_state = self.app_state.clone();
-        let whoami_url = self
-            .app_state
-            .0
-            .config
-            .helicone
-            .base_url
-            .join("/v1/router/control-plane/whoami")
-            .unwrap();
+        
+        // Just clone the Arc, which is much cheaper
+        let app_state = Arc::clone(&self.app_state); // NOTE: idk if this ARC is overkill, could just clone the app_state
 
         Box::pin(async move {
-            let whoami_result = app_state
-                .0
-                .jawn_client
-                .get(whoami_url)
-                .header("authorization", api_key.clone())
-                .send()
-                .await;
-
-            if let Ok(response) = whoami_result {
-                if let Ok(body) = response.json::<WhoamiResponse>().await {
-                    println!("body: {:?}", body);
-                    let org_id = Uuid::from_str(&body.organization_id).unwrap();
-                    let user_id = Uuid::from_str(&body.user_id).unwrap();
-                    let auth_ctx = AuthContext {
-                        api_key: api_key.replace("Bearer ", ""),
-                        user_id: UserId::new(user_id),
-                        org_id: OrgId::new(org_id),
-                    };
+            match Self::authenticate_request_inner(&app_state, api_key).await {
+                Ok(auth_ctx) => {
                     request.extensions_mut().insert(auth_ctx);
-                    return Ok(request);
+                    Ok(request)
                 }
-            } else if let Err(e) = whoami_result {
-                warn!("Error making whoami request: {:?}", e);
+                Err(e) => {
+                    warn!("Authentication error: {:?}", e);
+                    Err(http::Response::builder()
+                        .status(StatusCode::UNAUTHORIZED)
+                        .body(axum_core::body::Body::empty())
+                        .unwrap_or_else(|_| panic!("Failed to build response")))
+                }
             }
-
-            Err(http::Response::builder()
-                .status(StatusCode::UNAUTHORIZED)
-                .body(axum_core::body::Body::empty())
-                .unwrap())
         })
     }
 }

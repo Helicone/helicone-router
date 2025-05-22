@@ -18,6 +18,9 @@ pub enum AuthError {
 
     #[error("Invalid credentials")]
     InvalidCredentials,
+
+    #[error("Internal server error")]
+    InternalServerError,
 }
 
 impl IntoResponse for AuthError {
