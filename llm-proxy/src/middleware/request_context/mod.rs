@@ -63,7 +63,8 @@ where
     fn call(&mut self, mut req: Request) -> Self::Future {
         let router_config = self.router_config.clone();
         let provider_keys = self.provider_keys.clone();
-        let req_ctx = Service::<S>::get_context(router_config, provider_keys, &mut req);
+        let req_ctx =
+            Service::<S>::get_context(router_config, provider_keys, &mut req);
         req.extensions_mut().insert(Arc::new(req_ctx));
         Either::Right(self.inner.call(req))
     }

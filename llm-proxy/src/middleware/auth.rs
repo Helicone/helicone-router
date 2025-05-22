@@ -53,23 +53,19 @@ struct WhoamiResponse {
     organization_id: Uuid,
 }
 
-// Specific implementation for axum_core::body::Body
-impl AsyncAuthorizeRequest<axum_core::body::Body> for AuthService {
-    type RequestBody = axum_core::body::Body;
+impl<B> AsyncAuthorizeRequest<B> for AuthService
+where
+    B: Send + 'static,
+{
+    type RequestBody = B;
     type ResponseBody = axum_core::body::Body;
     type Future = BoxFuture<
         'static,
-        Result<
-            Request<axum_core::body::Body>,
-            http::Response<Self::ResponseBody>,
-        >,
+        Result<Request<B>, http::Response<Self::ResponseBody>>,
     >;
 
     #[tracing::instrument(skip_all)]
-    fn authorize(
-        &mut self,
-        mut request: Request<axum_core::body::Body>,
-    ) -> Self::Future {
+    fn authorize(&mut self, mut request: Request<B>) -> Self::Future {
         // NOTE:
         // this is a temporary solution, when we get the control plane up and
         // running, we will actively be validating the helicone api keys
