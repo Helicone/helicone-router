@@ -1,10 +1,9 @@
-use std::str::FromStr;
-
 use futures::future::BoxFuture;
 use http::{Request, StatusCode};
 use serde::Deserialize;
 use tower_http::auth::AsyncAuthorizeRequest;
 use tracing::warn;
+use url::Url;
 use uuid::Uuid;
 
 use crate::{
@@ -24,48 +23,43 @@ impl AuthService {
         Self { app_state }
     }
 
-    // Private helper function for authentication
     async fn authenticate_request_inner(
-        app_state: &AppState,
-        api_key: String,
+        app_state: AppState,
+        api_key: &str,
     ) -> Result<AuthContext, AuthError> {
-        let whoami_url = app_state
-            .0
-            .config
-            .helicone
-            .base_url
-            .join("/v1/router/control-plane/whoami")
-            .map_err(|_| AuthError::InvalidCredentials)?;
-
         let whoami_result = app_state
             .0
             .jawn_client
-            .get(whoami_url)
-            .header("authorization", api_key.clone())
+            .get(whoami_url(&app_state))
+            .header("authorization", api_key)
             .send()
-            .await?;
-
+            .await?
+            .error_for_status()?;
         let body = whoami_result.json::<WhoamiResponse>().await?;
-
-        let org_id = Uuid::from_str(&body.organization_id)
-            .map_err(|_| AuthError::InvalidCredentials)?;
-        let user_id = Uuid::from_str(&body.user_id)
-            .map_err(|_| AuthError::InvalidCredentials)?;
-
         Ok(AuthContext {
             api_key: api_key.replace("Bearer ", ""),
-            user_id: UserId::new(user_id),
-            org_id: OrgId::new(org_id),
+            user_id: UserId::new(body.user_id),
+            org_id: OrgId::new(body.organization_id),
         })
     }
+}
+
+fn whoami_url(app_state: &AppState) -> Url {
+    app_state
+        .0
+        .config
+        .helicone
+        .base_url
+        .join("/v1/router/control-plane/whoami")
+        .expect("helicone base url should be valid")
 }
 
 #[derive(Debug, Deserialize)]
 struct WhoamiResponse {
     #[serde(rename = "userId")]
-    user_id: String,
+    user_id: Uuid,
     #[serde(rename = "organizationId")]
-    organization_id: String,
+    organization_id: Uuid,
 }
 
 // Specific implementation for axum_core::body::Body
@@ -90,20 +84,14 @@ impl AsyncAuthorizeRequest<axum_core::body::Body> for AuthService {
         // running, we will actively be validating the helicone api keys
         // at the router rather than authenticating with jawn each time
         tracing::trace!("Auth middleware for axum body");
-        let api_key: Option<String> = request
-            .headers()
-            .get("authorization")
-            .and_then(|h| h.to_str().ok())
-            .map(String::from);
-
-        println!("api_key: {:?}", api_key);
-
         let app_state = self.app_state.clone();
-
         Box::pin(async move {
+            let api_key: Option<&str> = request
+                .headers()
+                .get("authorization")
+                .and_then(|h| h.to_str().ok());
             if let Some(api_key) = api_key {
-                match Self::authenticate_request_inner(&app_state, api_key)
-                    .await
+                match Self::authenticate_request_inner(app_state, api_key).await
                 {
                     Ok(auth_ctx) => {
                         request.extensions_mut().insert(Some(auth_ctx));
@@ -126,5 +114,19 @@ impl AsyncAuthorizeRequest<axum_core::body::Body> for AuthService {
                 Ok(request)
             }
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{app::App, config::Config, tests::TestDefault};
+
+    #[tokio::test]
+    async fn test_whoami_url() {
+        let app = App::new(Config::test_default()).await.unwrap();
+        let _whoami_url = whoami_url(&app.state);
+        // we don't care to assert what the url is,
+        // we just want to make sure it's not panicking
     }
 }
