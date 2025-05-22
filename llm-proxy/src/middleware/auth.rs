@@ -1,5 +1,4 @@
-use std::str::FromStr;
-use std::sync::Arc;
+use std::{str::FromStr, sync::Arc};
 
 use futures::future::BoxFuture;
 use http::{Request, StatusCode};
@@ -90,7 +89,8 @@ impl AsyncAuthorizeRequest<axum_core::body::Body> for AuthService {
         mut request: Request<axum_core::body::Body>,
     ) -> Self::Future {
         // NOTE:
-        // this is a temporary solution, when we get the control plane up and running, we will actively be pushing the config to the router
+        // this is a temporary solution, when we get the control plane up and
+        // running, we will actively be pushing the config to the router
         // rather than fetching it from the control plane each time
 
         tracing::trace!("Auth middleware for axum body");
@@ -142,7 +142,8 @@ impl AsyncAuthorizeRequest<axum_core::body::Body> for AuthService {
                     }
                 }
             } else {
-                // @Tom - do i need to do this? This extensions type hashmap is like magic to me, i have no idea what is happening
+                // @Tom - do i need to do this? This extensions type hashmap is
+                // like magic to me, i have no idea what is happening
                 request.extensions_mut().insert::<Option<AuthContext>>(None);
                 Ok(request)
             }

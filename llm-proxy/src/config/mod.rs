@@ -41,7 +41,7 @@ pub enum DeploymentTarget {
     Cloud {
         global_rate_limits: self::rate_limit::RateLimitConfig,
     },
-    Sidecar { 
+    Sidecar {
         use_global_helicone_key: bool,
     },
     SelfHosted {
@@ -56,7 +56,6 @@ impl Default for DeploymentTarget {
         }
     }
 }
-
 
 #[derive(Debug, Default, Deserialize, Serialize)]
 #[serde(default, deny_unknown_fields, rename_all = "kebab-case")]
