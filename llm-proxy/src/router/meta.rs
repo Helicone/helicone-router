@@ -44,11 +44,8 @@ pub struct MetaRouter {
 impl MetaRouter {
     pub async fn new(app_state: AppState) -> Result<Self, InitError> {
         let meta_router = match app_state.0.config.deployment_target {
-            DeploymentTarget::SelfHosted { .. } => {
-                Self::from_config(app_state).await
-            }
-            DeploymentTarget::Cloud { .. }
-            | DeploymentTarget::Sidecar { .. } => {
+            DeploymentTarget::SelfHosted => Self::from_config(app_state).await,
+            DeploymentTarget::Cloud { .. } | DeploymentTarget::Sidecar => {
                 return Err(InitError::DeploymentTargetNotSupported(
                     app_state.0.config.deployment_target.clone(),
                 ));

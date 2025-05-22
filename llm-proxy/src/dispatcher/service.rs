@@ -343,32 +343,35 @@ impl Dispatcher {
         tracing::debug!(provider_req_id = ?provider_request_id, status = %response.status(), "received response");
         response.extensions_mut().insert(stream_ctx);
 
-        let response_logger = LoggerService::builder()
-            .app_state(self.app_state.clone())
-            .req_ctx(req_ctx)
-            .target_url(target_url)
-            .request_headers(headers)
-            .request_body(req_body_bytes)
-            .response_status(response.status())
-            .response_body(body_reader)
-            .provider(target_provider)
-            .build();
+        if req_ctx.auth_context.is_some() {
+            let response_logger = LoggerService::builder()
+                .app_state(self.app_state.clone())
+                .req_ctx(req_ctx)
+                .target_url(target_url)
+                .request_headers(headers)
+                .request_body(req_body_bytes)
+                .response_status(response.status())
+                .response_body(body_reader)
+                .provider(target_provider)
+                .build();
 
-        let app_state = self.app_state.clone();
-        tokio::spawn(
-            async move {
-                if let Err(e) = response_logger.log().await {
-                    tracing::error!(error = %e, "failed to log response");
-                    let error_str = e.as_ref().to_string();
-                    app_state
-                        .0
-                        .metrics
-                        .error_count
-                        .add(1, &[KeyValue::new("type", error_str)]);
+            let app_state = self.app_state.clone();
+            tokio::spawn(
+                async move {
+                    if let Err(e) = response_logger.log().await {
+                        tracing::error!(error = %e, "failed to log response");
+                        let error_str = e.as_ref().to_string();
+                        app_state
+                            .0
+                            .metrics
+                            .error_count
+                            .add(1, &[KeyValue::new("type", error_str)]);
+                    }
                 }
-            }
-            .instrument(tracing::Span::current()),
-        );
+                .instrument(tracing::Span::current()),
+            );
+        }
+
         if response.status().is_server_error() {
             endpoint_metrics.incr_remote_internal_error_count();
         }
