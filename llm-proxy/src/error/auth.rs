@@ -1,25 +1,20 @@
 use axum_core::response::{IntoResponse, Response};
+use displaydoc::Display;
 use http::StatusCode;
 use tracing::error;
 
 use super::api::ErrorResponse;
 use crate::types::json::Json;
 
-#[derive(Debug, strum::AsRefStr, thiserror::Error)]
+#[derive(Debug, strum::AsRefStr, thiserror::Error, Display)]
 pub enum AuthError {
-    #[error(transparent)]
-    Database(#[from] sqlx::Error),
-
-    #[error(transparent)]
+    /// Reqwest error: {0}
     Reqwest(#[from] reqwest::Error),
-
-    #[error(transparent)]
+    /// Task join error: {0}
     TaskJoin(#[from] tokio::task::JoinError),
-
-    #[error("Invalid credentials")]
+    /// Invalid credentials
     InvalidCredentials,
-
-    #[error("Internal server error")]
+    /// Internal server error
     InternalServerError,
 }
 
