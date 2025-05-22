@@ -27,7 +27,7 @@ pub async fn test() {
     let response = reqwest::Client::new()
         .post("http://localhost:5678/router/v1/chat/completions")
         .header("Content-Type", "application/json")
-        /// TODO When we implement team keys we can add them here
+        // TODO: When we implement team keys we can add them here
         // .header(
         //     "authorization",
         //     format!(
