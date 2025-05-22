@@ -32,9 +32,9 @@ pub async fn test() {
         //     "authorization",
         //     format!(
         //         "Bearer {}",
-        //         std::env::var("ROUTER_TEAM_API_KEY") // RIGHT NOW TEAM LOGIC IS NOT IMPLEMENTED
-        //             .unwrap_or_else(|_| "mock-api-key".to_string())
-        //     ),
+        //         std::env::var("ROUTER_TEAM_API_KEY") // RIGHT NOW TEAM LOGIC
+        // IS NOT IMPLEMENTED             .unwrap_or_else(|_|
+        // "mock-api-key".to_string())     ),
         // )
         .body(bytes)
         .send()
