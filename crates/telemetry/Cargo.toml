@@ -25,6 +25,7 @@ tracing-subscriber = { workspace = true, features = [
 ] }
 thiserror = { workspace = true }
 uuid = { workspace = true }
+dotenv = "0.15"
 
 [lints]
 workspace = true
