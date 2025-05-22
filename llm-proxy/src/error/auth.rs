@@ -10,33 +10,39 @@ use crate::types::json::Json;
 pub enum AuthError {
     /// Reqwest error: {0}
     Reqwest(#[from] reqwest::Error),
-    /// Task join error: {0}
-    TaskJoin(#[from] tokio::task::JoinError),
+    /// Missing authorization header
+    MissingAuthorizationHeader,
     /// Invalid credentials
     InvalidCredentials,
-    /// Internal server error
-    InternalServerError,
 }
 
 impl IntoResponse for AuthError {
     fn into_response(self) -> Response {
-        if let Self::InvalidCredentials = self {
-            (
+        match self {
+            Self::Reqwest(error) => {
+                error!(error = %error, "reqwest error");
+                (
+                    error.status().unwrap_or(StatusCode::INTERNAL_SERVER_ERROR),
+                    Json(ErrorResponse {
+                        error: "Authentication error".to_string(),
+                    }),
+                )
+                    .into_response()
+            }
+            Self::MissingAuthorizationHeader => (
                 StatusCode::UNAUTHORIZED,
                 Json(ErrorResponse {
-                    error: "Invalid credentials".to_string(),
+                    error: Self::MissingAuthorizationHeader.to_string(),
                 }),
             )
-                .into_response()
-        } else {
-            error!(error = %self, "authentication error");
-            (
-                StatusCode::INTERNAL_SERVER_ERROR,
+                .into_response(),
+            Self::InvalidCredentials => (
+                StatusCode::UNAUTHORIZED,
                 Json(ErrorResponse {
-                    error: "Internal server error".to_string(),
+                    error: Self::InvalidCredentials.to_string(),
                 }),
             )
-                .into_response()
+                .into_response(),
         }
     }
 }

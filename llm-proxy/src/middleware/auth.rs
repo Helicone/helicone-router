@@ -1,5 +1,6 @@
+use axum_core::response::IntoResponse;
 use futures::future::BoxFuture;
-use http::{Request, StatusCode};
+use http::Request;
 use serde::Deserialize;
 use tower_http::auth::AsyncAuthorizeRequest;
 use tracing::warn;
@@ -44,16 +45,6 @@ impl AuthService {
     }
 }
 
-fn whoami_url(app_state: &AppState) -> Url {
-    app_state
-        .0
-        .config
-        .helicone
-        .base_url
-        .join("/v1/router/control-plane/whoami")
-        .expect("helicone base url should be valid")
-}
-
 #[derive(Debug, Deserialize)]
 struct WhoamiResponse {
     #[serde(rename = "userId")]
@@ -86,35 +77,40 @@ impl AsyncAuthorizeRequest<axum_core::body::Body> for AuthService {
         tracing::trace!("Auth middleware for axum body");
         let app_state = self.app_state.clone();
         Box::pin(async move {
-            let api_key: Option<&str> = request
+            if !app_state.0.config.auth.require_auth {
+                return Ok(request);
+            }
+            let Some(api_key) = request
                 .headers()
                 .get("authorization")
-                .and_then(|h| h.to_str().ok());
-            if let Some(api_key) = api_key {
-                match Self::authenticate_request_inner(app_state, api_key).await
-                {
-                    Ok(auth_ctx) => {
-                        request.extensions_mut().insert(Some(auth_ctx));
-                        Ok(request)
-                    }
-                    Err(e) => {
-                        warn!("Authentication error: {:?}", e);
-                        Err(http::Response::builder()
-                            .status(StatusCode::UNAUTHORIZED)
-                            .body(axum_core::body::Body::empty())
-                            .unwrap_or_else(|_| {
-                                panic!("Failed to build response")
-                            }))
-                    }
+                .and_then(|h| h.to_str().ok())
+            else {
+                return Err(
+                    AuthError::MissingAuthorizationHeader.into_response()
+                );
+            };
+            match Self::authenticate_request_inner(app_state, api_key).await {
+                Ok(auth_ctx) => {
+                    request.extensions_mut().insert(auth_ctx);
+                    Ok(request)
                 }
-            } else {
-                // @Tom - do i need to do this? This extensions type hashmap is
-                // like magic to me, i have no idea what is happening
-                request.extensions_mut().insert::<Option<AuthContext>>(None);
-                Ok(request)
+                Err(e) => {
+                    warn!(error = %e, "Authentication error");
+                    Err(e.into_response())
+                }
             }
         })
     }
+}
+
+fn whoami_url(app_state: &AppState) -> Url {
+    app_state
+        .0
+        .config
+        .helicone
+        .base_url
+        .join("/v1/router/control-plane/whoami")
+        .expect("helicone base url should be valid")
 }
 
 #[cfg(test)]
