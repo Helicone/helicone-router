@@ -34,17 +34,29 @@ pub enum Error {
 }
 
 #[derive(
-    Debug, Default, Clone, PartialEq, Eq, Deserialize, Serialize, IntoStaticStr,
+    Debug, Clone, PartialEq, Eq, Deserialize, Serialize, IntoStaticStr,
 )]
 #[serde(deny_unknown_fields, rename_all = "kebab-case")]
 pub enum DeploymentTarget {
     Cloud {
         global_rate_limits: self::rate_limit::RateLimitConfig,
     },
-    Sidecar,
-    #[default]
-    SelfHosted,
+    Sidecar { 
+        use_global_helicone_key: bool,
+    },
+    SelfHosted {
+        use_global_helicone_key: bool,
+    },
 }
+
+impl Default for DeploymentTarget {
+    fn default() -> Self {
+        Self::SelfHosted {
+            use_global_helicone_key: true,
+        }
+    }
+}
+
 
 #[derive(Debug, Default, Deserialize, Serialize)]
 #[serde(default, deny_unknown_fields, rename_all = "kebab-case")]

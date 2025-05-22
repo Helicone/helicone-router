@@ -90,7 +90,7 @@ where
     ) -> Result<RequestContext, Error> {
         let auth_context = req
             .extensions_mut()
-            .remove::<AuthContext>()
+            .remove::<Option<AuthContext>>()
             .ok_or(InternalError::ExtensionNotFound("AuthContext"))?;
 
         // TODO: this will come from parsing the prompt+headers+etc
@@ -106,7 +106,7 @@ where
             router_config,
             proxy_context,
             helicone,
-            auth_context,
+            auth_context: auth_context,
             request_id: Uuid::new_v4(),
             country_code: CountryCode::USA,
             start_time: Utc::now(),
