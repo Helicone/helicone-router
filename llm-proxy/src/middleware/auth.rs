@@ -2,7 +2,7 @@ use std::str::FromStr;
 use std::sync::Arc;
 
 use futures::future::BoxFuture;
-use http::{HeaderValue, Request, StatusCode};
+use http::{Request, StatusCode};
 use serde::Deserialize;
 use tower_http::auth::AsyncAuthorizeRequest;
 use tracing::warn;
@@ -10,6 +10,7 @@ use uuid::Uuid;
 
 use crate::{
     app::AppState,
+    config::DeploymentTarget,
     error::auth::AuthError,
     types::{org::OrgId, request::AuthContext, user::UserId},
 };
@@ -20,14 +21,18 @@ pub struct AuthService {
 }
 
 impl AuthService {
+    #[must_use]
     pub fn new(app_state: AppState) -> Self {
-                Self {
-            app_state: Arc::new(app_state)
+        Self {
+            app_state: Arc::new(app_state),
         }
     }
 
     // Private helper function for authentication
-    async fn authenticate_request_inner(app_state: &AppState, api_key: String) -> Result<AuthContext, AuthError> {
+    async fn authenticate_request_inner(
+        app_state: &AppState,
+        api_key: String,
+    ) -> Result<AuthContext, AuthError> {
         let whoami_url = app_state
             .0
             .config
@@ -45,7 +50,7 @@ impl AuthService {
             .await?;
 
         let body = whoami_result.json::<WhoamiResponse>().await?;
-        
+
         let org_id = Uuid::from_str(&body.organization_id)
             .map_err(|_| AuthError::InvalidCredentials)?;
         let user_id = Uuid::from_str(&body.user_id)
@@ -79,6 +84,7 @@ impl AsyncAuthorizeRequest<axum_core::body::Body> for AuthService {
         >,
     >;
 
+    #[tracing::instrument(skip_all)]
     fn authorize(
         &mut self,
         mut request: Request<axum_core::body::Body>,
@@ -88,30 +94,57 @@ impl AsyncAuthorizeRequest<axum_core::body::Body> for AuthService {
         // rather than fetching it from the control plane each time
 
         tracing::trace!("Auth middleware for axum body");
-        let api_key = request
-            .headers()
-            .get("authorization")
-            .unwrap_or(&HeaderValue::from_static(""))
-            .to_str()
-            .unwrap_or_default()
-            .to_string();
-        
+
+        let api_key: Option<String> =
+            match self.app_state.0.config.deployment_target {
+                DeploymentTarget::Cloud { .. } => {
+                    panic!("Cloud deployment target not implemented")
+                }
+                DeploymentTarget::Sidecar {
+                    use_global_helicone_key,
+                }
+                | DeploymentTarget::SelfHosted {
+                    use_global_helicone_key,
+                } => {
+                    if use_global_helicone_key {
+                        std::env::var("HELICONE_API_KEY").ok()
+                    } else {
+                        request
+                            .headers()
+                            .get("authorization")
+                            .and_then(|h| h.to_str().ok())
+                            .map(String::from)
+                    }
+                }
+            };
+        println!("api_key: {:?}", api_key);
+
         // Just clone the Arc, which is much cheaper
-        let app_state = Arc::clone(&self.app_state); // NOTE: idk if this ARC is overkill, could just clone the app_state
+        let app_state = self.app_state.clone();
 
         Box::pin(async move {
-            match Self::authenticate_request_inner(&app_state, api_key).await {
-                Ok(auth_ctx) => {
-                    request.extensions_mut().insert(auth_ctx);
-                    Ok(request)
+            if let Some(api_key) = api_key {
+                match Self::authenticate_request_inner(&app_state, api_key)
+                    .await
+                {
+                    Ok(auth_ctx) => {
+                        request.extensions_mut().insert(Some(auth_ctx));
+                        Ok(request)
+                    }
+                    Err(e) => {
+                        warn!("Authentication error: {:?}", e);
+                        Err(http::Response::builder()
+                            .status(StatusCode::UNAUTHORIZED)
+                            .body(axum_core::body::Body::empty())
+                            .unwrap_or_else(|_| {
+                                panic!("Failed to build response")
+                            }))
+                    }
                 }
-                Err(e) => {
-                    warn!("Authentication error: {:?}", e);
-                    Err(http::Response::builder()
-                        .status(StatusCode::UNAUTHORIZED)
-                        .body(axum_core::body::Body::empty())
-                        .unwrap_or_else(|_| panic!("Failed to build response")))
-                }
+            } else {
+                // @Tom - do i need to do this? This extensions type hashmap is like magic to me, i have no idea what is happening
+                request.extensions_mut().insert::<Option<AuthContext>>(None);
+                Ok(request)
             }
         })
     }

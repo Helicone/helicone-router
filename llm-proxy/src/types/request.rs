@@ -35,7 +35,8 @@ pub struct AuthContext {
 pub struct RequestContext {
     pub router_config: Arc<RouterConfig>,
     pub proxy_context: RequestProxyContext,
-    pub auth_context: AuthContext,
+    // If None then auth is not required for this request
+    pub auth_context: Option<AuthContext>,
     pub helicone: HeliconeContext,
     pub start_time: DateTime<Utc>,
     pub request_id: Uuid,
