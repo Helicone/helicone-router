@@ -1,4 +1,4 @@
-use std::{str::FromStr, sync::Arc};
+use std::str::FromStr;
 
 use futures::future::BoxFuture;
 use http::{Request, StatusCode};
@@ -9,22 +9,19 @@ use uuid::Uuid;
 
 use crate::{
     app::AppState,
-    config::DeploymentTarget,
     error::auth::AuthError,
     types::{org::OrgId, request::AuthContext, user::UserId},
 };
 
 #[derive(Clone)]
 pub struct AuthService {
-    app_state: Arc<AppState>,
+    app_state: AppState,
 }
 
 impl AuthService {
     #[must_use]
     pub fn new(app_state: AppState) -> Self {
-        Self {
-            app_state: Arc::new(app_state),
-        }
+        Self { app_state }
     }
 
     // Private helper function for authentication
@@ -90,36 +87,17 @@ impl AsyncAuthorizeRequest<axum_core::body::Body> for AuthService {
     ) -> Self::Future {
         // NOTE:
         // this is a temporary solution, when we get the control plane up and
-        // running, we will actively be pushing the config to the router
-        // rather than fetching it from the control plane each time
-
+        // running, we will actively be validating the helicone api keys
+        // at the router rather than authenticating with jawn each time
         tracing::trace!("Auth middleware for axum body");
+        let api_key: Option<String> = request
+            .headers()
+            .get("authorization")
+            .and_then(|h| h.to_str().ok())
+            .map(String::from);
 
-        let api_key: Option<String> =
-            match self.app_state.0.config.deployment_target {
-                DeploymentTarget::Cloud { .. } => {
-                    panic!("Cloud deployment target not implemented")
-                }
-                DeploymentTarget::Sidecar {
-                    use_global_helicone_key,
-                }
-                | DeploymentTarget::SelfHosted {
-                    use_global_helicone_key,
-                } => {
-                    if use_global_helicone_key {
-                        std::env::var("HELICONE_API_KEY").ok()
-                    } else {
-                        request
-                            .headers()
-                            .get("authorization")
-                            .and_then(|h| h.to_str().ok())
-                            .map(String::from)
-                    }
-                }
-            };
         println!("api_key: {:?}", api_key);
 
-        // Just clone the Arc, which is much cheaper
         let app_state = self.app_state.clone();
 
         Box::pin(async move {
