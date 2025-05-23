@@ -22,13 +22,17 @@ use tower_http::{
 use tracing::{Level, info};
 
 use crate::{
-    config::{Config, minio::Minio, server::TlsConfig},
+    config::{
+        Config, minio::Minio, rate_limit::RateLimitConfig, server::TlsConfig,
+    },
     discover::monitor::health::{
         EndpointMetricsRegistry, provider::HealthMonitorMap,
     },
     error::{self, init::InitError, runtime::RuntimeError},
     metrics::{self, Metrics},
-    middleware::auth::AuthService,
+    middleware::{
+        auth::AuthService, rate_limit::service::Layer as RateLimitLayer,
+    },
     router::meta::MetaRouter,
     utils::{catch_panic::PanicResponder, handle_error::ErrorHandlerLayer},
 };
@@ -67,6 +71,7 @@ pub struct InnerAppState {
     pub config: Config,
     pub minio: Minio,
     pub jawn_client: Client,
+    pub redis: Option<r2d2::Pool<redis::Client>>,
     /// Top level metrics which are exported to OpenTelemetry.
     pub metrics: Metrics,
     /// Metrics to track provider health and rate limits.
@@ -107,10 +112,6 @@ pub struct InnerAppState {
 ///
 /// -- region specific middleware (none yet, just leaf service) --
 /// 17. Dispatcher
-///
-/// Ideally we could combine the rate limits into one layer
-/// instead of using `tower_governor` and having to split them up.
-///
 ///
 /// For request processing, we need to use some dynamically added
 /// request extensions. We try to aggregate most of this into the
@@ -183,10 +184,22 @@ impl App {
         let endpoint_metrics = EndpointMetricsRegistry::default();
         let health_monitor = HealthMonitorMap::default();
 
+        let redis = match &config.rate_limit {
+            RateLimitConfig::Enabled { redis, .. } => {
+                let client = redis::Client::open(redis.url.0.clone())?;
+                let pool = r2d2::Pool::builder()
+                    .connection_timeout(redis.connection_timeout)
+                    .build(client)?;
+                Some(pool)
+            }
+            RateLimitConfig::Disabled => None,
+        };
+
         let app_state = AppState(Arc::new(InnerAppState {
             config,
             minio,
             jawn_client,
+            redis,
             metrics,
             endpoint_metrics,
             health_monitor,
@@ -215,6 +228,7 @@ impl App {
             .layer(AsyncRequireAuthorizationLayer::new(AuthService::new(
                 app_state.clone(),
             )))
+            .layer(RateLimitLayer::new(&app_state))
             .map_err(crate::error::internal::InternalError::BufferError)
             .layer(BufferLayer::new(BUFFER_SIZE))
             .layer(ErrorHandlerLayer::new(app_state.clone()))
