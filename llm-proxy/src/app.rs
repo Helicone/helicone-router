@@ -23,7 +23,10 @@ use tracing::{Level, info};
 
 use crate::{
     config::{
-        Config, minio::Minio, rate_limit::RateLimitConfig, server::TlsConfig,
+        Config,
+        minio::Minio,
+        rate_limit::{RateLimitConfig, RateLimitStore},
+        server::TlsConfig,
     },
     discover::monitor::health::{
         EndpointMetricsRegistry, provider::HealthMonitorMap,
@@ -185,13 +188,16 @@ impl App {
         let health_monitor = HealthMonitorMap::default();
 
         let redis = match &config.rate_limit {
-            RateLimitConfig::Enabled { redis, .. } => {
-                let client = redis::Client::open(redis.url.0.clone())?;
-                let pool = r2d2::Pool::builder()
-                    .connection_timeout(redis.connection_timeout)
-                    .build(client)?;
-                Some(pool)
-            }
+            RateLimitConfig::Enabled { store, .. } => match store {
+                RateLimitStore::Redis(redis) => {
+                    let client = redis::Client::open(redis.url.0.clone())?;
+                    let pool = r2d2::Pool::builder()
+                        .connection_timeout(redis.connection_timeout)
+                        .build(client)?;
+                    Some(pool)
+                }
+                RateLimitStore::InMemory => None,
+            },
             RateLimitConfig::Disabled => None,
         };
 

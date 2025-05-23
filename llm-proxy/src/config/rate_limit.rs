@@ -9,11 +9,19 @@ use super::redis::RedisConfig;
 pub enum RateLimitConfig {
     Enabled {
         #[serde(default)]
-        redis: RedisConfig,
+        store: RateLimitStore,
         #[serde(default, flatten)]
         limits: LimitConfig,
     },
     Disabled,
+}
+
+#[derive(Debug, Default, Clone, Deserialize, Serialize, Eq, PartialEq)]
+#[serde(deny_unknown_fields, rename_all = "kebab-case")]
+pub enum RateLimitStore {
+    Redis(RedisConfig),
+    #[default]
+    InMemory,
 }
 
 fn default_capacity() -> u32 {
@@ -27,7 +35,7 @@ fn default_fill_frequency() -> Duration {
 impl Default for RateLimitConfig {
     fn default() -> Self {
         Self::Enabled {
-            redis: RedisConfig::default(),
+            store: RateLimitStore::default(),
             limits: LimitConfig::default(),
         }
     }
@@ -41,10 +49,19 @@ impl crate::tests::TestDefault for RateLimitConfig {
 }
 
 #[cfg(feature = "testing")]
-pub fn enabled_for_test() -> RateLimitConfig {
+pub fn enabled_for_test_redis() -> RateLimitConfig {
     use crate::tests::TestDefault;
     RateLimitConfig::Enabled {
-        redis: RedisConfig::default(),
+        store: RateLimitStore::Redis(RedisConfig::default()),
+        limits: LimitConfig::test_default(),
+    }
+}
+
+#[cfg(feature = "testing")]
+pub fn enabled_for_test_in_memory() -> RateLimitConfig {
+    use crate::tests::TestDefault;
+    RateLimitConfig::Enabled {
+        store: RateLimitStore::InMemory,
         limits: LimitConfig::test_default(),
     }
 }

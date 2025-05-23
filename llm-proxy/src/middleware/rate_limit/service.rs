@@ -7,11 +7,15 @@ use std::{
 use brakes::{
     RateLimiter, backend::redis::RedisBackend, types::token_bucket::TokenBucket,
 };
+use tower::util::Either;
 
 use super::{brakes::TowerRateLimiterLayer, extractor::RateLimitKeyExtractor};
-use crate::{app::AppState, config::rate_limit::RateLimitConfig};
+use crate::{
+    app::AppState,
+    config::rate_limit::{RateLimitConfig, RateLimitStore},
+};
 
-pub type RateLimitService<S> =
+pub type RedisRateLimitService<S> =
     crate::middleware::rate_limit::brakes::TowerRateLimiter<
         S,
         TokenBucket,
@@ -19,15 +23,31 @@ pub type RateLimitService<S> =
         RateLimitKeyExtractor,
     >;
 
+pub type InMemoryRateLimitService<S> =
+    crate::middleware::rate_limit::brakes::TowerRateLimiter<
+        S,
+        TokenBucket,
+        brakes::backend::local::Memory,
+        RateLimitKeyExtractor,
+    >;
+
+type RedisRateLimitLayer =
+    crate::middleware::rate_limit::brakes::TowerRateLimiterLayer<
+        TokenBucket,
+        RedisBackend,
+        RateLimitKeyExtractor,
+    >;
+
+type InMemoryRateLimitLayer =
+    crate::middleware::rate_limit::brakes::TowerRateLimiterLayer<
+        TokenBucket,
+        brakes::backend::local::Memory,
+        RateLimitKeyExtractor,
+    >;
+
 #[derive(Clone)]
 pub struct Layer {
-    inner: Option<
-        crate::middleware::rate_limit::brakes::TowerRateLimiterLayer<
-            TokenBucket,
-            RedisBackend,
-            RateLimitKeyExtractor,
-        >,
-    >,
+    inner: Option<Either<RedisRateLimitLayer, InMemoryRateLimitLayer>>,
 }
 
 impl Layer {
@@ -37,35 +57,40 @@ impl Layer {
     #[must_use]
     pub fn new(app_state: &AppState) -> Self {
         match &app_state.0.config.rate_limit {
-            RateLimitConfig::Enabled { limits, redis: _ } => {
+            RateLimitConfig::Enabled { limits, store } => {
                 let strategy = TokenBucket::new(
                     limits.per_user.capacity,
                     limits.per_user.fill_frequency,
                 );
-                let backend = RedisBackend::new(
-                    app_state
-                        .0
-                        .redis
-                        .as_ref()
-                        .expect("redis is required")
-                        .clone(),
-                );
-                let limiter = RateLimiter::builder()
-                    .with_backend(backend)
-                    .with_limiter(strategy)
-                    .with_failure_strategy(brakes::RetryStrategy::RetryAndDeny(
-                        1,
-                    ))
-                    .with_conflict_strategy(
-                        brakes::RetryStrategy::RetryAndDeny(1),
-                    )
-                    .build();
-
-                let inner = Some(TowerRateLimiterLayer::new(
-                    limiter,
-                    RateLimitKeyExtractor,
-                ));
-                Self { inner }
+                match store {
+                    RateLimitStore::Redis(_redis_config) => {
+                        let backend = RedisBackend::new(
+                            app_state
+                                .0
+                                .redis
+                                .as_ref()
+                                .expect("redis is required")
+                                .clone(),
+                        );
+                        let limiter = build_limiter(backend, strategy);
+                        let inner =
+                            Some(Either::Left(TowerRateLimiterLayer::new(
+                                limiter,
+                                RateLimitKeyExtractor,
+                            )));
+                        Self { inner }
+                    }
+                    RateLimitStore::InMemory => {
+                        let backend = brakes::backend::local::Memory::new();
+                        let limiter = build_limiter(backend, strategy);
+                        let inner =
+                            Some(Either::Right(TowerRateLimiterLayer::new(
+                                limiter,
+                                RateLimitKeyExtractor,
+                            )));
+                        Self { inner }
+                    }
+                }
             }
             RateLimitConfig::Disabled => Self { inner: None },
         }
@@ -87,8 +112,12 @@ impl<S> tower::layer::Layer<S> for Layer {
 
 #[derive(Debug, Clone)]
 pub enum Service<S> {
-    Enabled { service: RateLimitService<S> },
-    Disabled { service: S },
+    Enabled {
+        service: Either<RedisRateLimitService<S>, InMemoryRateLimitService<S>>,
+    },
+    Disabled {
+        service: S,
+    },
 }
 
 pin_project_lite::pin_project! {
@@ -119,13 +148,13 @@ where
 impl<S, Request> tower::Service<Request> for Service<S>
 where
     S: tower::Service<Request>,
-    RateLimitService<S>:
+    Either<RedisRateLimitService<S>, InMemoryRateLimitService<S>>:
         tower::Service<Request, Response = S::Response, Error = S::Error>,
 {
     type Response = S::Response;
     type Error = S::Error;
     type Future = ResponseFuture<
-        <RateLimitService<S> as tower::Service<Request>>::Future,
+        <Either<RedisRateLimitService<S>, InMemoryRateLimitService<S>> as tower::Service<Request>>::Future,
         S::Future,
     >;
 
@@ -149,4 +178,16 @@ where
             },
         }
     }
+}
+
+fn build_limiter<B: brakes::backend::Backend>(
+    backend: B,
+    strategy: TokenBucket,
+) -> RateLimiter<TokenBucket, B> {
+    RateLimiter::builder()
+        .with_backend(backend)
+        .with_limiter(strategy)
+        .with_failure_strategy(brakes::RetryStrategy::RetryAndDeny(1))
+        .with_conflict_strategy(brakes::RetryStrategy::RetryAndDeny(1))
+        .build()
 }

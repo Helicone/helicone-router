@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use http::{Method, Request, StatusCode};
 use http_body_util::BodyExt;
 use llm_proxy::{
-    config::Config,
+    config::{Config, rate_limit::RateLimitConfig},
     tests::{TestDefault, harness::Harness, mock::MockArgs},
 };
 use serde_json::json;
@@ -11,12 +11,49 @@ use stubr::wiremock_rs::{Mock, ResponseTemplate, matchers};
 use tower::Service;
 use uuid::Uuid;
 
+// Redis-based rate limiter tests
 #[tokio::test]
 #[serial_test::serial]
-async fn rate_limit_capacity_enforced() {
+async fn rate_limit_capacity_enforced_redis() {
+    rate_limit_capacity_enforced_impl(
+        llm_proxy::config::rate_limit::enabled_for_test_redis(),
+    )
+    .await;
+}
+
+#[tokio::test]
+#[serial_test::serial]
+async fn rate_limit_per_user_isolation_redis() {
+    rate_limit_per_user_isolation_impl(
+        llm_proxy::config::rate_limit::enabled_for_test_redis(),
+    )
+    .await;
+}
+
+// In-memory rate limiter tests
+#[tokio::test]
+#[serial_test::serial]
+async fn rate_limit_capacity_enforced_in_memory() {
+    rate_limit_capacity_enforced_impl(
+        llm_proxy::config::rate_limit::enabled_for_test_in_memory(),
+    )
+    .await;
+}
+
+#[tokio::test]
+#[serial_test::serial]
+async fn rate_limit_per_user_isolation_in_memory() {
+    rate_limit_per_user_isolation_impl(
+        llm_proxy::config::rate_limit::enabled_for_test_in_memory(),
+    )
+    .await;
+}
+
+// Parameterized test implementations
+async fn rate_limit_capacity_enforced_impl(rate_limit_config: RateLimitConfig) {
     let mut config = Config::test_default();
     config.auth.require_auth = true;
-    config.rate_limit = llm_proxy::config::rate_limit::enabled_for_test();
+    config.rate_limit = rate_limit_config;
     let mock_args = MockArgs::builder()
         .stubs(HashMap::from([
             ("success:openai:chat_completion", 6.into()),
@@ -88,12 +125,12 @@ async fn rate_limit_capacity_enforced() {
     // mocks are verified on drop
 }
 
-#[tokio::test]
-#[serial_test::serial]
-async fn rate_limit_per_user_isolation() {
+async fn rate_limit_per_user_isolation_impl(
+    rate_limit_config: RateLimitConfig,
+) {
     let mut config = Config::test_default();
     config.auth.require_auth = true;
-    config.rate_limit = llm_proxy::config::rate_limit::enabled_for_test();
+    config.rate_limit = rate_limit_config;
 
     // Set up mocks - expect requests from both users
     let mock_args = MockArgs::builder()
