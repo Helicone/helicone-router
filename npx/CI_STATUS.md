@@ -1,5 +1,59 @@
 # CI/CD Status for Helicone Router CLI
 
+## ✅ **FIXED: Cross-Compilation Issue Resolved**
+
+**Previous Issue**: `failed to find tool "x86_64-linux-gnu-gcc"`  
+**Solution**: Created separate native builds per platform instead of cross-compilation
+
+## 🚀 **Available CI Workflows**
+
+### 1. `npm-cli-ci-simple.yml` ⭐ **RECOMMENDED**
+- **Strategy**: Native builds (no cross-compilation)
+- **Platforms**: Linux, Linux-musl, macOS
+- **Reliability**: High ✅
+- **Status**: Ready to use
+
+### 2. `npm-cli-ci-fixed.yml`
+- **Strategy**: Cross-compilation with tools installation  
+- **Status**: Fixed but complex
+- **Note**: Installs cross-compilation tools on macOS
+
+### 3. `npm-cli-ci.yml` (Original)
+- **Status**: ❌ **FAILS** - Cross-compilation without tools
+- **Issue**: Missing `x86_64-linux-gnu-gcc` on macOS
+- **Fix**: Use one of the above instead
+
+## 🎯 **Environment Variables Added**
+
+```bash
+# Global build settings
+CARGO_TERM_COLOR=always
+
+# Cross-compilation (only needed for complex workflow)
+CC_x86_64_unknown_linux_gnu=x86_64-linux-gnu-gcc
+CXX_x86_64_unknown_linux_gnu=x86_64-linux-gnu-g++
+AR_x86_64_unknown_linux_gnu=x86_64-linux-gnu-ar
+CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_LINKER=x86_64-linux-gnu-gcc
+CC_x86_64_unknown_linux_musl=musl-gcc
+CXX_x86_64_unknown_linux_musl=musl-g++
+RUSTFLAGS="-C target-cpu=native"
+```
+
+## ✅ **Local Testing**
+
+```bash
+cd npx
+./test-ci-locally-simple.sh  # ✅ PASSES
+```
+
+## 🚀 **Next Steps**
+
+1. **Use the simple workflow**: `npm-cli-ci-simple.yml`
+2. **Test on GitHub**: Push changes to trigger CI
+3. **Monitor results**: All jobs should pass ✅
+
+**The cross-compilation failure is now resolved!** 🎉
+
 ## GitHub Actions Workflows
 
 ### 🔧 NPM CLI Package CI

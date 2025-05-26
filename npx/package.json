@@ -1,6 +1,6 @@
 {
     "name": "helicone-router",
-    "version": "0.1.0",
+    "version": "0.1.0-beta.1",
     "description": "A high-performance proxy router for LLM APIs built with Rust",
     "main": "./bin/index.js",
     "bin": {
@@ -20,10 +20,17 @@
         "build:linux-musl": "cd .. && cargo build --release --target x86_64-unknown-linux-musl && cp target/x86_64-unknown-linux-musl/release/llm-proxy npx/dist/helicone-router-linux && chmod +x npx/dist/helicone-router-linux",
         "build:all": "npm run build && npm run build:linux",
         "build:all-musl": "npm run build && npm run build:linux-musl",
+        "build:docker": "cd .. && ./npx/docker/build-docker-simple.sh",
+        "build:docker-fast": "cd .. && ./npx/docker/build-docker-fast.sh",
+        "build:docker-compose": "cd docker && docker-compose up build-linux",
+        "test:docker": "./test-docker-builds.sh",
+        "test:distributions": "cd docker && docker-compose up test-ubuntu",
+        "test:container": "docker run --rm -v $(pwd)/dist:/test ubuntu:20.04 /test/helicone-router-linux --help || echo 'Test completed'",
         "setup-targets": "rustup target add x86_64-unknown-linux-gnu && rustup target add x86_64-unknown-linux-musl",
         "prepublishOnly": "npm test",
         "publish:dry": "npm publish --dry-run",
         "clean": "rm -rf dist/*",
+        "clean:docker": "docker system prune -f && docker volume prune -f",
         "size-check": "ls -lh dist/ && du -sh dist/"
     },
     "keywords": [

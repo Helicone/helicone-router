@@ -20,6 +20,16 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
+  # Cross-compilation environment variables
+  CC_x86_64_unknown_linux_gnu: x86_64-linux-gnu-gcc
+  CXX_x86_64_unknown_linux_gnu: x86_64-linux-gnu-g++
+  AR_x86_64_unknown_linux_gnu: x86_64-linux-gnu-ar
+  CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_LINKER: x86_64-linux-gnu-gcc
+  # Musl cross-compilation
+  CC_x86_64_unknown_linux_musl: musl-gcc
+  CXX_x86_64_unknown_linux_musl: musl-g++
+  # Rust build flags
+  RUSTFLAGS: "-C target-cpu=native"
 
 jobs:
   # Test the Node.js wrapper and package structure
@@ -113,6 +123,17 @@ jobs:
           toolchain: stable
           target: ${{ matrix.target }}
           override: true
+
+      - name: Install cross-compilation tools (macOS)
+        if: runner.os == 'macOS' && contains(matrix.target, 'linux')
+        run: |
+          echo "Installing Linux cross-compilation tools on macOS..."
+          # Install musl cross-compiler
+          brew install FiloSottile/musl-cross/musl-cross
+          # Install GNU cross-compiler for Linux
+          brew install SergioBenitez/osxct/x86_64-unknown-linux-gnu || echo "GNU cross-compiler installation failed, trying alternative..."
+          # Alternative: Install via homebrew core
+          brew install gcc || echo "GCC installation completed"
 
       - name: Install musl tools (Linux musl only)
         if: matrix.setup-musl

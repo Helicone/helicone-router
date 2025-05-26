@@ -1,0 +1,39 @@
+# Docker ignore file to speed up builds
+# Exclude target directory (build artifacts)
+target/
+
+# Exclude NPM node_modules if any
+node_modules/
+
+# Exclude git files
+.git/
+.gitignore
+
+# Exclude temporary files
+**/*.tmp
+**/*.temp
+**/.DS_Store
+
+# Exclude IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Exclude documentation that's not needed for builds
+*.md
+!README.md
+
+# Exclude CI files (not needed in container)
+.github/
+
+# Exclude test artifacts
+npx/test-artifacts/
+npx/dist/
+
+# Exclude Docker files themselves
+**/Dockerfile*
+**/docker-compose*
+
+# Exclude logs
+**/*.log 

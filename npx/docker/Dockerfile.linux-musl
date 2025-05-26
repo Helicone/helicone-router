@@ -1,0 +1,31 @@
+# Dockerfile for building Linux musl binary (Alpine-compatible)
+FROM --platform=linux/amd64 rustlang/rust:nightly-alpine as builder
+
+# Install musl build dependencies
+RUN apk add --no-cache \
+    musl-dev \
+    pkgconfig \
+    openssl-dev \
+    openssl-libs-static \
+    build-base
+
+# Set working directory
+WORKDIR /workspace
+
+# Copy all source code
+COPY . .
+
+# Build the musl binary for x86_64
+ENV RUSTFLAGS="-C target-feature=+crt-static"
+RUN cargo build --release
+
+# Final stage - minimal Alpine image
+FROM --platform=linux/amd64 alpine:latest
+RUN apk add --no-cache ca-certificates
+
+# Copy binary from builder stage
+COPY --from=builder /workspace/target/release/llm-proxy /output/helicone-router-linux-musl
+RUN chmod +x /output/helicone-router-linux-musl
+
+# Default command to copy binary to mounted volume
+CMD ["cp", "/output/helicone-router-linux-musl", "/dist/"] 
