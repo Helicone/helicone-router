@@ -1,0 +1,53 @@
+{
+    "name": "helicone-router",
+    "version": "0.1.0",
+    "description": "A high-performance proxy router for LLM APIs built with Rust",
+    "main": "./bin/index.js",
+    "bin": {
+        "helicone-router": "./bin/index.js"
+    },
+    "files": [
+        "bin",
+        "dist"
+    ],
+    "engines": {
+        "node": ">=16"
+    },
+    "scripts": {
+        "test": "node test-local.js",
+        "build": "cd .. && cargo build --release && cp target/release/llm-proxy npx/dist/helicone-router-macos && chmod +x npx/dist/helicone-router-macos",
+        "build:linux": "cd .. && cargo build --release --target x86_64-unknown-linux-gnu && cp target/x86_64-unknown-linux-gnu/release/llm-proxy npx/dist/helicone-router-linux && chmod +x npx/dist/helicone-router-linux",
+        "build:linux-musl": "cd .. && cargo build --release --target x86_64-unknown-linux-musl && cp target/x86_64-unknown-linux-musl/release/llm-proxy npx/dist/helicone-router-linux && chmod +x npx/dist/helicone-router-linux",
+        "build:all": "npm run build && npm run build:linux",
+        "build:all-musl": "npm run build && npm run build:linux-musl",
+        "setup-targets": "rustup target add x86_64-unknown-linux-gnu && rustup target add x86_64-unknown-linux-musl",
+        "prepublishOnly": "npm test",
+        "publish:dry": "npm publish --dry-run",
+        "clean": "rm -rf dist/*",
+        "size-check": "ls -lh dist/ && du -sh dist/"
+    },
+    "keywords": [
+        "llm",
+        "proxy",
+        "router",
+        "api",
+        "rust",
+        "cli"
+    ],
+    "author": "Helicone",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/Helicone/helicone-router.git",
+        "directory": "npx"
+    },
+    "bugs": {
+        "url": "https://github.com/Helicone/helicone-router/issues"
+    },
+    "homepage": "https://github.com/Helicone/helicone-router#readme",
+    "preferGlobal": false,
+    "os": [
+        "darwin",
+        "linux"
+    ]
+}
