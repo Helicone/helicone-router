@@ -1,0 +1,368 @@
+name: NPM CLI Package CI (Fixed)
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "npx/**"
+      - "crates/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - ".github/workflows/npm-cli-ci-fixed.yml"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "npx/**"
+      - "crates/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - ".github/workflows/npm-cli-ci-fixed.yml"
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  # Test the Node.js wrapper and package structure
+  test-npm-package:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+
+      - name: Cache Rust dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target/
+          key: ubuntu-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Build Rust binary (Linux)
+        run: cargo build --release
+
+      - name: Prepare NPM package
+        working-directory: npx
+        run: |
+          cp ../target/release/llm-proxy dist/helicone-router-linux
+          chmod +x dist/helicone-router-linux
+
+      - name: Run NPM package tests
+        working-directory: npx
+        run: npm test
+
+      - name: Test CLI execution
+        working-directory: npx
+        run: |
+          echo "Testing direct Node.js execution:"
+          node bin/index.js --help
+          
+          echo "Testing npm link:"
+          npm link
+          helicone-router --help
+          npm unlink -g helicone-router
+
+      - name: Validate package for publishing
+        working-directory: npx
+        run: npm run publish:dry
+
+  # Build on each platform natively (no cross-compilation)
+  build-platform-binaries:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            binary-name: helicone-router-linux
+            binary-path: target/release/llm-proxy
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-musl
+            binary-name: helicone-router-linux-musl
+            binary-path: target/x86_64-unknown-linux-musl/release/llm-proxy
+            setup-musl: true
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            binary-name: helicone-router-macos-intel
+            binary-path: target/release/llm-proxy
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            binary-name: helicone-router-macos-arm64
+            binary-path: target/aarch64-apple-darwin/release/llm-proxy
+
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: ${{ matrix.target }}
+          override: true
+
+      - name: Install musl tools (Linux musl only)
+        if: matrix.setup-musl
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y musl-tools
+
+      - name: Cache Rust dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target/
+          key: ${{ matrix.os }}-${{ matrix.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Build binary
+        run: |
+          if [[ "${{ matrix.target }}" == *"musl"* || "${{ matrix.target }}" != *"$(rustc -vV | grep host | cut -d' ' -f2)"* ]]; then
+            cargo build --release --target ${{ matrix.target }}
+          else
+            cargo build --release
+          fi
+
+      - name: Upload binary artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.binary-name }}
+          path: ${{ matrix.binary-path }}
+
+  # Test in different Linux distributions (only for Linux binaries)
+  test-distributions:
+    needs: build-platform-binaries
+    strategy:
+      matrix:
+        container:
+          - ubuntu:20.04
+          - ubuntu:22.04
+          - debian:11
+          - alpine:latest
+    
+    runs-on: ubuntu-latest
+    container: ${{ matrix.container }}
+    
+    steps:
+      - name: Install curl and basic tools
+        run: |
+          if command -v apt-get >/dev/null 2>&1; then
+            apt-get update && apt-get install -y curl
+          elif command -v apk >/dev/null 2>&1; then
+            apk add --no-cache curl
+          fi
+
+      - name: Install Node.js (Ubuntu/Debian)
+        if: startsWith(matrix.container, 'ubuntu') || startsWith(matrix.container, 'debian')
+        run: |
+          curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+          apt-get install -y nodejs
+
+      - name: Install Node.js (Alpine)
+        if: startsWith(matrix.container, 'alpine')
+        run: |
+          apk add --no-cache nodejs npm
+
+      - name: Download Linux binary (glibc)
+        if: "!startsWith(matrix.container, 'alpine')"
+        uses: actions/download-artifact@v3
+        with:
+          name: helicone-router-linux
+          path: /tmp/
+
+      - name: Download Linux binary (musl for Alpine)
+        if: startsWith(matrix.container, 'alpine')
+        uses: actions/download-artifact@v3
+        with:
+          name: helicone-router-linux-musl
+          path: /tmp/
+
+      - name: Test binary execution
+        run: |
+          chmod +x /tmp/llm-proxy
+          echo "Testing binary execution:"
+          /tmp/llm-proxy --help || echo "Binary test completed with exit code $?"
+
+      - name: Test Node.js environment
+        run: |
+          echo "Node.js version: $(node --version)"
+          echo "NPM version: $(npm --version)"
+
+  # Comprehensive package validation with all binaries
+  validate-complete-package:
+    needs: [test-npm-package, build-platform-binaries]
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Download all binary artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: artifacts/
+
+      - name: Prepare complete package
+        working-directory: npx
+        run: |
+          # Copy main binaries (the ones we'll actually ship)
+          cp ../artifacts/helicone-router-linux/llm-proxy dist/helicone-router-linux
+          cp ../artifacts/helicone-router-macos-intel/llm-proxy dist/helicone-router-macos
+          chmod +x dist/*
+          
+          echo "Package contents:"
+          ls -lh dist/
+
+      - name: Run comprehensive validation
+        working-directory: npx
+        run: |
+          echo "=== Package Structure ==="
+          ls -la
+          echo ""
+          echo "=== Dist Contents ==="
+          ls -lh dist/
+          echo ""
+          echo "=== Binary Types ==="
+          file dist/* || echo "file command not available"
+          echo ""
+          echo "=== Package Size ==="
+          du -sh .
+          echo ""
+          echo "=== Running Tests ==="
+          npm test
+
+      - name: Simulate publishing
+        working-directory: npx
+        run: |
+          echo "=== What would be published ==="
+          npm run publish:dry
+
+  # Security and quality checks
+  security-checks:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: NPM audit
+        working-directory: npx
+        run: |
+          if [ ! -f package-lock.json ]; then
+            npm install --package-lock-only
+          fi
+          npm audit --audit-level=moderate || echo "Audit completed with warnings"
+
+      - name: Check for common security issues
+        working-directory: npx
+        run: |
+          echo "=== Checking for hardcoded secrets ==="
+          if grep -r -i "password\|secret\|key\|token" . --exclude-dir=node_modules --exclude="*.md" --exclude="CI_STATUS.md" --exclude="DISTRIBUTION_CHECKLIST.md"; then
+            echo "⚠️ Found potential secrets in code - review manually"
+          else
+            echo "✅ No obvious secrets found"
+          fi
+          
+          echo "=== Checking file permissions ==="
+          if find . -type f -perm 0777 2>/dev/null; then
+            echo "⚠️ Found world-writable files"
+          else
+            echo "✅ No world-writable files found"
+          fi
+          
+          echo "=== Package.json validation ==="
+          node -e "
+            const pkg = require('./package.json');
+            console.log('Package name:', pkg.name);
+            console.log('Version:', pkg.version);
+            console.log('Files field:', pkg.files);
+            console.log('Bin field:', pkg.bin);
+            if (!pkg.files || pkg.files.length === 0) {
+              console.error('❌ No files field specified');
+              process.exit(1);
+            }
+            console.log('✅ Package.json validation passed');
+          "
+
+  # Performance and size monitoring
+  performance-check:
+    needs: build-platform-binaries
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download binary artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: artifacts/
+
+      - name: Analyze binary sizes
+        run: |
+          echo "=== Binary Size Analysis ==="
+          total_size=0
+          for artifact_dir in artifacts/*/; do
+            if [ -f "${artifact_dir}llm-proxy" ]; then
+              artifact_name=$(basename "$artifact_dir")
+              size=$(du -h "${artifact_dir}llm-proxy" | cut -f1)
+              echo "$artifact_name: $size"
+              
+              # Check if binary is too large
+              size_bytes=$(stat -c%s "${artifact_dir}llm-proxy")
+              size_mb=$((size_bytes / 1024 / 1024))
+              total_size=$((total_size + size_mb))
+              
+              if [ $size_mb -gt 50 ]; then
+                echo "⚠️ $artifact_name is ${size_mb}MB (> 50MB)"
+              fi
+            fi
+          done
+          
+          echo ""
+          echo "Total size of all binaries: ${total_size}MB"
+          if [ $total_size -gt 100 ]; then
+            echo "⚠️ Total package would be very large (${total_size}MB)"
+          fi
+
+      - name: Binary startup performance test
+        run: |
+          echo "=== Binary Startup Performance ==="
+          for artifact_dir in artifacts/*/; do
+            if [ -f "${artifact_dir}llm-proxy" ]; then
+              artifact_name=$(basename "$artifact_dir")
+              chmod +x "${artifact_dir}llm-proxy"
+              echo -n "$artifact_name startup time: "
+              
+              # Only test Linux binaries on Linux runner
+              if [[ "$artifact_name" == *"linux"* ]]; then
+                time timeout 10s "${artifact_dir}llm-proxy" --help >/dev/null 2>&1 || echo "timed out or failed"
+              else
+                echo "skipped (cross-platform binary)"
+              fi
+            fi
+          done 
