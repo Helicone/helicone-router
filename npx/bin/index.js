@@ -17,19 +17,67 @@ function checkNodeVersion() {
     }
 }
 
+// Show Rust installation instructions
+function showRustInstallInstructions() {
+    console.log('\n🦀 Rust Installation Required');
+    console.log('═══════════════════════════════════════════════════════════════');
+    console.log('');
+    console.log('To use Helicone Router on your platform, you\'ll need to install it via Rust.');
+    console.log('');
+    console.log('📋 Step 1: Install Rust');
+    console.log('Run the following command to install Rust:');
+    console.log('');
+    console.log('  curl --proto \'=https\' --tlsv1.2 -sSf https://sh.rustup.rs | sh');
+    console.log('');
+    console.log('📋 Step 2: Restart your terminal or run:');
+    console.log('');
+    console.log('  source ~/.cargo/env');
+    console.log('');
+    console.log('📋 Step 3: Install Helicone Router');
+    console.log('');
+    console.log('  cargo install helicone-router');
+    console.log('');
+    console.log('📋 Step 4: Run Helicone Router');
+    console.log('');
+    console.log('  helicone-router');
+    console.log('');
+    console.log('═══════════════════════════════════════════════════════════════');
+    console.log('');
+    console.log('💡 For more information about Rust installation, visit: https://rustup.rs/');
+    console.log('');
+}
+
 // Get the appropriate binary name based on platform
 function getBinaryName() {
     const platform = os.platform();
+    const arch = os.arch();
 
     switch (platform) {
         case 'darwin':
-            return 'helicone-router-macos';
+            if (arch === 'arm64') {
+                return 'helicone-router-macos';
+            } else {
+                console.log(`⚠️  Warning: macOS ${arch} architecture detected.`);
+                console.log('Pre-built binaries are only available for macOS ARM64 (Apple Silicon).');
+                showRustInstallInstructions();
+                process.exit(0);
+            }
         case 'linux':
-            return 'helicone-router-linux';
+            if (arch === 'x64') {
+                return 'helicone-router-linux';
+            } else {
+                console.log(`⚠️  Warning: Linux ${arch} architecture detected.`);
+                console.log('Pre-built binaries are only available for Linux x86_64.');
+                showRustInstallInstructions();
+                process.exit(0);
+            }
         default:
-            console.error(`❌ Error: Unsupported platform: ${platform}`);
-            console.error('Supported platforms: macOS (darwin), Linux (linux)');
-            process.exit(1);
+            console.log(`⚠️  Warning: Unsupported platform: ${platform} ${arch}`);
+            console.log('Pre-built binaries are only available for:');
+            console.log('  • macOS ARM64 (Apple Silicon)');
+            console.log('  • Linux x86_64');
+            showRustInstallInstructions();
+            process.exit(0);
     }
 }
 
@@ -44,9 +92,10 @@ function main() {
 
     // Check if binary exists
     if (!fs.existsSync(binaryPath)) {
-        console.error(`❌ Error: Binary not found at ${binaryPath}`);
-        console.error('Please ensure the Rust binary is compiled and placed in the dist/ directory.');
-        process.exit(1);
+        console.log(`⚠️  Warning: Pre-built binary not found at ${binaryPath}`);
+        console.log('This could mean the binary wasn\'t included in the package or your platform isn\'t supported.');
+        showRustInstallInstructions();
+        process.exit(0);
     }
 
     // Check if binary is executable
@@ -95,4 +144,4 @@ if (require.main === module) {
     main();
 }
 
-module.exports = { main, checkNodeVersion, getBinaryName }; 
+module.exports = { main, checkNodeVersion, getBinaryName, showRustInstallInstructions }; 

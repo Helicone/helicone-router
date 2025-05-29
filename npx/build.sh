@@ -41,12 +41,6 @@ docker build -f npx/docker/Dockerfile.linux -t helicone-router:linux .
 docker run --rm -v "$(pwd)/npx/dist:/dist" helicone-router:linux
 log_success "Linux x86_64 binary built"
 
-# Build Linux musl binary
-log_step "Building Linux musl binary (Alpine-compatible)"
-docker build -f npx/docker/Dockerfile.linux-musl -t helicone-router:linux-musl .
-docker run --rm -v "$(pwd)/npx/dist:/dist" helicone-router:linux-musl
-log_success "Linux musl binary built"
-
 # Build macOS binary (if on macOS)
 if [[ "$OSTYPE" == "darwin"* ]]; then
     log_step "Building macOS binary (native)"

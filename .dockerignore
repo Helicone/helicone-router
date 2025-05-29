@@ -30,6 +30,7 @@ node_modules/
 # Exclude test artifacts
 npx/test-artifacts/
 npx/dist/
+npx/
 
 # Exclude Docker files themselves
 **/Dockerfile*
