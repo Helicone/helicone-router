@@ -24,21 +24,6 @@ function showRustInstallInstructions() {
     console.log('');
     console.log('To use Helicone Router on your platform, you\'ll need to install it via Rust.');
     console.log('');
-    console.log('🚀 Option 1: Use cargo-dist (Recommended)');
-    console.log('If you\'re a maintainer, you can use cargo-dist to build cross-platform binaries:');
-    console.log('');
-    console.log('  # Install cargo-dist');
-    console.log('  cargo install cargo-dist');
-    console.log('');
-    console.log('  # Initialize cargo-dist in your project');
-    console.log('  cargo dist init');
-    console.log('');
-    console.log('  # Build for multiple platforms');
-    console.log('  cargo dist build');
-    console.log('');
-    console.log('📦 Option 2: Direct Installation');
-    console.log('For end users, install directly from source:');
-    console.log('');
     console.log('📋 Step 1: Install Rust');
     console.log('Run the following command to install Rust:');
     console.log('');
@@ -58,9 +43,7 @@ function showRustInstallInstructions() {
     console.log('');
     console.log('═══════════════════════════════════════════════════════════════');
     console.log('');
-    console.log('💡 Learn more:');
-    console.log('  • Rust installation: https://rustup.rs/');
-    console.log('  • cargo-dist: https://github.com/astral-sh/cargo-dist');
+    console.log('💡 For more information about Rust installation, visit: https://rustup.rs/');
     console.log('');
 }
 
