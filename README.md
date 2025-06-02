@@ -647,15 +647,13 @@ claude_response = client.chat.completions.create(model="claude-3-5-sonnet", ...)
 
 ## 🤝 Contributing
 
-<!-- TODO: include Code of Conduct file, Discussions, and Good First Issues file -->
-
 Helix is built by the community, for the community. All are welcome to contribute!
 
 ### Ways to Contribute
 - 🐛 **Report bugs** via [GitHub Issues](https://github.com/Helicone/helicone-router/issues)
 - 💡 **Suggest features** via [GitHub Discussions](https://github.com/Helicone/helicone-router/discussions)
 - 📖 **Improve docs** - every typo fix helps!
-- 🔧 **Submit PRs** - see our [good first issues](https://github.com/Helicone/helicone-router/labels/good%20first%20issue)
+- 🔧 **Submit PRs** - see our [contributing guide](CONTRIBUTING.md)
 - 🌟 **Star the repo** to show support
 
 ### Development Process
