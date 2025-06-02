@@ -40,7 +40,7 @@ docker run -d --name helix \
   helicone/helix:latest
 ```
 
-Then use any OpenAI SDK:
+In your application, use any OpenAI SDK:
 
 ```python
 from openai import OpenAI
