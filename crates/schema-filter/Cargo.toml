@@ -4,6 +4,8 @@ version = "0.1.0"
 edition = "2024"
 authors.workspace = true
 license.workspace = true
+description = "OpenAPI schema filtering utilities for the LLM proxy router"
+homepage = "https://helix.helicone.ai"
 
 [dependencies]
 anyhow = { workspace = true }
