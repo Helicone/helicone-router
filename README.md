@@ -24,7 +24,7 @@ The AI development space is progressing at an **exponential rate**.
 
 Keeping up means rewriting integrations for every new model - managing a maze of API keys, engineering custom fallbacks for provider outages, and constantly tuning traffic for cost or compliance.
 
-**Helix is the answer - a lightweight Rust router inspired by NGINX that removes the integration tax so you can focus on shipping features.**
+**Helicone Helix is the answer - a lightweight Rust router inspired by NGINX that removes the integration tax so you can focus on shipping features.**
 
 ---
 
@@ -60,7 +60,7 @@ response = client.chat.completions.create(
 
 ---
 
-## Why Helix?
+## Why Helicone Helix?
 
 <!-- TODO: include launch video here -->
 
@@ -563,10 +563,14 @@ Some additional packages may be needed depending on your system:
 
 On macOS with Homebrew:
 ```bash
-bashbrew install openssl protobuf pkg-config
-On Ubuntu/Debian:
-bashsudo apt-get install libssl-dev protobuf-compiler pkg-config
+brew install openssl protobuf pkg-config
 ```
+
+On Ubuntu/Debian:
+```bash
+sudo apt-get install libssl-dev protobuf-compiler pkg-config
+```
+
 ---
 
 ## 📚 Migration guide
