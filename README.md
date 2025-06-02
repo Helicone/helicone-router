@@ -619,7 +619,7 @@ claude_response = client.chat.completions.create(model="claude-3-5-sonnet", ...)
 
 ---
 
-## 💗 What engineers say about Helix
+## 💗 What they say about Helix
 
 > *"Helix reduced our LLM integration complexity from 15 different SDKs to just one. We're now spending time building features instead of maintaining integrations."*
 >
@@ -634,42 +634,6 @@ claude_response = client.chat.completions.create(model="claude-3-5-sonnet", ...)
 > — **Staff Engineer, SaaS Platform**
 
 *Want to be featured? [Share your story!](https://github.com/Helicone/helicone-router/discussions)*
-
----
-
-## ⭐ Star history
-
-[![Star History Chart](https://api.star-history.com/svg?repos=Helicone/helicone-router&type=Date)](https://star-history.com/#Helicone/helicone-router&Date)
-
-**Like what you see? Give us a Github star! 💙**
-
----
-
-## 🤝 Contributing
-
-Helix is built by the community, for the community. All are welcome to contribute!
-
-### Ways to Contribute
-- 🐛 **Report bugs** via [GitHub Issues](https://github.com/Helicone/helicone-router/issues)
-- 💡 **Suggest features** via [GitHub Discussions](https://github.com/Helicone/helicone-router/discussions)
-- 📖 **Improve docs** - every typo fix helps!
-- 🔧 **Submit PRs** - see our [contributing guide](CONTRIBUTING.md)
-- 🌟 **Star the repo** to show support
-
-### Development Process
-1. **Fork** the repository
-2. **Create** a feature branch: `git checkout -b feature/amazing-feature`
-3. **Make** your changes and add tests
-4. **Test** your changes: `cargo test`
-5. **Commit** with conventional commits: `git commit -m 'feat: add amazing feature'`
-6. **Push** to your branch: `git push origin feature/amazing-feature`
-7. **Open** a Pull Request
-
-### Community Guidelines
-- Be respectful and inclusive
-- Search existing issues before creating new ones
-- Provide detailed bug reports with reproduction steps
-- Follow our [Code of Conduct](CODE_OF_CONDUCT.md)
 
 ---
 
