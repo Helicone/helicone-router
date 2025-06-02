@@ -1,5 +1,5 @@
 [workspace]
-members = ["cargo:."]
+members = ["llm-proxy"]
 
 # Config for 'dist'
 [dist]
