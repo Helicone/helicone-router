@@ -65,6 +65,7 @@ impl ModelMapper {
             .get(target_provider)
             .ok_or(MapperError::NoProviderConfig(*target_provider))?
             .models;
+
         let source_model_name = ModelName::from_model(source_model);
         if models_offered_by_target_provider.contains(&source_model_name) {
             return Ok(source_model.clone());

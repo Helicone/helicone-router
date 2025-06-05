@@ -104,8 +104,11 @@ impl InferenceProvider {
                     .map(ApiEndpoint::Ollama)
                     .collect()
             }
-            // Inference not supported yet for these providers
-            InferenceProvider::Bedrock => vec![],
+            InferenceProvider::Bedrock => {
+                crate::endpoints::bedrock::Bedrock::iter()
+                    .map(ApiEndpoint::Bedrock)
+                    .collect()
+            }
         }
     }
 }
@@ -149,8 +152,10 @@ impl ProviderKeys {
         let providers = balance_config.providers();
 
         for provider in providers {
-            if provider == InferenceProvider::Ollama {
-                // ollama doesn't support API keys
+            if provider == InferenceProvider::Ollama
+                || provider == InferenceProvider::Bedrock
+            {
+                // ollama doesn't require an API key
                 continue;
             }
             let provider_str = provider.to_string().to_uppercase();
@@ -193,8 +198,10 @@ impl ProviderKeys {
     ) -> Result<Self, ProviderError> {
         let mut keys = HashMap::default();
         for (provider, config) in providers_config.iter() {
-            // ollama doesn't support API keys
-            if config.enabled && !matches!(provider, InferenceProvider::Ollama)
+            // ollama doesn't support API keys and bedrock
+            if config.enabled
+                && !matches!(provider, InferenceProvider::Ollama)
+                && !matches!(provider, InferenceProvider::Bedrock)
             {
                 let provider_str = provider.to_string().to_uppercase();
                 let env_var = format!("{provider_str}_API_KEY");

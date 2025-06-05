@@ -12,7 +12,7 @@ use crate::{
 };
 
 const DEFAULT_MAX_TOKENS: u32 = 1000;
-const OPENAI_CHAT_COMPLETION_OBJECT: &str = "chat.completion";
+pub const OPENAI_CHAT_COMPLETION_OBJECT: &str = "chat.completion";
 
 pub struct AnthropicConverter {
     model_mapper: ModelMapper,

@@ -165,14 +165,6 @@ async fn map_request(
         .await
         .map_err(InternalError::CollectBodyError)?
         .to_bytes();
-    let target_path_and_query =
-        if let Some(query_params) = target_path_and_query.query() {
-            format!("{}?{}", target_endpoint.path(), query_params)
-        } else {
-            target_endpoint.path().to_string()
-        };
-    let target_path_and_query = PathAndQuery::from_str(&target_path_and_query)
-        .map_err(InternalError::InvalidUri)?;
 
     let converter = converter_registry
         .get_converter(source_endpoint, target_endpoint)
@@ -181,15 +173,34 @@ async fn map_request(
         })?;
 
     let (body, mapper_ctx) = converter.convert_req_body(body)?;
+    let model_id = &mapper_ctx
+        .model
+        .clone()
+        .map(|m| m.to_string())
+        .unwrap_or_default();
+    let dynamic_target_path_and_query =
+        if let Some(query_params) = target_path_and_query.query() {
+            format!(
+                "{}?{}",
+                target_endpoint.path().replace("{model_id}", model_id),
+                query_params
+            )
+        } else {
+            target_endpoint.path().replace("{model_id}", model_id)
+        };
+    let dynamic_target_path_and_query =
+        PathAndQuery::from_str(&dynamic_target_path_and_query)
+            .map_err(InternalError::InvalidUri)?;
     let mut req = Request::from_parts(parts, axum_core::body::Body::from(body));
     tracing::trace!(
         source_endpoint = ?source_endpoint,
         target_endpoint = ?target_endpoint,
-        target_path_and_query = ?target_path_and_query,
+        target_path_and_query = ?dynamic_target_path_and_query,
         mapper_ctx = ?mapper_ctx,
         "mapped request"
     );
-    req.extensions_mut().insert(target_path_and_query);
+
+    req.extensions_mut().insert(dynamic_target_path_and_query);
     req.extensions_mut().insert(mapper_ctx);
     req.extensions_mut().insert(*target_endpoint);
     Ok(req)
