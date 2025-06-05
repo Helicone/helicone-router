@@ -104,8 +104,11 @@ impl InferenceProvider {
                     .map(ApiEndpoint::Ollama)
                     .collect()
             }
-            // Inference not supported yet for these providers
-            InferenceProvider::Bedrock => vec![],
+            InferenceProvider::Bedrock => {
+                crate::endpoints::bedrock::Bedrock::iter()
+                    .map(ApiEndpoint::Bedrock)
+                    .collect()
+            }
         }
     }
 }

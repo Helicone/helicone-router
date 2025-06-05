@@ -5,6 +5,7 @@ pub mod google_gemini_client;
 pub mod ollama_client;
 pub mod openai_client;
 pub mod service;
+mod bedrock_client;
 
 use std::pin::Pin;
 

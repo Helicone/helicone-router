@@ -1,6 +1,7 @@
 use crate::endpoints::{
     anthropic::Anthropic, google::Google, ollama::Ollama, openai::OpenAI,
 };
+use crate::endpoints::bedrock::Bedrock;
 
 impl From<Anthropic> for OpenAI {
     fn from(value: Anthropic) -> Self {
@@ -34,6 +35,7 @@ impl From<OpenAI> for Google {
     }
 }
 
+<<<<<<< HEAD
 impl From<OpenAI> for Ollama {
     fn from(value: OpenAI) -> Self {
         match value {
@@ -46,6 +48,13 @@ impl From<Ollama> for OpenAI {
     fn from(value: Ollama) -> Self {
         match value {
             Ollama::ChatCompletions(_) => Self::chat_completions(),
+        }
+    }
+}
+impl From<OpenAI> for Bedrock {
+    fn from(value: OpenAI) -> Self {
+        match value {
+            OpenAI::ChatCompletions(_) => Self::converse(),
         }
     }
 }

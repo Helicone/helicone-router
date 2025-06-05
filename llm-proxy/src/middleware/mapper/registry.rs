@@ -3,18 +3,24 @@ use std::sync::Arc;
 use rustc_hash::FxHashMap as HashMap;
 
 use super::{
-    EndpointConverter, TypedEndpointConverter, anthropic::AnthropicConverter,
-    gemini::GoogleGeminiConverter, model::ModelMapper, openai::OpenAIConverter,
+    anthropic::AnthropicConverter, gemini::GoogleGeminiConverter, model::ModelMapper,
+    openai::OpenAIConverter, EndpointConverter, TypedEndpointConverter,
 };
 use crate::{
+    self, anthropic::Anthropic,
+    bedrock::Bedrock,
     config::router::RouterConfig,
     endpoints::{
-        self, ApiEndpoint, anthropic::Anthropic, google::Google,
-        ollama::Ollama, openai::OpenAI,
+        self, anthropic::Anthropic, google::Google, ollama::Ollama,
+        openai::OpenAI, ApiEndpoint,
     },
-    middleware::mapper::ollama::OllamaConverter,
+    google::Google,
+    middleware::mapper::{bedrock::BedrockConverter, ollama::OllamaConverter},
+    openai::OpenAI,
     types::provider::InferenceProvider,
+    ApiEndpoint,
 };
+use crate::endpoints::bedrock::Bedrock;
 
 #[derive(Debug, Clone)]
 pub struct EndpointConverterRegistry(Arc<EndpointConverterRegistryInner>);
@@ -182,6 +188,24 @@ impl EndpointConverterRegistryInner {
             registry.register_converter(key, converter);
         }
 
+        if request_style == InferenceProvider::OpenAI
+            && providers.contains(&InferenceProvider::Bedrock)
+        {
+            let key = RegistryKey::new(
+                ApiEndpoint::OpenAI(OpenAI::chat_completions()),
+                ApiEndpoint::Bedrock(Bedrock::converse()),
+            );
+
+            let converter = TypedEndpointConverter::<
+                endpoints::openai::ChatCompletions,
+                endpoints::bedrock::Converse,
+                BedrockConverter,
+            >::new(BedrockConverter::new(
+                model_mapper.clone(),
+            ));
+
+            registry.register_converter(key, converter);
+        }
         registry
     }
 

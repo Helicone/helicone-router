@@ -30,6 +30,7 @@ pub mod ollama;
 pub mod openai;
 pub mod registry;
 pub mod service;
+mod bedrock;
 
 use bytes::Bytes;
 use error::MapperError;

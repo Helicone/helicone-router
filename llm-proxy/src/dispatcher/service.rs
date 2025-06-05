@@ -75,7 +75,8 @@ impl Dispatcher {
             .connect_timeout(app_state.0.config.dispatcher.connection_timeout)
             .timeout(app_state.0.config.dispatcher.timeout)
             .tcp_nodelay(true);
-
+    
+        // TODO: for now provider will always be OpenAI
         let client = match provider {
             InferenceProvider::OpenAI => Client::OpenAI(OpenAIClient::new(
                 &app_state,

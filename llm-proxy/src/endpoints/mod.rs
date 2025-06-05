@@ -1,4 +1,5 @@
 pub mod anthropic;
+pub(crate) mod bedrock;
 pub mod google;
 pub mod mappings;
 pub mod ollama;
@@ -8,7 +9,8 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     endpoints::{
-        anthropic::Anthropic, google::Google, ollama::Ollama, openai::OpenAI,
+        anthropic::Anthropic, bedrock::Bedrock, google::Google, ollama::Ollama,
+        openai::OpenAI,
     },
     error::invalid_req::InvalidRequestError,
     middleware::mapper::error::MapperError,
@@ -35,6 +37,7 @@ pub enum ApiEndpoint {
     Anthropic(Anthropic),
     Google(Google),
     Ollama(Ollama),
+    Bedrock(Bedrock),
 }
 
 impl ApiEndpoint {
@@ -53,7 +56,14 @@ impl ApiEndpoint {
                 Some(Self::Ollama(Ollama::try_from(path).ok()?))
             }
             InferenceProvider::Bedrock => {
+<<<<<<< HEAD
                 tracing::debug!("Provider not supported for request mapping");
+=======
+                Some(Self::Bedrock(Bedrock::try_from(path).ok()?))
+            }
+            unsupported => {
+                tracing::debug!(provider = %unsupported, "Provider not supported for request mapping");
+>>>>>>> e253da4 ([ENG-1529] WIP)
                 None
             }
         }
@@ -82,6 +92,9 @@ impl ApiEndpoint {
             (Self::Ollama(source), InferenceProvider::OpenAI) => {
                 Ok(Self::OpenAI(OpenAI::from(source)))
             }
+            (Self::OpenAI(source), InferenceProvider::Bedrock) => {
+                Ok(Self::Bedrock(Bedrock::from(source)))
+            }
             _ => Err(InvalidRequestError::UnsupportedProvider(target_provider)),
         }
     }
@@ -93,6 +106,7 @@ impl ApiEndpoint {
             Self::Anthropic(_) => InferenceProvider::Anthropic,
             Self::Google(_) => InferenceProvider::GoogleGemini,
             Self::Ollama(_) => InferenceProvider::Ollama,
+            Self::Bedrock(_) => InferenceProvider::Bedrock,
         }
     }
 
@@ -103,6 +117,7 @@ impl ApiEndpoint {
             Self::Anthropic(anthropic) => anthropic.path(),
             Self::Google(google) => google.path(),
             Self::Ollama(ollama) => ollama.path(),
+            Self::Bedrock(bedrock) => bedrock.path(),
         }
     }
 
@@ -113,6 +128,7 @@ impl ApiEndpoint {
             Self::Anthropic(anthropic) => anthropic.endpoint_type(),
             Self::Google(google) => google.endpoint_type(),
             Self::Ollama(ollama) => ollama.endpoint_type(),
+            Self::Bedrock(bedrock) => bedrock.endpoint_type(),
         }
     }
 }

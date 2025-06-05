@@ -3,71 +3,207 @@ gpt-4:
   - claude-3-7-sonnet
   - gemini-2.5-pro
   - deepseek-r1
+  - anthropic.claude-3-5-sonnet-20240620-v1:0
+  - anthropic.claude-3-5-haiku-20241022-v1:0
+  - anthropic.claude-3-haiku-20240307-v1:0
+  - anthropic.claude-3-7-sonnet-20250219-v1:0
+  - amazon.nova-pro-v1:0
+  - amazon.nova-lite-v1:0
+  - amazon.nova-micro-v1:0
+  - deepseek.r1-v1:0
 gpt-4-turbo:
   - claude-3-7-sonnet
   - gemini-2.5-pro
   - llama4
+  - anthropic.claude-3-5-sonnet-20240620-v1:0
+  - anthropic.claude-3-5-haiku-20241022-v1:0
+  - anthropic.claude-3-haiku-20240307-v1:0
+  - anthropic.claude-3-7-sonnet-20250219-v1:0
+  - amazon.nova-pro-v1:0
+  - amazon.nova-lite-v1:0
+  - amazon.nova-micro-v1:0
+  - deepseek.r1-v1:0
 gpt-4o:
   - claude-3-7-sonnet
   - gemini-2.5-pro
   - llama4
+  - anthropic.claude-3-5-sonnet-20240620-v1:0
+  - anthropic.claude-3-5-haiku-20241022-v1:0
+  - anthropic.claude-3-haiku-20240307-v1:0
+  - anthropic.claude-3-7-sonnet-20250219-v1:0
+  - amazon.nova-pro-v1:0
+  - amazon.nova-lite-v1:0
+  - amazon.nova-micro-v1:0
+  - deepseek.r1-v1:0
 gpt-4o-mini:
   - claude-3-5-haiku
   - gemini-2.0-flash
   - llama3.2
   - llama3
+  - anthropic.claude-3-5-sonnet-20240620-v1:0
+  - anthropic.claude-3-5-haiku-20241022-v1:0
+  - anthropic.claude-3-haiku-20240307-v1:0
+  - anthropic.claude-3-7-sonnet-20250219-v1:0
+  - amazon.nova-pro-v1:0
+  - amazon.nova-lite-v1:0
+  - amazon.nova-micro-v1:0
+  - deepseek.r1-v1:0
 gpt-4.1:
   - claude-3-7-sonnet
   - gemini-2.5-pro
   - llama4
+  - anthropic.claude-3-5-sonnet-20240620-v1:0
+  - anthropic.claude-3-5-haiku-20241022-v1:0
+  - anthropic.claude-3-haiku-20240307-v1:0
+  - anthropic.claude-3-7-sonnet-20250219-v1:0
+  - amazon.nova-pro-v1:0
+  - amazon.nova-lite-v1:0
+  - amazon.nova-micro-v1:0
+  - deepseek.r1-v1:0
 gpt-4.1-mini:
   - claude-3-5-haiku
   - gemini-2.0-flash
   - llama3.3
+  - anthropic.claude-3-5-sonnet-20240620-v1:0
+  - anthropic.claude-3-5-haiku-20241022-v1:0
+  - anthropic.claude-3-haiku-20240307-v1:0
+  - anthropic.claude-3-7-sonnet-20250219-v1:0
+  - amazon.nova-pro-v1:0
+  - amazon.nova-lite-v1:0
+  - amazon.nova-micro-v1:0
+  - deepseek.r1-v1:0
 gpt-4.1-nano:
   - claude-3-5-haiku
   - gemini-1.5-flash-8b
   - phi4
+  - anthropic.claude-3-5-sonnet-20240620-v1:0
+  - anthropic.claude-3-5-haiku-20241022-v1:0
+  - anthropic.claude-3-haiku-20240307-v1:0
+  - anthropic.claude-3-7-sonnet-20250219-v1:0
+  - amazon.nova-pro-v1:0
+  - amazon.nova-lite-v1:0
+  - amazon.nova-micro-v1:0
+  - deepseek.r1-v1:0
 gpt-4.5:
   - claude-opus-4-0
   - gemini-2.5-pro
   - deepseek-r1
+  - anthropic.claude-3-5-sonnet-20240620-v1:0
+  - anthropic.claude-3-5-haiku-20241022-v1:0
+  - anthropic.claude-3-haiku-20240307-v1:0
+  - anthropic.claude-3-7-sonnet-20250219-v1:0
+  - amazon.nova-pro-v1:0
+  - amazon.nova-lite-v1:0
+  - amazon.nova-micro-v1:0
+  - deepseek.r1-v1:0
 o1:
   - claude-sonnet-4-0
   - gemini-2.5-pro
   - deepseek-r1
+  - anthropic.claude-3-5-sonnet-20240620-v1:0
+  - anthropic.claude-3-5-haiku-20241022-v1:0
+  - anthropic.claude-3-haiku-20240307-v1:0
+  - anthropic.claude-3-7-sonnet-20250219-v1:0
+  - amazon.nova-pro-v1:0
+  - amazon.nova-lite-v1:0
+  - amazon.nova-micro-v1:0
+  - deepseek.r1-v1:0
 o1-mini:
   - claude-3-5-haiku
   - gemini-2.0-flash
   - llama3.3
+  - anthropic.claude-3-5-sonnet-20240620-v1:0
+  - anthropic.claude-3-5-haiku-20241022-v1:0
+  - anthropic.claude-3-haiku-20240307-v1:0
+  - anthropic.claude-3-7-sonnet-20250219-v1:0
+  - amazon.nova-pro-v1:0
+  - amazon.nova-lite-v1:0
+  - amazon.nova-micro-v1:0
+  - deepseek.r1-v1:0
 o1-pro:
   - claude-opus-4-0
   - gemini-2.5-pro
   - deepseek-r1
+  - anthropic.claude-3-5-sonnet-20240620-v1:0
+  - anthropic.claude-3-5-haiku-20241022-v1:0
+  - anthropic.claude-3-haiku-20240307-v1:0
+  - anthropic.claude-3-7-sonnet-20250219-v1:0
+  - amazon.nova-pro-v1:0
+  - amazon.nova-lite-v1:0
+  - amazon.nova-micro-v1:0
+  - deepseek.r1-v1:0
 o3:
   - claude-opus-4-0
   - gemini-2.5-pro
   - deepseek-r1
+  - anthropic.claude-3-5-sonnet-20240620-v1:0
+  - anthropic.claude-3-5-haiku-20241022-v1:0
+  - anthropic.claude-3-haiku-20240307-v1:0
+  - anthropic.claude-3-7-sonnet-20250219-v1:0
+  - amazon.nova-pro-v1:0
+  - amazon.nova-lite-v1:0
+  - amazon.nova-micro-v1:0
+  - deepseek.r1-v1:0
 o3-mini:
   - claude-3-5-haiku
   - gemini-2.0-flash
   - llama3.3
+  - anthropic.claude-3-5-sonnet-20240620-v1:0
+  - anthropic.claude-3-5-haiku-20241022-v1:0
+  - anthropic.claude-3-haiku-20240307-v1:0
+  - anthropic.claude-3-7-sonnet-20250219-v1:0
+  - amazon.nova-pro-v1:0
+  - amazon.nova-lite-v1:0
+  - amazon.nova-micro-v1:0
+  - deepseek.r1-v1:0
 o4-mini:
   - gemini-2.0-flash
   - gpt-4.1
   - llama3
+  - anthropic.claude-3-5-sonnet-20240620-v1:0
+  - anthropic.claude-3-5-haiku-20241022-v1:0
+  - anthropic.claude-3-haiku-20240307-v1:0
+  - anthropic.claude-3-7-sonnet-20250219-v1:0
+  - amazon.nova-pro-v1:0
+  - amazon.nova-lite-v1:0
+  - amazon.nova-micro-v1:0
+  - deepseek.r1-v1:0
 codex-mini:
   - claude-3-7-sonnet
   - gemini-2.0-flash
   - gemma3
+  - anthropic.claude-3-5-sonnet-20240620-v1:0
+  - anthropic.claude-3-5-haiku-20241022-v1:0
+  - anthropic.claude-3-haiku-20240307-v1:0
+  - anthropic.claude-3-7-sonnet-20250219-v1:0
+  - amazon.nova-pro-v1:0
+  - amazon.nova-lite-v1:0
+  - amazon.nova-micro-v1:0
+  - deepseek.r1-v1:0
 gpt-4o-mini-search:
   - claude-3-5-haiku
   - gemini-1.5-flash
   - llama3
+  - anthropic.claude-3-5-sonnet-20240620-v1:0
+  - anthropic.claude-3-5-haiku-20241022-v1:0
+  - anthropic.claude-3-haiku-20240307-v1:0
+  - anthropic.claude-3-7-sonnet-20250219-v1:0
+  - amazon.nova-pro-v1:0
+  - amazon.nova-lite-v1:0
+  - amazon.nova-micro-v1:0
+  - deepseek.r1-v1:0
 gpt-4o-search:
   - claude-3-7-sonnet
   - gemini-2.5-pro
   - llama4
+  - anthropic.claude-3-5-sonnet-20240620-v1:0
+  - anthropic.claude-3-5-haiku-20241022-v1:0
+  - anthropic.claude-3-haiku-20240307-v1:0
+  - anthropic.claude-3-7-sonnet-20250219-v1:0
+  - amazon.nova-pro-v1:0
+  - amazon.nova-lite-v1:0
+  - amazon.nova-micro-v1:0
+  - deepseek.r1-v1:0
 
 # Anthropic Models
 claude-opus-4-0:
