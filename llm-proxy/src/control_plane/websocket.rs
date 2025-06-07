@@ -9,7 +9,7 @@ use meltdown::Token;
 use tokio::{net::TcpStream, sync::Mutex};
 use tokio_tungstenite::{
     MaybeTlsStream, WebSocketStream, connect_async,
-    tungstenite::{self, Message},
+    tungstenite::{self, Message, handshake::client::Request},
 };
 use url::Url;
 
@@ -17,7 +17,10 @@ use super::{
     control_plane_state::ControlPlaneState,
     types::{MessageTypeRX, MessageTypeTX},
 };
-use crate::error::{init::InitError, runtime::RuntimeError};
+use crate::{
+    error::{init::InitError, runtime::RuntimeError},
+    types::secret::Secret,
+};
 type TlsWebSocketStream = WebSocketStream<MaybeTlsStream<TcpStream>>;
 
 #[derive(Debug)]
@@ -31,6 +34,7 @@ pub struct ControlPlaneClient {
     pub state: Arc<Mutex<ControlPlaneState>>,
     channel: WebsocketChannel,
     url: Url,
+    api_key: Secret<String>,
 }
 
 async fn handle_message(
@@ -49,8 +53,15 @@ async fn handle_message(
 
 async fn connect_async_and_split(
     url: &str,
+    api_key: &Secret<String>,
 ) -> Result<WebsocketChannel, InitError> {
-    let (tx, rx) = connect_async(url)
+    let request = Request::builder()
+        .uri(url)
+        .header("Authorization", api_key.to_string())
+        .body(())
+        .map_err(InitError::WebsocketRequestBuild)?;
+
+    let (tx, rx) = connect_async(request)
         .await
         .map_err(|e| InitError::WebsocketConnection(Box::new(e)))?
         .0
@@ -64,17 +75,22 @@ async fn connect_async_and_split(
 
 impl ControlPlaneClient {
     async fn reconnect_websocket(&mut self) -> Result<(), InitError> {
-        let channel = connect_async_and_split(self.url.as_str()).await?;
+        let channel =
+            connect_async_and_split(self.url.as_str(), &self.api_key).await?;
         self.channel = channel;
         Ok(())
     }
 
-    pub async fn connect(url: &str) -> Result<Self, InitError> {
+    pub async fn connect(
+        url: &str,
+        api_key: &Secret<String>,
+    ) -> Result<Self, InitError> {
         let url = Url::parse(url).map_err(InitError::WebsocketUrlParse)?;
 
         Ok(Self {
-            channel: connect_async_and_split(url.as_str()).await?,
+            channel: connect_async_and_split(url.as_str(), api_key).await?,
             url,
+            api_key: api_key.clone(),
             state: Arc::new(Mutex::new(ControlPlaneState::default())),
         })
     }
@@ -151,7 +167,7 @@ mod tests {
     use tokio_tungstenite::accept_async;
 
     use super::ControlPlaneClient;
-    use crate::control_plane::types::MessageTypeTX;
+    use crate::{control_plane::types::MessageTypeTX, types::secret::Secret};
 
     #[tokio::test]
     async fn test_mock_server_connection() {
@@ -171,8 +187,10 @@ mod tests {
         tokio::time::sleep(Duration::from_millis(50)).await;
 
         // Test connection
-        let result = ControlPlaneClient::connect(&ws_url).await;
+        let result =
+            ControlPlaneClient::connect(&ws_url, &Secret("".to_string())).await;
         assert!(result.is_ok(), "Should connect to mock server");
+        println!("result: {:?}", result);
     }
 
     #[tokio::test]
@@ -180,7 +198,8 @@ mod tests {
         let ws_url = "ws://localhost:8585/ws/v1/router/control-plane";
 
         // This will fail if no server is running on 8585, which is expected
-        let result = ControlPlaneClient::connect(ws_url).await;
+        let result =
+            ControlPlaneClient::connect(ws_url, &Secret("".to_string())).await;
 
         if let Ok(mut client) = result {
             // If we can connect, try sending a heartbeat

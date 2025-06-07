@@ -42,6 +42,7 @@ async fn main() -> Result<(), RuntimeError> {
             .map_err(InitError::Telemetry)
             .map_err(RuntimeError::Init)?;
     let ws_url = &config.helicone.websocket_url.to_string();
+    let helicone_api_key = &config.helicone.api_key.clone();
 
     info!("telemetry initialized");
     let mut shutting_down = false;
@@ -71,7 +72,7 @@ async fn main() -> Result<(), RuntimeError> {
         ))
         .register(TaggedService::new(
             "control-plane-client",
-            ControlPlaneClient::connect(ws_url).await?,
+            ControlPlaneClient::connect(ws_url, helicone_api_key).await?,
         ));
 
     while let Some((service, result)) = meltdown.next().await {

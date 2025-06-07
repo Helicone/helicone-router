@@ -47,4 +47,6 @@ pub enum InitError {
     WebsocketConnection(#[from] Box<tokio_tungstenite::tungstenite::Error>),
     /// URL parsing error: {0}
     WebsocketUrlParse(#[from] url::ParseError),
+    /// Failed to build websocket request: {0}
+    WebsocketRequestBuild(#[from] http::Error),
 }
