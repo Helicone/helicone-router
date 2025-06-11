@@ -46,7 +46,7 @@ In your application, use any OpenAI SDK:
 from openai import OpenAI
 
 client = OpenAI(
-    base_url="http://localhost:8080/v1"
+    base_url="http://localhost:8080/"
 )
 
 # Route to any provider through the same interface, we handle the rest.
@@ -56,7 +56,7 @@ response = client.chat.completions.create(
 )
 ```
 
-**That's it.** No SDKs to learn, no integrations to maintain. Fully-featured, open-source, and best of all,free.
+**That's it.** No SDKs to learn, no integrations to maintain. Fully-featured and open-sourced.
 
 ---
 
@@ -68,16 +68,13 @@ response = client.chat.completions.create(
 A **unified interface** for every LLM provider using familiar OpenAI syntax. Stop rewriting integrations—use one API for OpenAI, Anthropic, Google, AWS Bedrock, and [20+ more providers](https://helix.helicone.ai/docs/providers).
 
 #### ⚡ **Smart provider selection**
-**Load balance** to always hit the fastest, cheapest, or most reliable option. Built-in strategies include latency-based P2C + PeakEWMA, weighted distribution, and cost optimization.
+**Load balance** to always hit the fastest, cheapest, or most reliable option. Built-in strategies include latency-based P2C + PeakEWMA, weighted distribution, and cost optimization. Always aware of provider uptime and rate limits.
 
 #### 💰 **Control your spending**
 **Rate limit** to prevent runaway costs and usage abuse. Set limits per user, team, or globally with support for request counts, token usage, and dollar amounts.
 
 #### 🚀 **Reduce latency**
 **Cache responses** to reduce costs and latency by up to 95%. Supports Redis and S3 backends with intelligent cache invalidation.
-
-#### 🔐 **Centralize API keys**
-**Store all API keys securely** with AWS Secrets Manager integration to end credential chaos and security risks.
 
 #### 📊 **Simplified tracing**
 Monitor performance and debug issues with built-in Helicone integration, plus OpenTelemetry support for **logs, metrics, and traces**. All built-in.
@@ -100,7 +97,7 @@ Monitor performance and debug issues with built-in Helicone integration, plus Op
 
 | Metric | Helix | Typical Setup | Improvement |
 |--------|-------|---------------|-------------|
-| **P95 Latency** | ~50ms | ~200ms | **4x faster** |
+| **P95 Latency** | ~1-5ms | ~60-100ms | **10-100x faster** |
 | **Memory Usage** | ~64MB | ~512MB | **8x lower** |
 | **Requests/sec** | ~10,000 | ~1,000 | **10x throughput** |
 | **Binary Size** | ~15MB | ~200MB | **13x smaller** |
@@ -301,7 +298,7 @@ volumes:
 
 ### Kubernetes Deployment
 ```yaml
-apiVersion: apps/v1
+apiVersion: apps/
 kind: Deployment
 metadata:
   name: helix
@@ -417,11 +414,11 @@ caching:
 
   # Cache rules
   rules:
-    - path: "/v1/chat/completions"
+    - path: "//chat/completions"
       ttl: 3600
       cache_key_include: [model, messages, temperature]
 
-    - path: "/v1/embeddings"
+    - path: "//embeddings"
       ttl: 86400  # 24 hours
       cache_key_include: [model, input]
 ```
@@ -581,8 +578,8 @@ from openai import OpenAI
 
 client = OpenAI(
 -   api_key=os.getenv("OPENAI_API_KEY")
-+   base_url="http://localhost:8080/v1",
-+   api_key="any-key"  # Helix handles provider auth
++   base_url="http://localhost:8080/",
++   api_key="your-helicone-api-key"  # Helix handles provider auth
 )
 
 # No other changes needed!
@@ -599,8 +596,8 @@ from langchain_openai import ChatOpenAI
 llm = ChatOpenAI(
     model="gpt-4o",
 -   api_key=os.getenv("OPENAI_API_KEY")
-+   base_url="http://localhost:8080/v1",
-+   api_key="any-key"
++   base_url="http://localhost:8080/",
++   api_key="your-helicone-api-key"
 )
 ```
 
@@ -612,8 +609,8 @@ anthropic_client = Anthropic(api_key=anthropic_key)
 
 # After: One client for everything
 client = OpenAI(
-    base_url="http://localhost:8080/v1",
-    api_key="any-key"
+    base_url="http://localhost:8080/",
+    api_key="your-helicone-api-key"
 )
 
 # Use any model through the same interface
@@ -668,17 +665,19 @@ claude_response = client.chat.completions.create(model="claude-3-5-sonnet", ...)
 
 <!-- TODO: include correct license -->
 
-Helix is licensed under the [MIT License](LICENSE) - see the file for details.
+Helix is licensed under the [Apache License](LICENSE) - see the file for details.
 
 ### What this means:
-- ✅ **Commercial use** - Use Helix in your business
-- ✅ **Modification** - Change the code as needed
-- ✅ **Distribution** - Share your modifications
-- ✅ **Private use** - Use internally without sharing
-- ❌ **Liability** - We're not liable for issues (standard disclaimer)
-- ❌ **Warranty** - No warranties provided (but we do our best!)
-
-**TL;DR**: You can do almost anything with Helix. Just include the license and don't blame us if something breaks! 😄
+- ✅ **Commercial use** - Use the software for any purpose, including commercial applications
+- ✅ **Modification** - Modify the software to suit your needs
+- ✅ **Distribution** - Distribute original or modified versions
+- ✅ **Patent use** - Patent rights are granted for any patents owned by contributors
+- ✅ **Private use** - Use the software privately
+- ⚠️ **License and copyright notice** - Must include a copy of the license and copyright notice
+- ⚠️ **State changes** - Must state significant changes made to the software
+- ⚠️ **Attribution** - Must include attribution notices from the original software
+- ❌ **Liability** - No liability for damages
+- ❌ **Warranty** - No warranty provided
 
 ---
 
