@@ -51,7 +51,7 @@ client = OpenAI(
 
 # Route to any provider through the same interface, we handle the rest.
 response = client.chat.completions.create(
-    model="claude-3-5-sonnet",  # Or gpt-4o, gemini-pro, etc.
+    model="anthropic/claude-3-5-sonnet",  # Or openai/gpt-4o, gemini/gemini-2.5-pro, etc.
     messages=[{"role": "user", "content": "Hello from Helix!"}]
 )
 ```
