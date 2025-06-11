@@ -1,8 +1,8 @@
 use std::str::FromStr;
 
-use super::{TryConvertStreamData, model::ModelMapper};
+use super::{model::ModelMapper, TryConvertStreamData};
 use crate::{
-    middleware::mapper::{TryConvert, error::MapperError},
+    middleware::mapper::{error::MapperError, TryConvert},
     types::{model_id::ModelId, provider::InferenceProvider},
 };
 

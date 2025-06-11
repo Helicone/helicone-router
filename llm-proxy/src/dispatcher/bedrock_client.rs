@@ -1,4 +1,11 @@
-use http::{HeaderMap, HeaderValue};
+use std::time::SystemTime;
+
+use aws_credential_types::Credentials;
+use aws_sigv4::{
+    http_request::{SignableRequest, SignableBody, SigningSettings},
+    sign::v4,
+};
+use http::{HeaderMap, HeaderValue, Request};
 use reqwest::ClientBuilder;
 
 use crate::{
@@ -15,7 +22,6 @@ impl Client {
     pub fn new(
         app_state: &AppState,
         client_builder: ClientBuilder,
-        api_key: &Secret<String>,
     ) -> Result<Self, InitError> {
         let provider_config = app_state
             .0
@@ -29,10 +35,6 @@ impl Client {
         let base_url = provider_config.base_url.clone();
 
         let mut default_headers = HeaderMap::new();
-        default_headers.insert(
-            http::header::AUTHORIZATION,
-            HeaderValue::from_str(&format!("Bearer {}", api_key.0)).unwrap(),
-        );
 
         default_headers.insert(http::header::HOST, host_header(&base_url));
         default_headers.insert(

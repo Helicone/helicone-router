@@ -1,6 +1,7 @@
-
-use aws_sdk_bedrockruntime::operation::converse::{ConverseInput, ConverseOutput};
-use aws_sdk_bedrockruntime::operation::converse_stream::ConverseStreamInput;
+use aws_sdk_bedrockruntime::{
+    operation::converse::{ConverseInput, ConverseOutput},
+    types::ConverseStreamOutput,
+};
 
 use crate::{
     endpoints::{AiRequest, Endpoint},
@@ -12,21 +13,19 @@ use crate::{
 pub struct Converse;
 
 impl Endpoint for Converse {
-    const PATH: &'static str = "/v1/messages";
+    const PATH: &'static str = "/model/{model_id}/converse";
     type RequestBody = ConverseInput;
     type ResponseBody = ConverseOutput;
-    type StreamResponseBody = ConverseStreamInput;
+    type StreamResponseBody = ConverseStreamOutput;
 }
 
-// impl AiRequest for ConverseInput {
-//     fn is_stream(&self) -> bool {
-//         self.stream.unwrap_or(false)
-//     }
-//
-//     fn model(&self) -> Result<ModelId, MapperError> {
-//         ModelId::from_str_and_provider(
-//             InferenceProvider::Anthropic,
-//             &self.model,
-//         )
-//     }
-// }
+impl AiRequest for ConverseInput {
+    fn is_stream(&self) -> bool {
+        false
+    }
+
+    fn model(&self) -> Result<ModelId, MapperError> {
+        let model = self.model_id.as_ref().unwrap();
+        ModelId::from_str_and_provider(InferenceProvider::Bedrock, model)
+    }
+}

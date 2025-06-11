@@ -70,6 +70,6 @@ bedrock:
     - amazon.nova-pro-v1:0
     - amazon.nova-lite-v1:0
     - amazon.nova-micro-v1:0
-    - deepseek.r1-v1:0
-  base-url: bedrock-runtime.us-east-1.amazonaws.com
+    - us.deepseek.r1-v1:0
+  base-url: https://bedrock-runtime.us-east-1.amazonaws.com
   version: null

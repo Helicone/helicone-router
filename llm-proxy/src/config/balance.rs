@@ -115,6 +115,7 @@ impl BalanceConfigInner {
                 InferenceProvider::Anthropic,
                 InferenceProvider::GoogleGemini,
                 InferenceProvider::Ollama,
+                InferenceProvider::Bedrock
             ],
         }
     }

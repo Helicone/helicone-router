@@ -10,7 +10,7 @@ gpt-4:
   - amazon.nova-pro-v1:0
   - amazon.nova-lite-v1:0
   - amazon.nova-micro-v1:0
-  - deepseek.r1-v1:0
+  - us.deepseek.r1-v1:0
 gpt-4-turbo:
   - claude-3-7-sonnet
   - gemini-2.5-pro
@@ -22,7 +22,7 @@ gpt-4-turbo:
   - amazon.nova-pro-v1:0
   - amazon.nova-lite-v1:0
   - amazon.nova-micro-v1:0
-  - deepseek.r1-v1:0
+  - us.deepseek.r1-v1:0
 gpt-4o:
   - claude-3-7-sonnet
   - gemini-2.5-pro
@@ -34,7 +34,7 @@ gpt-4o:
   - amazon.nova-pro-v1:0
   - amazon.nova-lite-v1:0
   - amazon.nova-micro-v1:0
-  - deepseek.r1-v1:0
+  - us.deepseek.r1-v1:0
 gpt-4o-mini:
   - claude-3-5-haiku
   - gemini-2.0-flash
@@ -47,7 +47,7 @@ gpt-4o-mini:
   - amazon.nova-pro-v1:0
   - amazon.nova-lite-v1:0
   - amazon.nova-micro-v1:0
-  - deepseek.r1-v1:0
+  - us.deepseek.r1-v1:0
 gpt-4.1:
   - claude-3-7-sonnet
   - gemini-2.5-pro
@@ -59,7 +59,7 @@ gpt-4.1:
   - amazon.nova-pro-v1:0
   - amazon.nova-lite-v1:0
   - amazon.nova-micro-v1:0
-  - deepseek.r1-v1:0
+  - us.deepseek.r1-v1:0
 gpt-4.1-mini:
   - claude-3-5-haiku
   - gemini-2.0-flash
@@ -71,7 +71,7 @@ gpt-4.1-mini:
   - amazon.nova-pro-v1:0
   - amazon.nova-lite-v1:0
   - amazon.nova-micro-v1:0
-  - deepseek.r1-v1:0
+  - us.deepseek.r1-v1:0
 gpt-4.1-nano:
   - claude-3-5-haiku
   - gemini-1.5-flash-8b
@@ -83,7 +83,7 @@ gpt-4.1-nano:
   - amazon.nova-pro-v1:0
   - amazon.nova-lite-v1:0
   - amazon.nova-micro-v1:0
-  - deepseek.r1-v1:0
+  - us.deepseek.r1-v1:0
 gpt-4.5:
   - claude-opus-4-0
   - gemini-2.5-pro
@@ -95,7 +95,7 @@ gpt-4.5:
   - amazon.nova-pro-v1:0
   - amazon.nova-lite-v1:0
   - amazon.nova-micro-v1:0
-  - deepseek.r1-v1:0
+  - us.deepseek.r1-v1:0
 o1:
   - claude-sonnet-4-0
   - gemini-2.5-pro
@@ -107,7 +107,7 @@ o1:
   - amazon.nova-pro-v1:0
   - amazon.nova-lite-v1:0
   - amazon.nova-micro-v1:0
-  - deepseek.r1-v1:0
+  - us.deepseek.r1-v1:0
 o1-mini:
   - claude-3-5-haiku
   - gemini-2.0-flash
@@ -119,7 +119,7 @@ o1-mini:
   - amazon.nova-pro-v1:0
   - amazon.nova-lite-v1:0
   - amazon.nova-micro-v1:0
-  - deepseek.r1-v1:0
+  - us.deepseek.r1-v1:0
 o1-pro:
   - claude-opus-4-0
   - gemini-2.5-pro
@@ -131,7 +131,7 @@ o1-pro:
   - amazon.nova-pro-v1:0
   - amazon.nova-lite-v1:0
   - amazon.nova-micro-v1:0
-  - deepseek.r1-v1:0
+  - us.deepseek.r1-v1:0
 o3:
   - claude-opus-4-0
   - gemini-2.5-pro
@@ -143,7 +143,7 @@ o3:
   - amazon.nova-pro-v1:0
   - amazon.nova-lite-v1:0
   - amazon.nova-micro-v1:0
-  - deepseek.r1-v1:0
+  - us.deepseek.r1-v1:0
 o3-mini:
   - claude-3-5-haiku
   - gemini-2.0-flash
@@ -155,7 +155,7 @@ o3-mini:
   - amazon.nova-pro-v1:0
   - amazon.nova-lite-v1:0
   - amazon.nova-micro-v1:0
-  - deepseek.r1-v1:0
+  - us.deepseek.r1-v1:0
 o4-mini:
   - gemini-2.0-flash
   - gpt-4.1
@@ -167,7 +167,7 @@ o4-mini:
   - amazon.nova-pro-v1:0
   - amazon.nova-lite-v1:0
   - amazon.nova-micro-v1:0
-  - deepseek.r1-v1:0
+  - us.deepseek.r1-v1:0
 codex-mini:
   - claude-3-7-sonnet
   - gemini-2.0-flash

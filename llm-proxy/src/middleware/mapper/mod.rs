@@ -163,7 +163,10 @@ where
         if is_stream {
             let source_response: T::StreamResponseBody =
                 serde_json::from_slice(&bytes)
-                    .map_err(InvalidRequestError::InvalidRequestBody)?;
+                    .map_err(|e| InternalError::Deserialize {
+                        ty: std::any::type_name::<T::StreamResponseBody>(),
+                        error: e,
+                    })?;
             let target_response: Option<S::StreamResponseBody> = self
                 .converter
                 .try_convert_chunk(source_response)
@@ -185,7 +188,10 @@ where
         } else {
             let source_response: T::ResponseBody =
             serde_json::from_slice(&bytes)
-                .map_err(InvalidRequestError::InvalidRequestBody)?;
+                .map_err(|e| InternalError::Deserialize {
+                    ty: std::any::type_name::<T::ResponseBody>(),
+                    error: e,
+                })?;
             let target_response: S::ResponseBody = self
             .converter
             .try_convert(source_response)

@@ -1,6 +1,8 @@
 use std::{collections::HashMap, str::FromStr};
 
-use super::{TryConvert, TryConvertStreamData, error::MapperError};
+use anthropic_ai_sdk::types::message::ImageMediaType;
+
+use super::{error::MapperError, TryConvert, TryConvertStreamData};
 use crate::{
     endpoints::openai::chat_completions::system_prompt,
     middleware::mapper::model::ModelMapper,
@@ -11,7 +13,7 @@ use crate::{
 };
 
 const DEFAULT_MAX_TOKENS: u32 = 1000;
-const OPENAI_CHAT_COMPLETION_OBJECT: &str = "chat.completion";
+pub const OPENAI_CHAT_COMPLETION_OBJECT: &str = "chat.completion";
 
 pub struct AnthropicConverter {
     model_mapper: ModelMapper,
