@@ -57,13 +57,9 @@ cargo build
 # Optimized release build
 cargo build --release
 
-# File watching for development
+# (optional) File watching for development
 cargo install cargo-watch
 cargo watch -x run
-
-# Cross-platform builds
-cargo install cross
-cross build --target x86_64-unknown-linux-musl --release
 ```
 7. Create a new branch: `git checkout -b my-branch-name`.
 8. Make your change, add tests, and make sure the tests still pass.
