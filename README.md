@@ -495,78 +495,82 @@ curl http://localhost:8080/status
 - [Helicone API key](https://docs.helicone.ai/api-keys)
 - [Docker](https://docs.docker.com/get-docker/) & [Docker Compose](https://docs.docker.com/compose/install/)
 
-### Setup
+### Development Setup
 
-Clone the repository
-```bash
-# Clone the repository
-git clone https://github.com/Helicone/helicone-router.git
-cd helicone-router
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/Helicone/helicone-router.git
+   cd helicone-router
+   ```
 
-# Copy environment template and configure
-cp .env.template .env
-# Fill out PROXY__HELICONE__API_KEY, HELICONE_API_KEY, OPENAI_API_KEY, ANTHROPIC_API_KEY and any others where your local environment does not match the default Helicone configuration
-```
+1. **Environment Setup**
+   ```bash
+   # Copy environment template and configure
+   cp .env.template .env
+   ```
+   Fill out the following environment variables in you .env file:
+   - `PROXY__HELICONE__API_KEY`
+   - `HELICONE_API_KEY`
+   - `OPENAI_API_KEY`
+   - `ANTHROPIC_API_KEY`
 
-Start docker compose
-```bash
-cd infrastructure && docker compose up -d && cd ..
-```
+2. **Start Services**
+   ```bash
+   # Start docker compose stack
+   cd infrastructure && docker compose up -d && cd ..
+   ```
 
-Start the router (from root)
-```bash
-# With default configs:
-cargo run
+3. **Run the Router**
+   ```bash
+   # With default configs
+   cargo run
 
-# Or with a dev config file:
-cargo rl
-```
+   # Or with a dev config file
+   cargo rl
+   ```
 
-Testing
-```bash
-# Run an HTTP request against the router. This uses the package in scripts/test/src/main.rs
-cargo run -p test
+4. **Testing**
+   ```bash
+   # Run an HTTP request against the router
+   cargo run -p test
 
-# Standard unit tests
-cargo test
+   # Run unit + integration tests
+   cargo int-test
+   ```
 
-# Integration tests
-cargo int-test
-```
+## 🎮 Demo Guide
 
-Building & development tools
-```bash
-# Debug build
-cargo build
-
-# Optimized release build
-cargo build --release
-
-# File watching for development
-cargo install cargo-watch
-cargo watch -x run
-
-# Cross-platform builds
-cargo install cross
-cross build --target x86_64-unknown-linux-musl --release
-```
-
-### System Dependencies
-Some additional packages may be needed depending on your system:
-
-- TLS libraries (OpenSSL/LibreSSL)
-- Protocol Buffers (protoc)
-- pkg-config
+### Basic Setup
+1. Set up environment variables as described in the Development Setup section
+2. Run the router locally with OpenAI/Anthropic:
+   ```bash
+   cargo run -- -c ./llm-proxy/config/demo.yaml
+   ```
+3. Send a test request:
+   ```bash
+   cargo run -p test
+   ```
+   You should see the request logged in your Helicone dashboard
 
 On macOS with Homebrew:
 ```bash
 brew install openssl protobuf pkg-config
 ```
 
-On Ubuntu/Debian:
-```bash
-sudo apt-get install libssl-dev protobuf-compiler pkg-config
-```
+### Load Testing
+1. Start the load test server:
+   ```bash
+   cargo rlt
+   ```
+2. In another terminal, start the mock server:
+   ```bash
+   cargo run -p mock-server
+   ```
+3. In a third terminal, run continuous test requests:
+   ```bash
+   cargo run -p test -- --run-forever
+   ```
+4. Monitor the results in your Grafana dashboard
 
 ---
 
