@@ -1,7 +1,5 @@
 use std::{collections::HashMap, str::FromStr};
 
-use anthropic_ai_sdk::types::message::ImageMediaType;
-
 use super::{TryConvert, TryConvertStreamData, error::MapperError};
 use crate::{
     endpoints::openai::chat_completions::system_prompt,

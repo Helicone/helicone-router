@@ -12,15 +12,15 @@ use aws_sigv4::{
 };
 use bytes::Bytes;
 use chrono::DateTime;
-use futures::{future::BoxFuture, TryStreamExt};
-use http::{uri::PathAndQuery, HeaderMap, HeaderName, HeaderValue, StatusCode};
+use futures::{TryStreamExt, future::BoxFuture};
+use http::{HeaderMap, HeaderName, HeaderValue, StatusCode, uri::PathAndQuery};
 use http_body_util::BodyExt;
 use opentelemetry::KeyValue;
 use reqwest::{RequestBuilder, Response};
 use reqwest_eventsource::RequestBuilderExt;
 use tokio::sync::mpsc::Sender;
 use tower::{Service, ServiceBuilder};
-use tracing::{info_span, Instrument};
+use tracing::{Instrument, info_span};
 
 use super::SSEStream;
 use crate::{
@@ -53,8 +53,8 @@ use crate::{
         secret::Secret,
     },
     utils::{
-        handle_error::{ErrorHandler, ErrorHandlerLayer},
         ResponseExt as _,
+        handle_error::{ErrorHandler, ErrorHandlerLayer},
     },
 };
 
@@ -668,11 +668,7 @@ fn extract_and_sign_aws_headers(
             .contains_key(key)
         {
             tracing::info!(
-<<<<<<< HEAD
-                "set new headers key: {:?}, value: {:?}",
-=======
                 "set aws signature headers key: {:?}, value: {:?}",
->>>>>>> 6f1c7e4 (fix clippy)
                 key,
                 value
             );

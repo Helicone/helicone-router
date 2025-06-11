@@ -7,6 +7,7 @@ use tracing::{Instrument, info_span};
 use crate::{
     dispatcher::{
         SSEStream, anthropic_client::Client as AnthropicClient,
+        bedrock_client::Client as BedrockClient,
         google_gemini_client::Client as GoogleGeminiClient,
         ollama_client::Client as OllamaClient,
         openai_client::Client as OpenAIClient,
@@ -20,6 +21,7 @@ pub enum Client {
     Anthropic(AnthropicClient),
     GoogleGemini(GoogleGeminiClient),
     Ollama(OllamaClient),
+    Bedrock(BedrockClient),
 }
 
 impl Client {
@@ -45,6 +47,7 @@ impl AsRef<reqwest::Client> for Client {
             Client::Anthropic(client) => &client.0,
             Client::GoogleGemini(client) => &client.0,
             Client::Ollama(client) => &client.0,
+            Client::Bedrock(client) => &client.0,
         }
     }
 }

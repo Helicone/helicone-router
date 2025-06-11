@@ -3,22 +3,17 @@ use std::sync::Arc;
 use rustc_hash::FxHashMap as HashMap;
 
 use super::{
-    anthropic::AnthropicConverter, gemini::GoogleGeminiConverter, model::ModelMapper,
-    openai::OpenAIConverter, EndpointConverter, TypedEndpointConverter,
+    EndpointConverter, TypedEndpointConverter, anthropic::AnthropicConverter,
+    gemini::GoogleGeminiConverter, model::ModelMapper, openai::OpenAIConverter,
 };
 use crate::{
-    self, anthropic::Anthropic,
-    bedrock::Bedrock,
     config::router::RouterConfig,
     endpoints::{
-        self, anthropic::Anthropic, bedrock::Bedrock, google::Google,
-        ollama::Ollama, openai::OpenAI, ApiEndpoint,
+        self, ApiEndpoint, anthropic::Anthropic, bedrock::Bedrock,
+        google::Google, ollama::Ollama, openai::OpenAI,
     },
-    google::Google,
     middleware::mapper::{bedrock::BedrockConverter, ollama::OllamaConverter},
-    openai::OpenAI,
     types::provider::InferenceProvider,
-    ApiEndpoint,
 };
 
 #[derive(Debug, Clone)]

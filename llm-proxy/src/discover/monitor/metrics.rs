@@ -5,11 +5,11 @@ use strum::IntoEnumIterator;
 
 use crate::{
     endpoints::{
+        ApiEndpoint,
         anthropic::{Anthropic, Messages},
         bedrock::{Bedrock, Converse},
         google::{GenerateContents, Google},
         openai::{ChatCompletions, OpenAI},
-        ApiEndpoint,
     },
     error::internal::InternalError,
     metrics::RollingCounter,

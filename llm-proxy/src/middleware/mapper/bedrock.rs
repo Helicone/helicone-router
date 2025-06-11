@@ -9,7 +9,7 @@ use aws_sdk_bedrockruntime::types::{
 use uuid::Uuid;
 
 use super::{
-    error::MapperError, model::ModelMapper, TryConvert, TryConvertStreamData,
+    TryConvert, TryConvertStreamData, error::MapperError, model::ModelMapper,
 };
 use crate::types::{model_id::ModelId, provider::InferenceProvider};
 
