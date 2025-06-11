@@ -22,7 +22,7 @@ use serde::{Deserialize, Serialize};
 use strum::IntoStaticStr;
 use thiserror::Error;
 
-use crate::utils::default_true;
+use crate::{error::init::InitError, utils::default_true};
 
 #[derive(Debug, Error, Display)]
 pub enum Error {
@@ -122,6 +122,11 @@ impl Config {
             .map_err(Error::from)
             .map_err(Box::new)?;
         Ok(config)
+    }
+
+    /// Validate the config.
+    pub fn validate(&self) -> Result<(), InitError> {
+        todo!()
     }
 }
 

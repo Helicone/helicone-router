@@ -41,7 +41,7 @@ async fn weighted_balancer_anthropic_preferred() {
     config.routers = RouterConfigs::new(HashMap::from([(
         RouterId::Default,
         RouterConfig {
-            balance: balance_config,
+            load_balance: balance_config,
             ..Default::default()
         },
     )]));
@@ -114,7 +114,7 @@ async fn weighted_balancer_openai_preferred() {
     config.routers = RouterConfigs::new(HashMap::from([(
         RouterId::Default,
         RouterConfig {
-            balance: balance_config,
+            load_balance: balance_config,
             ..Default::default()
         },
     )]));
@@ -187,7 +187,7 @@ async fn weighted_balancer_anthropic_heavily_preferred() {
     config.routers = RouterConfigs::new(HashMap::from([(
         RouterId::Default,
         RouterConfig {
-            balance: balance_config,
+            load_balance: balance_config,
             ..Default::default()
         },
     )]));
@@ -268,7 +268,7 @@ async fn weighted_balancer_equal_four_providers() {
     config.routers = RouterConfigs::new(HashMap::from([(
         RouterId::Default,
         RouterConfig {
-            balance: balance_config,
+            load_balance: balance_config,
             ..Default::default()
         },
     )]));
