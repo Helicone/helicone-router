@@ -47,7 +47,10 @@ impl
         use async_openai::types as openai;
         use aws_sdk_bedrockruntime as bedrock;
 
-        println!("target_provider: {:?}, source_model: {:?}", target_provider, source_model);
+        println!(
+            "target_provider: {:?}, source_model: {:?}",
+            target_provider, source_model
+        );
         println!("model: {:?}", value.model);
 
         let target_model = self
@@ -277,7 +280,7 @@ impl
             )));
         }
         println!("dafaq: {:?}", &mapped_messages);
-        
+
         let mut builder = aws_sdk_bedrockruntime::operation::converse::ConverseInput::builder()
             .model_id(target_model.to_string())
             .set_messages(Some(mapped_messages))
@@ -289,21 +292,22 @@ impl
                     .set_tool_choice(tool_choice)
                     .set_tools(Some(tools))
                     .build()
-                    .unwrap()
+                    .unwrap(),
             );
         }
 
         Ok(builder
-            .set_inference_config(
-                Some(
-                    aws_sdk_bedrockruntime::types::InferenceConfiguration::builder()
-                        .top_p(top_p.unwrap_or_default())
-                        .temperature(temperature.unwrap_or_default())
-                        .max_tokens(max_tokens as i32)
-                        .set_stop_sequences(stop_sequences)
-                        .build()
+            .set_inference_config(Some(
+                aws_sdk_bedrockruntime::types::InferenceConfiguration::builder(
                 )
-            ).build().unwrap())
+                .top_p(top_p.unwrap_or_default())
+                .temperature(temperature.unwrap_or_default())
+                .max_tokens(max_tokens as i32)
+                .set_stop_sequences(stop_sequences)
+                .build(),
+            ))
+            .build()
+            .unwrap())
     }
 }
 
@@ -323,11 +327,9 @@ impl
         use async_openai::types as openai;
         let model = value
             .trace
-            .unwrap()
-            .prompt_router
-            .unwrap()
-            .invoked_model_id
-            .unwrap();
+            .and_then(|t| t.prompt_router)
+            .and_then(|r| r.invoked_model_id)
+            .unwrap_or_default();
 
         let created = 0;
         let usage = value.usage.unwrap();
