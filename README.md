@@ -164,19 +164,7 @@ curl -L https://github.com/Helicone/helicone-router/releases/latest/download/hel
 ./helix
 ```
 
-### Option 3: Homebrew (macOS/Linux)
-```bash
-brew install helicone/tap/helix
-helix
-```
-
-### Option 4: npm (Cross-platform)
-```bash
-npm install -g @helicone/helix
-helix
-```
-
-### Option 5: Cargo (From Source)
+### Option 3: Cargo (From Source)
 ```bash
 cargo install helix-llm-proxy
 helix
