@@ -63,6 +63,8 @@ cargo watch -x run
 ```
 7. Create a new branch: `git checkout -b my-branch-name`.
 8. Make your change, add tests, and make sure the tests still pass.
+9. Commit your change using [the conventional commit format](https://www.conventionalcommits.org/en/v1.0.0/)
+10. Push to your fork and [submit a pull request](https://github.com/Helicone/helicone-router/compare).
 9. Push to your fork and [submit a pull request](https://github.com/Helicone/helicone-router/compare).
 10. Pat your self on the back and wait for your pull request to be reviewed and merged.
 
