@@ -41,12 +41,13 @@ async fn main() -> Result<(), RuntimeError> {
         telemetry::init_telemetry(&config.telemetry)
             .map_err(InitError::Telemetry)
             .map_err(RuntimeError::Init)?;
-    let helicone_config = config.helicone.clone();
 
     info!("telemetry initialized");
     let mut shutting_down = false;
+    let helicone_config = config.helicone.clone();
     let app = App::new(config).await?;
     let health_monitor = HealthMonitor::new(app.state.clone());
+    let control_plane_state = app.state.0.control_plane_state.clone();
 
     let rate_limiting_cleanup_service =
         rate_limit::cleanup::GarbageCollector::new(
@@ -54,11 +55,20 @@ async fn main() -> Result<(), RuntimeError> {
             app.state.0.config.rate_limit.cleanup_interval(),
         );
 
-    let mut meltdown = Meltdown::new()
-        .register(TaggedService::new(
-            "shutdown-signals",
-            llm_proxy::utils::meltdown::wait_for_shutdown_signals,
-        ))
+    let mut meltdown = Meltdown::new().register(TaggedService::new(
+        "shutdown-signals",
+        llm_proxy::utils::meltdown::wait_for_shutdown_signals,
+    ));
+
+    if app.state.0.config.helicone.enable_control_plane {
+        meltdown = meltdown.register(TaggedService::new(
+            "control-plane-client",
+            ControlPlaneClient::connect(control_plane_state, helicone_config)
+                .await?,
+        ));
+    }
+
+    meltdown = meltdown
         .register(TaggedService::new("proxy", app))
         .register(TaggedService::new(
             "provider-health-monitor",
@@ -68,10 +78,6 @@ async fn main() -> Result<(), RuntimeError> {
         .register(TaggedService::new(
             "rate-limiting-cleanup",
             rate_limiting_cleanup_service,
-        ))
-        .register(TaggedService::new(
-            "control-plane-client",
-            ControlPlaneClient::connect(helicone_config).await?,
         ));
 
     while let Some((service, result)) = meltdown.next().await {
