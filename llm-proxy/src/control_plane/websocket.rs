@@ -9,7 +9,9 @@ use meltdown::Token;
 use tokio::{net::TcpStream, sync::Mutex};
 use tokio_tungstenite::{
     MaybeTlsStream, WebSocketStream, connect_async,
-    tungstenite::{self, Message, handshake::client::Request},
+    tungstenite::{
+        self, Message, client::IntoClientRequest, handshake::client::Request,
+    },
 };
 use url::Url;
 
@@ -18,8 +20,8 @@ use super::{
     types::{MessageTypeRX, MessageTypeTX},
 };
 use crate::{
+    config::helicone::HeliconeConfig,
     error::{init::InitError, runtime::RuntimeError},
-    types::secret::Secret,
 };
 type TlsWebSocketStream = WebSocketStream<MaybeTlsStream<TcpStream>>;
 
@@ -33,8 +35,7 @@ pub struct WebsocketChannel {
 pub struct ControlPlaneClient {
     pub state: Arc<Mutex<ControlPlaneState>>,
     channel: WebsocketChannel,
-    url: Url,
-    api_key: Secret<String>,
+    helicone_config: HeliconeConfig,
 }
 
 async fn handle_message(
@@ -51,17 +52,48 @@ async fn handle_message(
     Ok(())
 }
 
-async fn connect_async_and_split(
-    url: &str,
-    api_key: &Secret<String>,
-) -> Result<WebsocketChannel, InitError> {
-    let request = Request::builder()
-        .uri(url)
-        .header("Authorization", api_key.to_string())
-        .body(())
-        .map_err(InitError::WebsocketRequestBuild)?;
+impl IntoClientRequest for &HeliconeConfig {
+    fn into_client_request(
+        self,
+    ) -> Result<Request, tokio_tungstenite::tungstenite::Error> {
+        let parsed_url =
+            Url::parse(self.websocket_url.as_str()).map_err(|_| {
+                tokio_tungstenite::tungstenite::Error::Url(
+                    tungstenite::error::UrlError::UnsupportedUrlScheme,
+                )
+            })?;
+        let host = parsed_url.host_str().unwrap_or("localhost");
+        let port = parsed_url
+            .port()
+            .map(|p| format!(":{p}"))
+            .unwrap_or_default();
+        let host_header = format!("{host}{port}");
 
-    let (tx, rx) = connect_async(request)
+        Ok(Request::builder()
+            .uri(self.websocket_url.as_str())
+            .header("Host", host_header)
+            .header("Authorization", format!("Bearer {}", self.api_key.0))
+            .header("Connection", "Upgrade")
+            .header("Upgrade", "websocket")
+            .header("Sec-WebSocket-Version", "13")
+            .header(
+                "Sec-WebSocket-Key",
+                tokio_tungstenite::tungstenite::handshake::client::generate_key(
+                ),
+            )
+            .body(())
+            .map_err(|_| {
+                tokio_tungstenite::tungstenite::Error::Url(
+                    tungstenite::error::UrlError::UnsupportedUrlScheme,
+                )
+            })?)
+    }
+}
+
+async fn connect_async_and_split(
+    helicone_config: &HeliconeConfig,
+) -> Result<WebsocketChannel, InitError> {
+    let (tx, rx) = connect_async(helicone_config)
         .await
         .map_err(|e| InitError::WebsocketConnection(Box::new(e)))?
         .0
@@ -75,22 +107,17 @@ async fn connect_async_and_split(
 
 impl ControlPlaneClient {
     async fn reconnect_websocket(&mut self) -> Result<(), InitError> {
-        let channel =
-            connect_async_and_split(self.url.as_str(), &self.api_key).await?;
+        let channel = connect_async_and_split(&self.helicone_config).await?;
         self.channel = channel;
         Ok(())
     }
 
     pub async fn connect(
-        url: &str,
-        api_key: &Secret<String>,
+        helicone_config: HeliconeConfig,
     ) -> Result<Self, InitError> {
-        let url = Url::parse(url).map_err(InitError::WebsocketUrlParse)?;
-
         Ok(Self {
-            channel: connect_async_and_split(url.as_str(), api_key).await?,
-            url,
-            api_key: api_key.clone(),
+            channel: connect_async_and_split(&helicone_config).await?,
+            helicone_config: helicone_config.clone(),
             state: Arc::new(Mutex::new(ControlPlaneState::default())),
         })
     }
@@ -167,7 +194,10 @@ mod tests {
     use tokio_tungstenite::accept_async;
 
     use super::ControlPlaneClient;
-    use crate::{control_plane::types::MessageTypeTX, types::secret::Secret};
+    use crate::{
+        config::helicone::HeliconeConfig, control_plane::types::MessageTypeTX,
+        types::secret::Secret,
+    };
 
     #[tokio::test]
     async fn test_mock_server_connection() {
@@ -187,10 +217,13 @@ mod tests {
         tokio::time::sleep(Duration::from_millis(50)).await;
 
         // Test connection
-        let result =
-            ControlPlaneClient::connect(&ws_url, &Secret("".to_string())).await;
+        let result = ControlPlaneClient::connect(HeliconeConfig {
+            websocket_url: ws_url.parse().unwrap(),
+            api_key: Secret(String::new()),
+            base_url: "http://localhost:8585".parse().unwrap(),
+        })
+        .await;
         assert!(result.is_ok(), "Should connect to mock server");
-        println!("result: {:?}", result);
     }
 
     #[tokio::test]
@@ -198,8 +231,14 @@ mod tests {
         let ws_url = "ws://localhost:8585/ws/v1/router/control-plane";
 
         // This will fail if no server is running on 8585, which is expected
-        let result =
-            ControlPlaneClient::connect(ws_url, &Secret("".to_string())).await;
+        let result = ControlPlaneClient::connect(HeliconeConfig {
+            websocket_url: ws_url.parse().unwrap(),
+            api_key: Secret(dbg!(
+                std::env::var("HELICONE_API_KEY").unwrap_or_default()
+            )),
+            base_url: "http://localhost:8585".parse().unwrap(),
+        })
+        .await;
 
         if let Ok(mut client) = result {
             // If we can connect, try sending a heartbeat
