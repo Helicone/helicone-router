@@ -4,9 +4,13 @@ use clap::Parser;
 use llm_proxy::{
     app::App,
     config::Config,
-    discover::monitor::health::provider::HealthMonitor,
+    control_plane::websocket::ControlPlaneClient,
+    discover::monitor::{
+        health::provider::HealthMonitor, rate_limit::RateLimitMonitor,
+    },
     error::{init::InitError, runtime::RuntimeError},
     metrics::system::SystemMetrics,
+    middleware::rate_limit,
     utils::meltdown::TaggedService,
 };
 use meltdown::Meltdown;
@@ -42,19 +46,47 @@ async fn main() -> Result<(), RuntimeError> {
 
     info!("telemetry initialized");
     let mut shutting_down = false;
+    let helicone_config = config.helicone.clone();
     let app = App::new(config).await?;
+    let config = app.state.config();
     let health_monitor = HealthMonitor::new(app.state.clone());
-    let mut meltdown = Meltdown::new()
-        .register(TaggedService::new(
-            "shutdown-signals",
-            llm_proxy::utils::meltdown::wait_for_shutdown_signals,
-        ))
+    let rate_limit_monitor = RateLimitMonitor::new(app.state.clone());
+    let control_plane_state = app.state.0.control_plane_state.clone();
+
+    let rate_limiting_cleanup_service =
+        rate_limit::cleanup::GarbageCollector::new(
+            app.state.clone(),
+            config.rate_limit.cleanup_interval(),
+        );
+
+    let mut meltdown = Meltdown::new().register(TaggedService::new(
+        "shutdown-signals",
+        llm_proxy::utils::meltdown::wait_for_shutdown_signals,
+    ));
+
+    if app.state.0.config.helicone.enable_control_plane {
+        meltdown = meltdown.register(TaggedService::new(
+            "control-plane-client",
+            ControlPlaneClient::connect(control_plane_state, helicone_config)
+                .await?,
+        ));
+    }
+
+    meltdown = meltdown
         .register(TaggedService::new("proxy", app))
         .register(TaggedService::new(
             "provider-health-monitor",
             health_monitor,
         ))
-        .register(TaggedService::new("system-metrics", SystemMetrics));
+        .register(TaggedService::new(
+            "provider-rate-limit-monitor",
+            rate_limit_monitor,
+        ))
+        .register(TaggedService::new("system-metrics", SystemMetrics))
+        .register(TaggedService::new(
+            "rate-limiting-cleanup",
+            rate_limiting_cleanup_service,
+        ));
 
     while let Some((service, result)) = meltdown.next().await {
         match result {

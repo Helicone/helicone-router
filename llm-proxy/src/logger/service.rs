@@ -5,13 +5,14 @@ use chrono::Utc;
 use http::{HeaderMap, StatusCode};
 use http_body_util::BodyExt;
 use indexmap::IndexMap;
+use reqwest::Client;
 use rusty_s3::S3Action;
 use typed_builder::TypedBuilder;
 use url::Url;
 
 use crate::{
-    app::AppState,
-    error::logger::LoggerError,
+    app_state::AppState,
+    error::{init::InitError, logger::LoggerError},
     types::{
         body::BodyReader,
         logger::{
@@ -24,6 +25,24 @@ use crate::{
 };
 
 const PUT_OBJECT_SIGN_DURATION: Duration = Duration::from_secs(120);
+const JAWN_CONNECT_TIMEOUT: Duration = Duration::from_secs(10);
+
+#[derive(Debug)]
+pub struct JawnClient {
+    pub request_client: Client,
+}
+
+impl JawnClient {
+    pub fn new() -> Result<Self, InitError> {
+        Ok(Self {
+            request_client: Client::builder()
+                .tcp_nodelay(true)
+                .connect_timeout(JAWN_CONNECT_TIMEOUT)
+                .build()
+                .map_err(InitError::CreateReqwestClient)?,
+        })
+    }
+}
 
 #[derive(Debug, TypedBuilder)]
 pub struct LoggerService {
@@ -137,8 +156,7 @@ impl LoggerService {
 
         let helicone_url = self
             .app_state
-            .0
-            .config
+            .config()
             .helicone
             .base_url
             .join("/v1/log/request")?;
@@ -146,7 +164,8 @@ impl LoggerService {
         let _helicone_response = self
             .app_state
             .0
-            .jawn_client
+            .jawn_http_client
+            .request_client
             .post(helicone_url)
             .json(&log_message)
             .header(

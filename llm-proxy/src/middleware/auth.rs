@@ -8,7 +8,7 @@ use url::Url;
 use uuid::Uuid;
 
 use crate::{
-    app::AppState,
+    app_state::AppState,
     error::auth::AuthError,
     types::{org::OrgId, request::AuthContext, user::UserId},
 };
@@ -30,13 +30,20 @@ impl AuthService {
     ) -> Result<AuthContext, AuthError> {
         let whoami_result = app_state
             .0
-            .jawn_client
+            .jawn_http_client
+            .request_client
             .get(whoami_url(&app_state))
             .header("authorization", api_key)
             .send()
-            .await?
+            .await
+            .inspect_err(|e| {
+                tracing::error!("Error sending request to whoami: {:?}", e);
+            })?
             .error_for_status()
-            .map_err(AuthError::UnsuccessfulAuthResponse)?;
+            .map_err(AuthError::UnsuccessfulAuthResponse)
+            .inspect_err(|e| {
+                tracing::error!("Error calling whoami: {:?}", e);
+            })?;
         let body = whoami_result.json::<WhoamiResponse>().await?;
         Ok(AuthContext {
             api_key: api_key.replace("Bearer ", ""),
@@ -123,7 +130,7 @@ fn whoami_url(app_state: &AppState) -> Url {
         .expect("helicone base url should be valid")
 }
 
-#[cfg(test)]
+#[cfg(all(test, feature = "testing"))]
 mod tests {
     use super::*;
     use crate::{app::App, config::Config, tests::TestDefault};

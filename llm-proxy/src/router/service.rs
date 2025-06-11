@@ -10,21 +10,23 @@ use rustc_hash::FxHashMap as HashMap;
 use tower::ServiceBuilder;
 
 use crate::{
-    app::AppState,
+    app_state::AppState,
     balancer::provider::ProviderBalancer,
     config::{DeploymentTarget, router::RouterConfig},
     dispatcher::{Dispatcher, DispatcherService},
     endpoints::{ApiEndpoint, EndpointType},
     error::{
         api::ApiError, init::InitError, internal::InternalError,
-        invalid_req::InvalidRequestError, provider::ProviderError,
+        invalid_req::InvalidRequestError,
     },
-    middleware::request_context,
+    middleware::{rate_limit::service as rate_limit, request_context},
     types::{provider::ProviderKeys, router::RouterId},
 };
 
-pub type RouterService = request_context::Service<ProviderBalancer>;
-pub type DirectProxyService = request_context::Service<DispatcherService>;
+pub type RouterService =
+    rate_limit::Service<request_context::Service<ProviderBalancer>>;
+pub type DirectProxyService =
+    rate_limit::Service<request_context::Service<DispatcherService>>;
 
 #[derive(Debug)]
 pub struct Router {
@@ -60,7 +62,11 @@ impl Router {
 
         let provider_keys =
             Self::add_provider_keys(id, &router_config, &app_state).await?;
+
         let mut inner = HashMap::default();
+        let rl_layer =
+            rate_limit::Layer::per_router(&app_state, id, &router_config)
+                .await?;
         for (endpoint_type, balance_config) in router_config.balance.as_ref() {
             let balancer = ProviderBalancer::new(
                 app_state.clone(),
@@ -70,37 +76,33 @@ impl Router {
             )
             .await?;
             let service_stack: RouterService = ServiceBuilder::new()
+                .layer(rl_layer.clone())
                 .layer(request_context::Layer::new(
                     router_config.clone(),
                     provider_keys.clone(),
                 ))
-                // other middleware: rate limiting, caching, etc, etc
+                // other middleware: caching, etc, etc
                 // will be added here as well from the router config
                 // .map_err(|e| crate::error::api::Error::Box(e))
                 .service(balancer);
 
             inner.insert(*endpoint_type, service_stack);
         }
-        let direct_proxy_provider_api_key = provider_keys
-            .get(&router_config.request_style)
-            .ok_or(ProviderError::ApiKeyNotFound(router_config.request_style))
-            .inspect_err(|e| {
-                tracing::error!(error = ?e, "Api key not found");
-            })?;
         let direct_proxy_dispatcher = Dispatcher::new(
-            app_state,
+            app_state.clone(),
             id,
             &router_config,
             router_config.request_style,
-            direct_proxy_provider_api_key,
-        )?;
+        )
+        .await?;
 
         let direct_proxy = ServiceBuilder::new()
+            .layer(rl_layer)
             .layer(request_context::Layer::new(
                 router_config.clone(),
                 provider_keys,
             ))
-            // other middleware: rate limiting, caching, etc, etc
+            // other middleware: caching, etc, etc
             // will be added here as well from the router config
             // .map_err(|e| crate::error::api::Error::Box(e))
             .service(direct_proxy_dispatcher);

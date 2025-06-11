@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use super::{
     balance::{BalanceConfig, BalanceConfigInner},
     model_mapping::ModelMappingConfig,
-    rate_limit::RateLimitConfig,
+    rate_limit::LimitsConfig,
     retry::RetryConfig,
     spend_control::SpendControlConfig,
 };
@@ -41,13 +41,17 @@ pub struct RouterConfig {
     #[serde(default = "default_request_style")]
     pub request_style: InferenceProvider,
     pub balance: BalanceConfig,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub model_mappings: Option<ModelMappingConfig>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub cache: Option<CacheControlConfig>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub retries: Option<RetryConfig>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub rate_limit: Option<RateLimitConfig>,
+    #[serde(
+        default,
+        skip_serializing_if = "RouterRateLimitConfig::is_disabled"
+    )]
+    pub rate_limit: RouterRateLimitConfig,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub spend_control: Option<SpendControlConfig>,
 }
@@ -60,7 +64,7 @@ impl Default for RouterConfig {
             cache: None,
             balance: BalanceConfig::default(),
             retries: None,
-            rate_limit: None,
+            rate_limit: RouterRateLimitConfig::default(),
             spend_control: None,
         }
     }
@@ -106,8 +110,29 @@ pub struct CacheControlConfig {
     pub seed: String,
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize, Eq, Hash, PartialEq)]
-pub struct PromptVersion(pub String);
+#[derive(Debug, Default, Clone, Deserialize, Serialize, Eq, PartialEq)]
+#[serde(deny_unknown_fields, untagged, rename_all = "kebab-case")]
+pub enum RouterRateLimitConfig {
+    /// Disable rate limiting middleware at the *router* level.
+    /// Note that if the app configuration enables rate limiting globally,
+    /// then rate limiting will still take effect.
+    #[default]
+    None,
+    /// Opt-in to the global rate limit config.
+    OptIn,
+    /// Routers must configure their own rate limit settings.
+    Custom {
+        #[serde(default, flatten)]
+        limits: LimitsConfig,
+    },
+}
+
+impl RouterRateLimitConfig {
+    #[must_use]
+    pub fn is_disabled(&self) -> bool {
+        matches!(self, RouterRateLimitConfig::None)
+    }
+}
 
 #[cfg(feature = "testing")]
 impl crate::tests::TestDefault for RouterConfigs {
@@ -127,7 +152,7 @@ impl crate::tests::TestDefault for RouterConfigs {
                     },
                 )])),
                 retries: None,
-                rate_limit: None,
+                rate_limit: RouterRateLimitConfig::default(),
                 spend_control: None,
             },
         )]))
@@ -165,7 +190,7 @@ mod tests {
             cache: Some(cache),
             balance,
             retries: Some(retries),
-            rate_limit: None,
+            rate_limit: RouterRateLimitConfig::default(),
             spend_control: None,
         }
     }

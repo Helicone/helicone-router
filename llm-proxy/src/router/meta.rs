@@ -11,7 +11,7 @@ use rustc_hash::FxHashMap as HashMap;
 use uuid::Uuid;
 
 use crate::{
-    app::AppState,
+    app_state::AppState,
     config::DeploymentTarget,
     error::{
         api::ApiError, init::InitError, internal::InternalError,
@@ -127,6 +127,10 @@ impl tower::Service<crate::types::request::Request> for MetaRouter {
         let extracted_path_and_query = match extracted_path_and_query {
             Ok(path_and_query) => path_and_query,
             Err(_e) => {
+                // This should **never** happen theoretically since in order to
+                // get this far, the request uri should have
+                // been valid, and a subpath of that which
+                // we extract with the regex should also be valid.
                 tracing::warn!(
                     "Failed to convert extracted path to PathAndQuery"
                 );

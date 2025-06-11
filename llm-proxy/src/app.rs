@@ -4,17 +4,15 @@ use std::{
     net::SocketAddr,
     sync::Arc,
     task::{Context, Poll},
-    time::Duration,
 };
 
 use axum_server::{accept::NoDelayAcceptor, tls_rustls::RustlsConfig};
 use futures::future::BoxFuture;
 use meltdown::Token;
 use opentelemetry::global;
-use reqwest::Client;
 use rustc_hash::FxHashMap as HashMap;
 use telemetry::{make_span::SpanFactory, tracing::MakeRequestId};
-use tokio::sync::RwLock;
+use tokio::sync::{Mutex, RwLock};
 use tower::{ServiceBuilder, buffer::BufferLayer, util::BoxCloneService};
 use tower_http::{
     ServiceBuilderExt, add_extension::AddExtension,
@@ -25,27 +23,25 @@ use tower_http::{
 use tracing::{Level, info};
 
 use crate::{
-    config::{
-        Config,
-        minio::Minio,
-        rate_limit::{RateLimitConfig, RateLimitStore},
-        server::TlsConfig,
-    },
-    discover::monitor::health::{
-        EndpointMetricsRegistry, provider::HealthMonitorMap,
+    app_state::{AppState, InnerAppState},
+    config::{Config, minio::Minio, server::TlsConfig},
+    control_plane::control_plane_state::ControlPlaneState,
+    discover::monitor::{
+        health::provider::HealthMonitorMap, metrics::EndpointMetricsRegistry,
+        rate_limit::RateLimitMonitorMap,
     },
     error::{self, init::InitError, runtime::RuntimeError},
-    metrics::{self, Metrics, attribute_extractor::AttributeExtractor},
+    logger::service::JawnClient,
+    metrics::{self, attribute_extractor::AttributeExtractor},
     middleware::{
         auth::AuthService, rate_limit::service::Layer as RateLimitLayer,
+        response_headers::ResponseHeaderLayer,
     },
     router::meta::MetaRouter,
-    types::{provider::ProviderKeys, router::RouterId},
     utils::{catch_panic::PanicResponder, handle_error::ErrorHandlerLayer},
 };
 
 const BUFFER_SIZE: usize = 1024;
-const JAWN_CONNECT_TIMEOUT: Duration = Duration::from_secs(10);
 const SERVICE_NAME: &str = "helicone-router";
 
 pub type AppResponseBody = tower_http::body::UnsyncBoxBody<
@@ -69,23 +65,6 @@ pub type BoxedHyperServiceStack = BoxCloneService<
     AppResponse,
     Infallible,
 >;
-
-#[derive(Debug, Clone)]
-pub struct AppState(pub Arc<InnerAppState>);
-
-#[derive(Debug)]
-pub struct InnerAppState {
-    pub config: Config,
-    pub minio: Minio,
-    pub jawn_client: Client,
-    pub redis: Option<r2d2::Pool<redis::Client>>,
-    pub provider_keys: RwLock<HashMap<RouterId, ProviderKeys>>,
-    /// Top level metrics which are exported to OpenTelemetry.
-    pub metrics: Metrics,
-    /// Metrics to track provider health and rate limits.
-    pub endpoint_metrics: EndpointMetricsRegistry,
-    pub health_monitor: HealthMonitorMap,
-}
 
 /// The top level app used to start the hyper server.
 /// The middleware stack is as follows:
@@ -161,6 +140,7 @@ pub struct InnerAppState {
 ///   - `ApiEndpoint`
 ///   - `MapperContext`
 ///   - `AuthContext`
+///   - `ProviderRequestId`
 #[derive(Clone)]
 pub struct App {
     pub state: AppState,
@@ -192,11 +172,8 @@ impl App {
     pub async fn new(config: Config) -> Result<Self, InitError> {
         tracing::info!(config = ?config, "creating app");
         let minio = Minio::new(config.minio.clone())?;
-        let jawn_client = Client::builder()
-            .tcp_nodelay(true)
-            .connect_timeout(JAWN_CONNECT_TIMEOUT)
-            .build()
-            .map_err(error::init::InitError::CreateReqwestClient)?;
+
+        let jawn_http_client = JawnClient::new()?;
 
         // If global meter is not set, opentelemetry defaults to a
         // NoopMeterProvider
@@ -204,30 +181,27 @@ impl App {
         let metrics = metrics::Metrics::new(&meter);
         let endpoint_metrics = EndpointMetricsRegistry::default();
         let health_monitor = HealthMonitorMap::default();
+        let rate_limit_monitor = RateLimitMonitorMap::default();
 
-        let redis = match &config.rate_limit {
-            RateLimitConfig::Enabled { store, .. } => match store {
-                RateLimitStore::Redis(redis) => {
-                    let client = redis::Client::open(redis.url.0.clone())?;
-                    let pool = r2d2::Pool::builder()
-                        .connection_timeout(redis.connection_timeout)
-                        .build(client)?;
-                    Some(pool)
-                }
-                RateLimitStore::InMemory => None,
-            },
-            RateLimitConfig::Disabled => None,
-        };
+        let global_rate_limit =
+            config.rate_limit.global_limiter().map(Arc::new);
 
         let app_state = AppState(Arc::new(InnerAppState {
             config,
             minio,
-            jawn_client,
-            redis,
+            jawn_http_client,
+            control_plane_state: Arc::new(Mutex::new(
+                ControlPlaneState::default(),
+            )),
             provider_keys: RwLock::new(HashMap::default()),
+            global_rate_limit,
+            router_rate_limits: RwLock::new(HashMap::default()),
             metrics,
             endpoint_metrics,
-            health_monitor,
+            health_monitors: health_monitor,
+            rate_limit_monitors: rate_limit_monitor,
+            rate_limit_senders: RwLock::new(HashMap::default()),
+            rate_limit_receivers: RwLock::new(HashMap::default()),
         }));
 
         let otel_metrics_layer =
@@ -250,7 +224,7 @@ impl App {
                 TraceLayer::new_for_http()
                     .make_span_with(SpanFactory::new(
                         Level::INFO,
-                        app_state.0.config.telemetry.propagate,
+                        app_state.config().telemetry.propagate,
                     ))
                     .on_body_chunk(())
                     .on_eos(()),
@@ -266,8 +240,12 @@ impl App {
             .layer(AsyncRequireAuthorizationLayer::new(AuthService::new(
                 app_state.clone(),
             )))
-            .layer(RateLimitLayer::new(&app_state))
+            .layer(RateLimitLayer::global(&app_state))
+            .layer(ResponseHeaderLayer::new(
+                app_state.response_headers_config(),
+            ))
             .map_err(crate::error::internal::InternalError::BufferError)
+            // TODO: move this up before the auth layer
             .layer(BufferLayer::new(BUFFER_SIZE))
             .layer(ErrorHandlerLayer::new(app_state.clone()))
             .service(router);
@@ -287,15 +265,14 @@ impl meltdown::Service for App {
     fn run(self, token: Token) -> Self::Future {
         Box::pin(async move {
             let app_state = self.state.clone();
-            let addr = SocketAddr::from((
-                app_state.0.config.server.address,
-                app_state.0.config.server.port,
-            ));
-            info!(address = %addr, tls = %app_state.0.config.server.tls, "server starting");
+            let config = app_state.config();
+            let addr =
+                SocketAddr::from((config.server.address, config.server.port));
+            info!(address = %addr, tls = %config.server.tls, "server starting");
 
             let handle = axum_server::Handle::new();
             let app_factory = AppFactory::new_hyper_app(self);
-            match &app_state.0.config.server.tls {
+            match &config.server.tls {
                 TlsConfig::Enabled { cert, key } => {
                     let tls_config =
                         RustlsConfig::from_pem_file(cert.clone(), key.clone())
