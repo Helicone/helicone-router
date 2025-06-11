@@ -154,6 +154,7 @@ impl meltdown::Service for ControlPlaneClient {
     type Future = BoxFuture<'static, Result<(), RuntimeError>>;
 
     fn run(mut self, _token: Token) -> Self::Future {
+        println!("running control plane client");
         let state_clone = Arc::clone(&self.state);
 
         Box::pin(async move {
@@ -193,14 +194,18 @@ impl meltdown::Service for ControlPlaneClient {
 
 #[cfg(test)]
 mod tests {
-    use std::time::Duration;
+    use std::{sync::Arc, time::Duration};
 
-    use tokio::net::TcpListener;
+    use meltdown::{Service, Token};
+    use tokio::{net::TcpListener, sync::Mutex};
     use tokio_tungstenite::accept_async;
 
     use super::ControlPlaneClient;
     use crate::{
-        config::helicone::HeliconeConfig, control_plane::types::MessageTypeTX,
+        config::helicone::HeliconeConfig,
+        control_plane::{
+            control_plane_state::ControlPlaneState, types::MessageTypeTX,
+        },
     };
 
     #[tokio::test]
@@ -241,11 +246,62 @@ mod tests {
         if let Ok(mut client) = result {
             // If we can connect, try sending a heartbeat
             let send_result =
-                client.send_message(MessageTypeTX::Heartbeat).await;
+                client.send_message(MessageTypeTX::Heartbeat {}).await;
             assert!(send_result.is_ok(), "Should be able to send heartbeat");
         } else {
             // If we can't connect, that's fine for this test
             println!("No server running on localhost:8585 - this is expected");
+        }
+    }
+
+    #[tokio::test]
+    /// Sends a heartbeat to the control plane and verifies that it is received
+    /// and we get an ack back
+    async fn test_integration_localhost_8585_heartbeat() {
+        unsafe {
+            std::env::set_var(
+                "HELICONE_API_KEY",
+                "sk-helicone-n2zkt2i-x3mukmi-tgvgzyy-xom3q4y",
+            );
+        }
+        println!("setting api key");
+        let helicone_config = HeliconeConfig::default();
+
+        let control_plane_state: Arc<Mutex<ControlPlaneState>> =
+            Default::default();
+        // This will fail if no server is running on 8585, which is expected
+        let result = ControlPlaneClient::connect(
+            control_plane_state.clone(),
+            helicone_config,
+        )
+        .await;
+        println!("connected to control plane {:?}", result);
+
+        assert!(
+            control_plane_state
+                .clone()
+                .lock()
+                .await
+                .last_heartbeat
+                .is_none(),
+            "Last heartbeat should be none"
+        );
+
+        if let Ok(mut client) = result {
+            println!("sending heartbeat");
+            let send_result =
+                client.send_message(MessageTypeTX::Heartbeat {}).await;
+            tokio::spawn(client.run(Token::new()));
+
+            assert!(send_result.is_ok(), "Should be able to send heartbeat");
+            // wait for the heartbeat to be received
+            println!("waiting for heartbeat to be received");
+            tokio::time::sleep(Duration::from_secs(10)).await;
+
+            assert!(
+                control_plane_state.lock().await.last_heartbeat.is_some(),
+                "Last heartbeat should be some"
+            );
         }
     }
 }
