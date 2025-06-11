@@ -494,16 +494,14 @@ impl Dispatcher {
     > {
         let response: Response = if self.provider == InferenceProvider::Bedrock
         {
-            let request = extract_and_sign_aws_headers(
+            extract_and_sign_aws_headers(
                 request_builder,
                 req_body_bytes.clone(),
-            );
-
-            request
-                .body(req_body_bytes)
-                .send()
-                .await
-                .map_err(InternalError::ReqwestError)?
+            )
+            .body(req_body_bytes)
+            .send()
+            .await
+            .map_err(InternalError::ReqwestError)?
         } else {
             request_builder
                 .body(req_body_bytes)
@@ -638,9 +636,6 @@ fn extract_and_sign_aws_headers(
         .expect("cannot build temp request");
     temp_request.headers_mut().extend(request.headers().clone());
 
-    println!("request_headers: {:?}", temp_request.headers().clone());
-    println!("url: {:?}", temp_request.uri().to_string());
-
     let method_str = temp_request.method().to_string();
     let url_str = temp_request.uri().to_string();
 
@@ -673,7 +668,11 @@ fn extract_and_sign_aws_headers(
             .contains_key(key)
         {
             tracing::info!(
+<<<<<<< HEAD
                 "set new headers key: {:?}, value: {:?}",
+=======
+                "set aws signature headers key: {:?}, value: {:?}",
+>>>>>>> 6f1c7e4 (fix clippy)
                 key,
                 value
             );

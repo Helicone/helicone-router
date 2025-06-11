@@ -129,4 +129,3 @@ workspace_root = "0.1.2"
 url = "2.5.4"
 utoipa = "5.3.1"
 uuid = { version = "1.16.0", features = ["serde", "v7"] }
-urlencoding = "2.1.3"

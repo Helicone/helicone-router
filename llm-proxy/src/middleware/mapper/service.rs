@@ -4,11 +4,10 @@ use std::{
     task::{Context, Poll},
 };
 
-use futures::{future::BoxFuture, TryStreamExt};
+use futures::{TryStreamExt, future::BoxFuture};
 use http::uri::PathAndQuery;
 use http_body_util::BodyExt;
-use tracing::{info_span, Instrument};
-use urlencoding;
+use tracing::{Instrument, info_span};
 
 use crate::{
     endpoints::ApiEndpoint,
@@ -197,12 +196,17 @@ async fn map_request(
     let model_id = &mapper_ctx.model.clone().unwrap().to_string();
     let dynamic_target_path_and_query =
         if let Some(query_params) = target_path_and_query.query() {
-            format!("{}?{}", target_endpoint.path().replace("{model_id}", model_id), query_params)
+            format!(
+                "{}?{}",
+                target_endpoint.path().replace("{model_id}", model_id),
+                query_params
+            )
         } else {
             target_endpoint.path().replace("{model_id}", model_id)
         };
-    let dynamic_target_path_and_query = PathAndQuery::from_str(&dynamic_target_path_and_query)
-        .map_err(InternalError::InvalidUri)?;
+    let dynamic_target_path_and_query =
+        PathAndQuery::from_str(&dynamic_target_path_and_query)
+            .map_err(InternalError::InvalidUri)?;
     let mut req = Request::from_parts(parts, axum_core::body::Body::from(body));
     tracing::trace!(
         source_endpoint = ?source_endpoint,

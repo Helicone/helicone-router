@@ -8,12 +8,11 @@ use chrono::Utc;
 use futures::future::Either;
 use isocountry::CountryCode;
 use uuid::Uuid;
-use http::{HeaderMap, HeaderName, HeaderValue};
 
 use crate::{
     config::router::RouterConfig,
     types::{
-        provider::{ProviderKeys, InferenceProvider},
+        provider::ProviderKeys,
         request::{AuthContext, Request, RequestContext},
         response::Response,
     },

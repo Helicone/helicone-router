@@ -1,19 +1,15 @@
 use std::{collections::HashMap, str::FromStr};
 
 use async_openai::types::{
-    ChatCompletionRequestMessage, ChatCompletionRequestUserMessageContentPart,
-    ChatCompletionToolChoiceOption, CreateChatCompletionResponse,
-    CreateChatCompletionStreamResponse,
+    CreateChatCompletionResponse, CreateChatCompletionStreamResponse,
 };
 use aws_sdk_bedrockruntime::types::{
     ContentBlock, ContentBlockDelta, ContentBlockStart, ConversationRole,
 };
-use tower_http::ServiceExt;
 use uuid::Uuid;
 
 use super::{
-    error::MapperError, model::ModelMapper, openai, TryConvert,
-    TryConvertStreamData,
+    error::MapperError, model::ModelMapper, TryConvert, TryConvertStreamData,
 };
 use crate::types::{model_id::ModelId, provider::InferenceProvider};
 
@@ -35,6 +31,7 @@ impl
     > for BedrockConverter
 {
     type Error = MapperError;
+    #[allow(clippy::too_many_lines)]
     fn try_convert(
         &self,
         value: async_openai::types::CreateChatCompletionRequest,
@@ -47,11 +44,12 @@ impl
         use async_openai::types as openai;
         use aws_sdk_bedrockruntime as bedrock;
 
-        println!(
+        tracing::trace!(
             "target_provider: {:?}, source_model: {:?}",
-            target_provider, source_model
+            target_provider,
+            source_model
         );
-        println!("model: {:?}", value.model);
+        tracing::trace!("model: {:?}", value.model);
 
         let target_model = self
             .model_mapper
@@ -59,9 +57,7 @@ impl
 
         tracing::trace!(source_model = ?source_model, target_model = ?target_model, "mapped model");
 
-        let max_tokens = value
-            .max_completion_tokens
-            .unwrap_or_else(|| value.max_tokens.unwrap_or(100));
+        let max_tokens = value.max_completion_tokens.unwrap_or_default();
         let stop_sequences = match value.stop {
             Some(openai::Stop::String(stop)) => Some(vec![stop]),
             Some(openai::Stop::StringArray(stops)) => Some(stops),
@@ -93,8 +89,7 @@ impl
                     bedrock::types::AnyToolChoice::builder().build(),
                 ))
             }
-            Some(openai::ChatCompletionToolChoiceOption::None) => None,
-            None => None,
+            Some(openai::ChatCompletionToolChoiceOption::None) | None => None,
         };
 
         let tools = if let Some(tools) = value.tools {
@@ -376,7 +371,7 @@ impl
                             name: tool_result_block.tool_use_id.clone(),
                             arguments: serde_json::to_string(&content)?,
                         },
-                    })
+                    });
                 }
                 ContentBlock::Text(text) => {
                     content = Some(text.clone());
@@ -386,8 +381,8 @@ impl
                 | ContentBlock::CachePoint(_)
                 | ContentBlock::ReasoningContent(_)
                 | ContentBlock::GuardContent(_)
-                | ContentBlock::Video(_) => {}
-                _ => {}
+                | ContentBlock::Video(_)
+                | _ => {}
             }
         }
         let tool_calls = if tool_calls.is_empty() {
@@ -435,6 +430,7 @@ impl
 {
     type Error = MapperError;
 
+    #[allow(clippy::too_many_lines)]
     fn try_convert_chunk(
         &self,
         value: aws_sdk_bedrockruntime::types::ConverseStreamOutput,
@@ -487,39 +483,38 @@ impl
                 choices.push(choice);
             }
             bedrock::ContentBlockStart(content_block_start) => {
-                match content_block_start.start.unwrap() {
-                    ContentBlockStart::ToolUse(tool_use) => {
-                        let tool_call_chunk =
-                            openai::ChatCompletionMessageToolCallChunk {
-                                index: content_block_start
-                                    .content_block_index
-                                    .try_into()
-                                    .unwrap_or(0),
-                                id: Some(tool_use.tool_use_id),
-                                r#type: Some(
-                                    openai::ChatCompletionToolType::Function,
-                                ),
-                                function: Some(openai::FunctionCallStream {
-                                    name: Some(tool_use.name),
-                                    arguments: Some("".to_string()),
-                                }),
-                            };
-                        let choice = openai::ChatChoiceStream {
-                            index: 0,
-                            delta: openai::ChatCompletionStreamResponseDelta {
-                                role: None,
-                                content: None,
-                                tool_calls: Some(vec![tool_call_chunk]),
-                                refusal: None,
-                                function_call: None,
-                            },
-                            finish_reason: None,
-                            logprobs: None,
+                if let ContentBlockStart::ToolUse(tool_use) =
+                    content_block_start.start.unwrap()
+                {
+                    let tool_call_chunk =
+                        openai::ChatCompletionMessageToolCallChunk {
+                            index: content_block_start
+                                .content_block_index
+                                .try_into()
+                                .unwrap_or(0),
+                            id: Some(tool_use.tool_use_id),
+                            r#type: Some(
+                                openai::ChatCompletionToolType::Function,
+                            ),
+                            function: Some(openai::FunctionCallStream {
+                                name: Some(tool_use.name),
+                                arguments: Some("".to_string()),
+                            }),
                         };
+                    let choice = openai::ChatChoiceStream {
+                        index: 0,
+                        delta: openai::ChatCompletionStreamResponseDelta {
+                            role: None,
+                            content: None,
+                            tool_calls: Some(vec![tool_call_chunk]),
+                            refusal: None,
+                            function_call: None,
+                        },
+                        finish_reason: None,
+                        logprobs: None,
+                    };
 
-                        choices.push(choice);
-                    }
-                    _ => {}
+                    choices.push(choice);
                 }
             }
             bedrock::ContentBlockDelta(content_block_delta_event) => {
@@ -575,12 +570,10 @@ impl
 
                         choices.push(choice);
                     }
-                    ContentBlockDelta::ReasoningContent(_) => {}
-                    _ => {}
+                    ContentBlockDelta::ReasoningContent(_) | _ => {}
                 }
             }
 
-            bedrock::ContentBlockStop(_) | bedrock::MessageStop(_) => {}
             bedrock::Metadata(metadata) => {
                 if let Some(usage) = metadata.usage {
                     completion_usage.prompt_tokens =
@@ -591,8 +584,8 @@ impl
                         u32::try_from(usage.total_tokens).unwrap_or(0);
                 }
             }
-            _ => {}
-        };
+            bedrock::ContentBlockStop(_) | bedrock::MessageStop(_) | _ => {}
+        }
 
         Ok(Some(openai::CreateChatCompletionStreamResponse {
             id: PLACEHOLDER_STREAM_ID.to_string(), /* TODO: Use actual stream

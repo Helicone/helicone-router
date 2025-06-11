@@ -5,16 +5,16 @@ use strum::IntoEnumIterator;
 
 use crate::{
     endpoints::{
+        anthropic::{Anthropic, Messages},
         bedrock::{Bedrock, Converse},
+        google::{GenerateContents, Google},
+        openai::{ChatCompletions, OpenAI},
         ApiEndpoint,
     },
     error::internal::InternalError,
     metrics::RollingCounter,
     types::provider::InferenceProvider,
 };
-use crate::endpoints::anthropic::{Anthropic, Messages};
-use crate::endpoints::google::{GenerateContents, Google};
-use crate::endpoints::openai::{ChatCompletions, OpenAI};
 
 /// We use this to track metrics for monitoring provider health.
 ///

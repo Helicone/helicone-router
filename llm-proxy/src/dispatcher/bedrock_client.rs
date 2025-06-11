@@ -1,17 +1,10 @@
-use std::time::SystemTime;
-
-use aws_credential_types::Credentials;
-use aws_sigv4::{
-    http_request::{SignableRequest, SignableBody, SigningSettings},
-    sign::v4,
-};
-use http::{HeaderMap, HeaderValue, Request};
+use http::{HeaderMap, HeaderValue};
 use reqwest::ClientBuilder;
 
 use crate::{
     app::AppState,
     error::{init::InitError, provider::ProviderError},
-    types::{provider::InferenceProvider, secret::Secret},
+    types::provider::InferenceProvider,
     utils::host_header,
 };
 

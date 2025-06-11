@@ -23,6 +23,7 @@
 //! this struct then helps us deserialize to the correct type and then
 //! call the `TryConvert` fn.
 pub mod anthropic;
+mod bedrock;
 pub mod error;
 mod gemini;
 pub mod model;
@@ -30,7 +31,6 @@ pub mod ollama;
 pub mod openai;
 pub mod registry;
 pub mod service;
-mod bedrock;
 
 use bytes::Bytes;
 use error::MapperError;

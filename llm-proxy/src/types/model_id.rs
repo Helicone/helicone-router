@@ -361,7 +361,7 @@ impl FromStr for BedrockModelId {
         let rest = split
             .next()
             .ok_or_else(|| MapperError::InvalidModelName(s.to_string()))?;
- 
+
         // Parse the bedrock internal version
         // eg: claude-3-sonnet-20240229-v1:0 (split on `-v`)
         let (model_part, bedrock_version) =
@@ -1912,8 +1912,8 @@ mod tests {
 //         )
 //         .unwrap();
 //         let ModelId::Anthropic(model_with_version) = &result else {
-//             panic!("Expected Anthropic ModelId with implicit latest version");
-//         };
+//             panic!("Expected Anthropic ModelId with implicit latest
+// version");         };
 //         assert_eq!(model_with_version.model, "claude-opus-4-0");
 //         assert!(matches!(
 //             model_with_version.version,
@@ -1932,8 +1932,8 @@ mod tests {
 //         )
 //         .unwrap();
 //         let ModelId::Anthropic(model_with_version) = &result else {
-//             panic!("Expected Anthropic ModelId with implicit latest version");
-//         };
+//             panic!("Expected Anthropic ModelId with implicit latest
+// version");         };
 //         assert_eq!(model_with_version.model, "claude-sonnet-4-0");
 //         assert!(matches!(
 //             model_with_version.version,
@@ -1953,8 +1953,8 @@ mod tests {
 //         if let Err(MapperError::ProviderNotSupported(provider)) = result {
 //             assert_eq!(provider, "amazon");
 //         } else {
-//             panic!("Expected ProviderNotSupported error for amazon provider");
-//         }
+//             panic!("Expected ProviderNotSupported error for amazon
+// provider");         }
 //     }
 
 //     #[test]
@@ -2361,8 +2361,8 @@ mod tests {
 //         if let Err(MapperError::ProviderNotSupported(provider)) = result {
 //             assert_eq!(provider, "some-unknown-provider");
 //         } else {
-//             panic!("Expected ProviderNotSupported error for unknown provider");
-//         }
+//             panic!("Expected ProviderNotSupported error for unknown
+// provider");         }
 //     }
 
 //     #[test]
@@ -2432,8 +2432,8 @@ mod tests {
 //     #[test]
 //     fn test_edge_case_trailing_dash() {
 //         let result =
-//             ModelId::from_str_and_provider(InferenceProvider::OpenAI, "model-");
-//         assert!(result.is_err());
+//             ModelId::from_str_and_provider(InferenceProvider::OpenAI,
+// "model-");         assert!(result.is_err());
 //         if let Err(MapperError::InvalidModelName(msg)) = result {
 //             assert_eq!(msg, "Model name cannot end with dash");
 //         } else {
@@ -2444,8 +2444,8 @@ mod tests {
 //     #[test]
 //     fn test_edge_case_at_symbol() {
 //         let result =
-//             ModelId::from_str_and_provider(InferenceProvider::OpenAI, "model@");
-//         assert!(result.is_err());
+//             ModelId::from_str_and_provider(InferenceProvider::OpenAI,
+// "model@");         assert!(result.is_err());
 //         if let Err(MapperError::InvalidModelName(msg)) = result {
 //             assert_eq!(msg, "Model name cannot end with @ symbol");
 //         } else {
@@ -2494,8 +2494,8 @@ mod tests {
 //     #[test]
 //     fn test_provider_specific_model_variants() {
 //         let openai_result =
-//             ModelId::from_str_and_provider(InferenceProvider::OpenAI, "gpt-4");
-//         assert!(matches!(openai_result, Ok(ModelId::OpenAI(_))));
+//             ModelId::from_str_and_provider(InferenceProvider::OpenAI,
+// "gpt-4");         assert!(matches!(openai_result, Ok(ModelId::OpenAI(_))));
 
 //         let anthropic_result = ModelId::from_str_and_provider(
 //             InferenceProvider::Anthropic,
@@ -2510,8 +2510,8 @@ mod tests {
 //         assert!(matches!(bedrock_result, Ok(ModelId::Bedrock(_))));
 
 //         let ollama_result =
-//             ModelId::from_str_and_provider(InferenceProvider::Ollama, "llama3");
-//         assert!(matches!(ollama_result, Ok(ModelId::Ollama(_))));
+//             ModelId::from_str_and_provider(InferenceProvider::Ollama,
+// "llama3");         assert!(matches!(ollama_result, Ok(ModelId::Ollama(_))));
 //     }
 
 //     #[test]
@@ -2708,8 +2708,8 @@ mod tests {
 //     fn test_version_implicit_latest_roundtrip() {
 //         let original = Version::ImplicitLatest;
 //         let serialized = serde_json::to_string(&original).unwrap();
-//         let deserialized: Version = serde_json::from_str(&serialized).unwrap();
-//         assert_eq!(original, deserialized);
-//     }
+//         let deserialized: Version =
+// serde_json::from_str(&serialized).unwrap();         assert_eq!(original,
+// deserialized);     }
 // }
 >>>>>>> 9c90252 (works almost)

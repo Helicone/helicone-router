@@ -11,8 +11,8 @@ use crate::{
     bedrock::Bedrock,
     config::router::RouterConfig,
     endpoints::{
-        self, anthropic::Anthropic, google::Google, ollama::Ollama,
-        openai::OpenAI, ApiEndpoint,
+        self, anthropic::Anthropic, bedrock::Bedrock, google::Google,
+        ollama::Ollama, openai::OpenAI, ApiEndpoint,
     },
     google::Google,
     middleware::mapper::{bedrock::BedrockConverter, ollama::OllamaConverter},
@@ -20,7 +20,6 @@ use crate::{
     types::provider::InferenceProvider,
     ApiEndpoint,
 };
-use crate::endpoints::bedrock::Bedrock;
 
 #[derive(Debug, Clone)]
 pub struct EndpointConverterRegistry(Arc<EndpointConverterRegistryInner>);

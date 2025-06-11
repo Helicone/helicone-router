@@ -34,9 +34,7 @@ impl TryFrom<&str> for Bedrock {
 
     fn try_from(path: &str) -> Result<Self, Self::Error> {
         match path {
-            Converse::PATH => {
-                Ok(Self::Converse(Converse))
-            }
+            Converse::PATH => Ok(Self::Converse(Converse)),
             path => {
                 tracing::warn!(path = %path, "unsupported Bedrock path");
                 Err(crate::error::invalid_req::InvalidRequestError::NotFound(

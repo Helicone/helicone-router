@@ -42,7 +42,6 @@ pub enum ApiEndpoint {
 
 impl ApiEndpoint {
     pub fn new(path: &str, request_style: InferenceProvider) -> Option<Self> {
-        println!("path: {:?}", request_style);
         match request_style {
             InferenceProvider::OpenAI => {
                 Some(Self::OpenAI(OpenAI::try_from(path).ok()?))
