@@ -57,7 +57,7 @@ impl
 
         tracing::trace!(source_model = ?source_model, target_model = ?target_model, "mapped model");
 
-        let max_tokens = value.max_completion_tokens.unwrap_or_default();
+        let max_tokens = value.max_completion_tokens.unwrap_or(100);
         let stop_sequences = match value.stop {
             Some(openai::Stop::String(stop)) => Some(vec![stop]),
             Some(openai::Stop::StringArray(stops)) => Some(stops),
