@@ -9,7 +9,7 @@ const MODEL_MAPPING_YAML: &str =
 
 #[derive(Debug, Clone, Deserialize, Serialize, AsRef, PartialEq, Eq)]
 pub struct ModelMappingConfig(
-    NEMap<ModelName<'static>, NESet<ModelName<'static>>>,
+    pub(crate) NEMap<ModelName<'static>, NESet<ModelName<'static>>>,
 );
 
 impl Default for ModelMappingConfig {

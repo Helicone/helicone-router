@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, fs};
 
 use http::{Method, Request, StatusCode};
 use http_body_util::BodyExt;
@@ -242,6 +242,11 @@ async fn weighted_balancer_equal_four_providers() {
     let mut config = Config::test_default();
     // Disable auth for this test since we're not testing authentication
     config.auth.require_auth = false;
+    let model_mapping_with_ollama =
+        fs::read_to_string("config/embedded/model-mapping-ollama.yaml")
+            .unwrap();
+    config.default_model_mapping =
+        serde_yml::from_str(&model_mapping_with_ollama).unwrap();
     let balance_config = BalanceConfig::from(HashMap::from([(
         EndpointType::Chat,
         BalanceConfigInner::Weighted {

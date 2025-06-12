@@ -13,6 +13,7 @@ pub mod retry;
 pub mod router;
 pub mod server;
 pub mod spend_control;
+pub mod validation;
 use std::path::PathBuf;
 
 use config::ConfigError;
@@ -124,9 +125,12 @@ impl Config {
         Ok(config)
     }
 
-    /// Validate the config.
     pub fn validate(&self) -> Result<(), InitError> {
-        todo!()
+        for router_config in self.routers.as_ref().values() {
+            router_config.validate()?;
+        }
+        self.validate_model_mappings()?;
+        Ok(())
     }
 }
 
