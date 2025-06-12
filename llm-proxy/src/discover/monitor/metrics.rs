@@ -4,16 +4,8 @@ use rustc_hash::FxHashMap as HashMap;
 use strum::IntoEnumIterator;
 
 use crate::{
-    endpoints::{
-        ApiEndpoint,
-        anthropic::{Anthropic, Messages},
-        bedrock::{Bedrock, Converse},
-        google::{GenerateContents, Google},
-        openai::{ChatCompletions, OpenAI},
-    },
-    error::internal::InternalError,
-    metrics::RollingCounter,
-    types::provider::InferenceProvider,
+    endpoints::ApiEndpoint, error::internal::InternalError,
+    metrics::RollingCounter, types::provider::InferenceProvider,
 };
 
 /// We use this to track metrics for monitoring provider health.
@@ -46,23 +38,6 @@ impl Default for EndpointMetricsRegistry {
                     .insert(endpoint, EndpointMetrics::default());
             }
         }
-        let mut known_endpoints = HashMap::default();
-        known_endpoints.insert(
-            ApiEndpoint::OpenAI(OpenAI::ChatCompletions(ChatCompletions)),
-            EndpointMetrics::default(),
-        );
-        known_endpoints.insert(
-            ApiEndpoint::Anthropic(Anthropic::Messages(Messages)),
-            EndpointMetrics::default(),
-        );
-        known_endpoints.insert(
-            ApiEndpoint::Google(Google::GenerateContents(GenerateContents)),
-            EndpointMetrics::default(),
-        );
-        known_endpoints.insert(
-            ApiEndpoint::Bedrock(Bedrock::Converse(Converse)),
-            EndpointMetrics::default(),
-        );
         Self {
             endpoint_health_metrics: Arc::new(endpoint_health_metrics),
         }

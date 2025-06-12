@@ -27,6 +27,10 @@ pub enum MapperError {
     EmptyResponseBody,
     /// Provider not supported: {0}
     ProviderNotSupported(String),
+    /// Tool spec not found: {0}
+    ToolMappingInvalid(String),
+    /// Image URLs are not supported
+    ImageUrlNotSupported(String),
 }
 
 /// Error types that can occur when mapping requests between providers.
@@ -52,6 +56,10 @@ pub enum MapperErrorMetric {
     EmptyResponseBody,
     /// Provider not supported
     ProviderNotSupported,
+    /// Tool spec not found
+    ToolMappingInvalid,
+    /// Image URLs are not supported
+    ImageUrlNotSupported,
 }
 
 impl From<&MapperError> for MapperErrorMetric {
@@ -67,6 +75,8 @@ impl From<&MapperError> for MapperErrorMetric {
             MapperError::StreamError(_) => Self::StreamError,
             MapperError::EmptyResponseBody => Self::EmptyResponseBody,
             MapperError::ProviderNotSupported(_) => Self::ProviderNotSupported,
+            MapperError::ToolMappingInvalid(_) => Self::ToolMappingInvalid,
+            MapperError::ImageUrlNotSupported(_) => Self::ImageUrlNotSupported,
         }
     }
 }

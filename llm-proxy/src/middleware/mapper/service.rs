@@ -193,7 +193,11 @@ async fn map_request(
         })?;
 
     let (body, mapper_ctx) = converter.convert_req_body(body)?;
-    let model_id = &mapper_ctx.model.clone().unwrap().to_string();
+    let model_id = &mapper_ctx
+        .model
+        .clone()
+        .map(|m| m.to_string())
+        .unwrap_or_default();
     let dynamic_target_path_and_query =
         if let Some(query_params) = target_path_and_query.query() {
             format!(

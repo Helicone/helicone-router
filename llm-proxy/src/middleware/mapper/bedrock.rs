@@ -44,13 +44,6 @@ impl
         use async_openai::types as openai;
         use aws_sdk_bedrockruntime as bedrock;
 
-        tracing::trace!(
-            "target_provider: {:?}, source_model: {:?}",
-            target_provider,
-            source_model
-        );
-        tracing::trace!("model: {:?}", value.model);
-
         let target_model = self
             .model_mapper
             .map_model(&source_model, &target_provider)?;
@@ -94,23 +87,49 @@ impl
 
         let tools = if let Some(tools) = value.tools {
             let mapped_tools = tools.iter().map(|tool| {
-                let json_value = serde_json::from_value(
-                    tool.function.parameters.clone().unwrap(),
-                )
-                .unwrap();
+                let parameters = match tool.function.parameters.clone() {
+                    Some(params) => params,
+                    None => {
+                        return Err(MapperError::ToolMappingInvalid(
+                            "Tool parameters are missing".to_string(),
+                        ));
+                    }
+                };
+                let json_value = match serde_json::from_value(parameters) {
+                    Ok(val) => val,
+                    Err(e) => {
+                        return Err(MapperError::ToolMappingInvalid(format!(
+                            "Failed to parse tool parameters: {}",
+                            e
+                        )));
+                    }
+                };
 
-                let tool_spec = bedrock::types::ToolSpecification::builder()
-                    .name(tool.function.name.clone())
-                    .set_description(tool.function.description.clone())
-                    .input_schema(bedrock::types::ToolInputSchema::Json(
-                        json_value,
-                    ))
-                    .build()
-                    .unwrap();
+                let tool_spec =
+                    match bedrock::types::ToolSpecification::builder()
+                        .name(tool.function.name.clone())
+                        .set_description(tool.function.description.clone())
+                        .input_schema(bedrock::types::ToolInputSchema::Json(
+                            json_value,
+                        ))
+                        .build()
+                    {
+                        Ok(spec) => spec,
+                        Err(e) => {
+                            return Err(MapperError::ToolMappingInvalid(
+                                format!(
+                                    "Failed to build tool specification: {}",
+                                    e
+                                ),
+                            ));
+                        }
+                    };
 
-                bedrock::types::Tool::ToolSpec(tool_spec)
+                Ok(bedrock::types::Tool::ToolSpec(tool_spec))
             });
-            Some(mapped_tools.collect::<Vec<_>>())
+            let mapped_tools: Result<Vec<_>, _> = mapped_tools.collect();
+            let mapped_tools = mapped_tools?;
+            Some(mapped_tools)
         } else {
             None
         };
@@ -185,7 +204,6 @@ impl
                 }
                 openai::ChatCompletionRequestMessage::Tool(message) => {
                     let mapped_content = match message.content {
-                        // TODO: Copying from Anthropic but should support more than just text
                         openai::ChatCompletionRequestToolMessageContent::Text(text) => {
                             vec![
                                 bedrock::types::ContentBlock::ToolResult(
@@ -238,9 +256,7 @@ impl
                     };
 
                     let tool_spec = tool.as_tool_spec().map_err(|_| {
-                        MapperError::ProviderNotSupported(
-                            "Tool spec not found".to_string(),
-                        )
+                        MapperError::ToolMappingInvalid(message.name.clone())
                     })?;
 
                     let input = tool_spec
@@ -270,7 +286,7 @@ impl
         }
 
         if found_mapping_error {
-            return Err(MapperError::ProviderNotSupported(String::from(
+            return Err(MapperError::ImageUrlNotSupported(String::from(
                 "Not support Image url",
             )));
         }
