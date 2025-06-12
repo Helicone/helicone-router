@@ -274,7 +274,6 @@ impl
                 "Not support Image url",
             )));
         }
-        println!("dafaq: {:?}", &mapped_messages);
 
         let mut builder = aws_sdk_bedrockruntime::operation::converse::ConverseInput::builder()
             .model_id(target_model.to_string())
@@ -472,9 +471,10 @@ impl
                             _ => openai::Role::System,
                         }),
                         content: None,
-                        function_call: None,
                         tool_calls: None,
                         refusal: None,
+                        #[allow(deprecated)]
+                        function_call: None,
                     },
                     finish_reason: None,
                     logprobs: None,
@@ -508,6 +508,7 @@ impl
                             content: None,
                             tool_calls: Some(vec![tool_call_chunk]),
                             refusal: None,
+                            #[allow(deprecated)]
                             function_call: None,
                         },
                         finish_reason: None,
@@ -530,6 +531,7 @@ impl
                                 content: Some(text),
                                 tool_calls: None,
                                 refusal: None,
+                                #[allow(deprecated)]
                                 function_call: None,
                             },
                             finish_reason: None,
@@ -562,6 +564,7 @@ impl
                                 content: None,
                                 tool_calls: Some(vec![tool_call_chunk]),
                                 refusal: None,
+                                #[allow(deprecated)]
                                 function_call: None,
                             },
                             finish_reason: None,

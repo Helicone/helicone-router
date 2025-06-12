@@ -152,8 +152,10 @@ impl ProviderKeys {
         let providers = balance_config.providers();
 
         for provider in providers {
-            if provider == InferenceProvider::Ollama {
-                // ollama doesn't support API keys
+            if provider == InferenceProvider::Ollama
+                || provider == InferenceProvider::Bedrock
+            {
+                // ollama doesn't require an API key
                 continue;
             }
             let provider_str = provider.to_string().to_uppercase();

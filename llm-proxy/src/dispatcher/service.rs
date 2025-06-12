@@ -616,18 +616,21 @@ fn extract_and_sign_aws_headers(
         Credentials::new(access_key_id, secret, None, None, "Environment")
             .into();
 
+    let request = request_builder.try_clone().unwrap().build().unwrap();
+    let host = request.url().host().unwrap().to_string();
+    let host_region: Vec<&str> = host.split('.').collect();
+    let host_region = host_region.get(1).unwrap();
+
     let signing_settings = SigningSettings::default();
     let signing_params = v4::SigningParams::builder()
         .identity(&identity)
-        .region("us-east-1") // TODO: Extract from url
+        .region(host_region)
         .name("bedrock")
         .time(SystemTime::now())
         .settings(signing_settings)
         .build()
         .unwrap()
         .into();
-
-    let request = request_builder.try_clone().unwrap().build().unwrap();
 
     let mut temp_request = http::Request::builder()
         .uri(request.url().as_str())
@@ -675,16 +678,6 @@ fn extract_and_sign_aws_headers(
             request_builder = request_builder.header(key, value);
         }
     }
-
-    println!(
-        "request_builder_headers: {:?}",
-        request_builder
-            .try_clone()
-            .unwrap()
-            .build()
-            .unwrap()
-            .headers()
-    );
 
     request_builder
 }
