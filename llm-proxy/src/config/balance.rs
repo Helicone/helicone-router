@@ -26,9 +26,9 @@ impl BalanceConfig {
             EndpointType::Chat,
             BalanceConfigInner::Latency {
                 targets: nes![
-                    // InferenceProvider::OpenAI,
-                    // InferenceProvider::Anthropic,
-                    // InferenceProvider::GoogleGemini,
+                    InferenceProvider::OpenAI,
+                    InferenceProvider::Anthropic,
+                    InferenceProvider::GoogleGemini,
                     InferenceProvider::Bedrock
                 ],
             },
@@ -126,10 +126,10 @@ impl BalanceConfigInner {
     pub fn p2c_all_providers() -> Self {
         Self::Latency {
             targets: nes![
-                // InferenceProvider::OpenAI,
-                // InferenceProvider::Anthropic,
-                // InferenceProvider::GoogleGemini,
-                // InferenceProvider::Ollama,
+                InferenceProvider::OpenAI,
+                InferenceProvider::Anthropic,
+                InferenceProvider::GoogleGemini,
+                InferenceProvider::Ollama,
                 InferenceProvider::Bedrock
             ],
         }
