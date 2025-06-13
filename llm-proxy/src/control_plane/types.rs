@@ -45,6 +45,12 @@ pub struct Config {
     pub router_config: String, // TODO: replace with router config
 }
 
+impl Config {
+    pub fn get_key_from_hash(&self, key_hash: &str) -> Option<&Key> {
+        self.keys.iter().find(|k| k.key_hash == key_hash)
+    }
+}
+
 #[derive(TS, Serialize, Deserialize, Debug, Clone)]
 #[ts(export)]
 pub enum Update {

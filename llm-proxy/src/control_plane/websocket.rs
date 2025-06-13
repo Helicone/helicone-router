@@ -45,13 +45,9 @@ async fn handle_message(
     state: &Arc<Mutex<ControlPlaneState>>,
     message: Message,
 ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-    println!("handling message: {:?}", message);
     let bytes = message.into_data();
     let m: MessageTypeRX = serde_json::from_slice(&bytes)?;
-
-    tracing::info!(message = ?m, "received message from control plane");
     let mut state_guard = state.lock().await;
-
     state_guard.update(m);
 
     Ok(())
@@ -161,14 +157,11 @@ impl ControlPlaneClient {
             while let Some(message) = self.channel.msg_rx.next().await {
                 match message {
                     Ok(message) => {
-                        println!("received message: {:?}", message);
-                        println!("state_clone: {:?}", state_clone);
                         let _ = handle_message(&state_clone, message)
                             .await
                             .map_err(|e| {
                                 tracing::error!(error = ?e, "websocket error");
                             });
-                        println!("state_clone: {:?}", state_clone);
                     }
                     Err(tungstenite::Error::AlreadyClosed) => {
                         tracing::error!(

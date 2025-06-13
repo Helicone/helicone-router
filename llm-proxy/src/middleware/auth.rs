@@ -34,7 +34,6 @@ fn hash_key(key: &str) -> String {
     // Zero out the result array
     let mut result_vec = result.to_vec();
     result_vec.fill(0);
-
     hex_string
 }
 
@@ -48,17 +47,14 @@ impl AuthService {
         app_state: AppState,
         api_key: &str,
     ) -> Result<AuthContext, AuthError> {
-        let config = app_state.0.control_plane_state.lock().await;
-        let keys = &config.config.keys;
-
-        let key = keys.iter().find(|k| k.key_hash == hash_key(api_key));
+        let config = &app_state.0.control_plane_state.lock().await.config;
+        let key = config.get_key_from_hash(&hash_key(api_key));
 
         if let Some(key) = key {
-            let auth = &config.config.auth;
             Ok(AuthContext {
                 api_key: api_key.replace("Bearer ", ""),
                 user_id: (&key.owner_id).try_into()?,
-                org_id: (&auth.organization_id).try_into()?,
+                org_id: (&config.auth.organization_id).try_into()?,
             })
         } else {
             tracing::error!("key not found: {:?}", api_key);
