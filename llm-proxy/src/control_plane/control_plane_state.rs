@@ -13,7 +13,8 @@ pub struct ControlPlaneState {
 }
 
 impl ControlPlaneState {
-    #[must_use] pub fn new() -> Self {
+    #[must_use]
+    pub fn new() -> Self {
         Self {
             last_heartbeat: None,
             config: Config::default(),
@@ -27,7 +28,6 @@ impl ControlPlaneState {
         }
 
         match m {
-            MessageTypeRX::Config { data: m } => (),
             MessageTypeRX::Update(Update::Keys { data }) => {
                 self.config.keys = data;
             }
@@ -37,11 +37,7 @@ impl ControlPlaneState {
             MessageTypeRX::Update(Update::Config { data }) => {
                 self.config = data;
             }
-
-            /// we don't care about these for updating state, probably want to
-            /// only have this function accept update in the future
-            MessageTypeRX::Ack(_) => (),
-            MessageTypeRX::Message { .. } => (),
+            MessageTypeRX::Ack(_) => todo!(),
         }
     }
 }

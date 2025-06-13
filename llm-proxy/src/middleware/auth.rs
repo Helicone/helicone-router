@@ -1,17 +1,14 @@
+use std::fmt::Write;
+
 use axum_core::response::IntoResponse;
 use futures::future::BoxFuture;
 use http::Request;
-use serde::Deserialize;
 use sha2::{Digest, Sha256};
 use tower_http::auth::AsyncAuthorizeRequest;
 use tracing::warn;
-use url::Url;
-use uuid::Uuid;
 
 use crate::{
-    app::AppState,
-    error::auth::AuthError,
-    types::request::AuthContext,
+    app::AppState, error::auth::AuthError, types::request::AuthContext,
 };
 
 #[derive(Clone)]
@@ -25,16 +22,13 @@ fn hash_key(key: &str) -> String {
     hasher.update(key.as_bytes());
     let result = hasher.finalize();
 
-    // Convert to hex string
-    let hex_string = result
-        .iter()
-        .map(|b| format!("{b:02x}"))
-        .collect::<String>();
-
-    // Zero out the result array
-    let mut result_vec = result.to_vec();
-    result_vec.fill(0);
-    hex_string
+    result.iter().fold(
+        String::with_capacity(result.len() * 2),
+        |mut acc, &b| {
+            let _ = write!(acc, "{b:02x}");
+            acc
+        },
+    )
 }
 
 impl AuthService {
@@ -61,14 +55,6 @@ impl AuthService {
             Err(AuthError::InvalidCredentials)
         }
     }
-}
-
-#[derive(Debug, Deserialize)]
-struct WhoamiResponse {
-    #[serde(rename = "userId")]
-    user_id: Uuid,
-    #[serde(rename = "organizationId")]
-    organization_id: Uuid,
 }
 
 impl<B> AsyncAuthorizeRequest<B> for AuthService
@@ -127,29 +113,5 @@ where
                 }
             }
         })
-    }
-}
-
-fn whoami_url(app_state: &AppState) -> Url {
-    app_state
-        .0
-        .config
-        .helicone
-        .base_url
-        .join("/v1/router/control-plane/whoami")
-        .expect("helicone base url should be valid")
-}
-
-#[cfg(all(test, feature = "testing"))]
-mod tests {
-    use super::*;
-    use crate::{app::App, config::Config, tests::TestDefault};
-
-    #[tokio::test]
-    async fn test_whoami_url() {
-        let app = App::new(Config::test_default()).await.unwrap();
-        let _whoami_url = whoami_url(&app.state);
-        // we don't care to assert what the url is,
-        // we just want to make sure it's not panicking
     }
 }

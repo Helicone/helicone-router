@@ -285,8 +285,7 @@ mod tests {
         println!("setting api key");
         let helicone_config = HeliconeConfig::default();
 
-        let control_plane_state: Arc<Mutex<ControlPlaneState>> =
-            Default::default();
+        let control_plane_state: Arc<Mutex<ControlPlaneState>> = Arc::default();
         // This will fail if no server is running on 8585, which is expected
         let result = ControlPlaneClient::connect(
             control_plane_state.clone(),
