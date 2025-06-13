@@ -51,6 +51,7 @@ o3:
   - deepseek-r1
 o3-mini:
   - claude-3-5-haiku
+  - us.anthropic.claude-3-5-haiku-20241022-v1:0
   - gemini-2.0-flash
   - llama3.3
 o4-mini:

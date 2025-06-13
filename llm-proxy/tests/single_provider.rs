@@ -407,6 +407,7 @@ async fn bedrock_with_openai_request_style() {
             ..Default::default()
         },
     )]));
+    telemetry::init_telemetry(&config.telemetry);
     config.routers = router_config;
     let mock_args = MockArgs::builder()
         .stubs(HashMap::from([
@@ -438,7 +439,7 @@ async fn bedrock_with_openai_request_style() {
     let request = Request::builder()
         .method(Method::POST)
         // default router
-        .uri("http://router.helicone.com/router/v1/chat/completions")
+        .uri("http://router.helicone.com/router/default/v1/chat/completions")
         .body(request_body)
         .unwrap();
     let response = harness.call(request).await.unwrap();

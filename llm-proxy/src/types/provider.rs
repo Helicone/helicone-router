@@ -109,11 +109,6 @@ impl InferenceProvider {
                     .map(ApiEndpoint::Bedrock)
                     .collect()
             }
-<<<<<<< HEAD
-=======
-            // Inference isn't supported yet for these providers
-            _ => vec![],
->>>>>>> 5ca573f (feat: Direct proxy to provider based on URL (#74))
         }
     }
 }
@@ -215,7 +210,7 @@ impl ProviderKeys {
                         provider = %provider,
                         "Got direct proxy provider key"
                     );
-                    keys.insert(*provider, Secret(key));
+                    keys.insert(*provider, Secret::from(key));
                 } else {
                     return Err(ProviderError::ApiKeyNotFound(*provider));
                 }

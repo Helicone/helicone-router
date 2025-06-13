@@ -856,45 +856,30 @@ mod tests {
     }
 
     #[test]
-    fn test_bedrock_amazon_titan_invalid_provider() {
+    fn test_bedrock_amazon_titan_valid_provider() {
         let result = ModelId::from_str_and_provider(
             InferenceProvider::Bedrock,
             "amazon.titan-embed-text-v1:0",
         );
-        assert!(result.is_err());
-        if let Err(MapperError::ProviderNotSupported(provider)) = result {
-            assert_eq!(provider, "amazon");
-        } else {
-            panic!("Expected ProviderNotSupported error for amazon provider");
-        }
+        assert!(result.is_ok());
     }
 
     #[test]
-    fn test_bedrock_ai21_jamba_invalid_provider() {
+    fn test_bedrock_ai21_jamba_valid_provider() {
         let result = ModelId::from_str_and_provider(
             InferenceProvider::Bedrock,
             "ai21.jamba-1-5-large-v1:0",
         );
-        assert!(result.is_err());
-        if let Err(MapperError::ProviderNotSupported(provider)) = result {
-            assert_eq!(provider, "ai21");
-        } else {
-            panic!("Expected ProviderNotSupported error for ai21 provider");
-        }
+        assert!(result.is_ok());
     }
 
     #[test]
-    fn test_bedrock_meta_llama_invalid_provider() {
+    fn test_bedrock_meta_llama_valid_provider() {
         let result = ModelId::from_str_and_provider(
             InferenceProvider::Bedrock,
             "meta.llama3-8b-instruct-v1:0",
         );
-        assert!(result.is_err());
-        if let Err(MapperError::ProviderNotSupported(provider)) = result {
-            assert_eq!(provider, "meta");
-        } else {
-            panic!("Expected ProviderNotSupported error for meta provider");
-        }
+        assert!(result.is_ok())
     }
 
     #[test]
@@ -1286,9 +1271,10 @@ mod tests {
             InferenceProvider::Bedrock,
             "some-unknown-provider.model",
         );
+
         assert!(result.is_err());
-        if let Err(MapperError::ProviderNotSupported(provider)) = result {
-            assert_eq!(provider, "some-unknown-provider");
+        if let Err(MapperError::InvalidModelName(provider)) = result {
+            assert_eq!(provider, "some-unknown-provider.model");
         } else {
             panic!("Expected ProviderNotSupported error for unknown provider");
         }
