@@ -20,6 +20,7 @@ gpt-4.1:
   - claude-3-7-sonnet
   - gemini-2.5-pro
   - llama4
+  - us.deepseek.r1-v1:0
 gpt-4.1-mini:
   - claude-3-5-haiku
   - gemini-2.0-flash
@@ -32,6 +33,7 @@ gpt-4.5:
   - claude-opus-4-0
   - gemini-2.5-pro
   - deepseek-r1
+  - us.deepseek.r1-v1:0
 o1:
   - claude-sonnet-4-0
   - gemini-2.5-pro
@@ -43,13 +45,14 @@ o1-mini:
 o1-pro:
   - claude-opus-4-0
   - gemini-2.5-pro
-  - deepseek-r1
+  - us.deepseek.r1-v1:0
 o3:
   - claude-opus-4-0
   - gemini-2.5-pro
   - deepseek-r1
 o3-mini:
   - claude-3-5-haiku
+  - us.anthropic.claude-3-5-haiku-20241022-v1:0
   - gemini-2.0-flash
   - llama3.3
 o4-mini:
@@ -78,6 +81,7 @@ claude-sonnet-4-0:
   - o4-mini
   - gemini-2.0-flash
   - llama4
+  - us.deepseek.r1-v1:0
 claude-3-7-sonnet:
   - o4-mini
   - gemini-2.0-flash
@@ -86,14 +90,17 @@ claude-3-5-haiku:
   - gemini-2.0-flash
   - gpt-4o-mini
   - llama3
+  - us.deepseek.r1-v1:0
 claude-3-5-sonnet:
   - o3-mini
   - gemini-2.0-flash
   - llama4
+  - us.deepseek.r1-v1:0
 claude-3-opus:
   - gpt-4.5
   - gemini-2.5-pro
   - deepseek-r1
+  - us.deepseek.r1-v1:0
 
 # Gemini Models
 gemini-2.5-flash:
@@ -158,3 +165,34 @@ llava:
   - gpt-4o-mini
   - claude-3-5-haiku
   - gemini-1.5-flash
+
+
+  # Bedrock model
+us.anthropic.claude-3-5-haiku-20241022-v1:0:
+  - gemini-2.0-flash
+  - gpt-4o-mini
+  - us.deepseek.r1-v1:0
+anthropic.claude-3-5-sonnet-20240620-v1:0:
+  - o3-mini
+  - gemini-2.0-flash
+  - us.deepseek.r1-v1:0
+us.anthropic.claude-3-opus-20240229-v1:0:
+  - gpt-4.5
+  - gemini-2.5-pro
+  - us.deepseek.r1-v1:0
+us.anthropic.claude-3-7-sonnet-20250219-v1:0:
+  - o4-mini
+  - gemini-2.0-flash
+  - us.deepseek.r1-v1:0
+us.anthropic.claude-opus-4-20250514-v1:0:
+  - o3
+  - gemini-2.5-pro
+  - us.deepseek.r1-v1:0
+us.anthropic.claude-sonnet-4-20250514-v1:0:
+  - o4-mini
+  - gemini-2.0-flash
+  - us.deepseek.r1-v1:0
+us.deepseek.r1-v1:0:
+  - gpt-4o
+  - claude-3-5-sonnet
+  - gemini-2.0-flash

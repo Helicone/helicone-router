@@ -9,10 +9,10 @@ use super::{
 use crate::{
     config::router::RouterConfig,
     endpoints::{
-        self, ApiEndpoint, anthropic::Anthropic, google::Google,
-        ollama::Ollama, openai::OpenAI,
+        self, ApiEndpoint, anthropic::Anthropic, bedrock::Bedrock,
+        google::Google, ollama::Ollama, openai::OpenAI,
     },
-    middleware::mapper::ollama::OllamaConverter,
+    middleware::mapper::{bedrock::BedrockConverter, ollama::OllamaConverter},
     types::provider::InferenceProvider,
 };
 
@@ -182,6 +182,24 @@ impl EndpointConverterRegistryInner {
             registry.register_converter(key, converter);
         }
 
+        if request_style == InferenceProvider::OpenAI
+            && providers.contains(&InferenceProvider::Bedrock)
+        {
+            let key = RegistryKey::new(
+                ApiEndpoint::OpenAI(OpenAI::chat_completions()),
+                ApiEndpoint::Bedrock(Bedrock::converse()),
+            );
+
+            let converter = TypedEndpointConverter::<
+                endpoints::openai::ChatCompletions,
+                endpoints::bedrock::Converse,
+                BedrockConverter,
+            >::new(BedrockConverter::new(
+                model_mapper.clone(),
+            ));
+
+            registry.register_converter(key, converter);
+        }
         registry
     }
 

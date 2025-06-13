@@ -10,7 +10,7 @@ use futures::{TryStreamExt, future::BoxFuture};
 use http::{HeaderMap, HeaderName, HeaderValue, StatusCode, uri::PathAndQuery};
 use http_body_util::BodyExt;
 use opentelemetry::KeyValue;
-use reqwest::RequestBuilder;
+use reqwest::{RequestBuilder, Response};
 use tokio::sync::mpsc::Sender;
 use tower::{Service, ServiceBuilder};
 use tracing::{Instrument, info_span};
@@ -20,7 +20,9 @@ use crate::{
     config::router::RouterConfig,
     discover::monitor::metrics::EndpointMetricsRegistry,
     dispatcher::{
-        anthropic_client::Client as AnthropicClient, client::Client,
+        anthropic_client::Client as AnthropicClient,
+        bedrock_client::Client as BedrockClient,
+        client::{Client, ProviderClient},
         extensions::ExtensionsCopier,
         google_gemini_client::Client as GoogleGeminiClient,
         ollama_client::Client as OllamaClient,
@@ -76,6 +78,7 @@ impl Dispatcher {
             .timeout(app_state.0.config.dispatcher.timeout)
             .tcp_nodelay(true);
 
+        // TODO: for now provider will always be OpenAI
         let client = match provider {
             InferenceProvider::OpenAI => Client::OpenAI(OpenAIClient::new(
                 &app_state,
@@ -118,7 +121,7 @@ impl Dispatcher {
                 Client::Ollama(OllamaClient::new(&app_state, base_client)?)
             }
             InferenceProvider::Bedrock => {
-                todo!("only openai and anthropic are supported at the moment")
+                Client::Bedrock(BedrockClient::new(&app_state, base_client)?)
             }
         };
         let rate_limit_tx = app_state.get_rate_limit_tx(router_id).await?;
@@ -269,6 +272,11 @@ impl Dispatcher {
             .as_ref()
             .request(method, target_url.clone())
             .headers(headers.clone());
+
+        let request_builder = self.client.extract_and_sign_aws_headers(
+            request_builder,
+            req_body_bytes.clone(),
+        );
 
         let metrics_for_stream = self.app_state.0.endpoint_metrics.clone();
         if let Some(api_endpoint) = api_endpoint {
@@ -439,7 +447,7 @@ impl Dispatcher {
         ),
         ApiError,
     > {
-        let response = request_builder
+        let response: Response = request_builder
             .body(req_body_bytes)
             .send()
             .await
