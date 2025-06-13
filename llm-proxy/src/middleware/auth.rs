@@ -11,7 +11,7 @@ use uuid::Uuid;
 use crate::{
     app::AppState,
     error::auth::AuthError,
-    types::{org::OrgId, request::AuthContext, user::UserId},
+    types::request::AuthContext,
 };
 
 #[derive(Clone)]
@@ -20,7 +20,7 @@ pub struct AuthService {
 }
 
 fn hash_key(key: &str) -> String {
-    let key = format!("Bearer {}", key);
+    let key = format!("Bearer {key}");
     let mut hasher = Sha256::new();
     hasher.update(key.as_bytes());
     let result = hasher.finalize();
@@ -28,7 +28,7 @@ fn hash_key(key: &str) -> String {
     // Convert to hex string
     let hex_string = result
         .iter()
-        .map(|b| format!("{:02x}", b))
+        .map(|b| format!("{b:02x}"))
         .collect::<String>();
 
     // Zero out the result array
@@ -58,7 +58,7 @@ impl AuthService {
             })
         } else {
             tracing::error!("key not found: {:?}", api_key);
-            return Err(AuthError::InvalidCredentials);
+            Err(AuthError::InvalidCredentials)
         }
     }
 }

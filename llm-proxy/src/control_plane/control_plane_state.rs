@@ -1,6 +1,6 @@
 use chrono::{DateTime, Utc};
 
-use super::types::{Ack, Config, Key, MessageTypeRX, Status, Update};
+use super::types::{Config, MessageTypeRX, Update};
 const MAX_HISTORY_SIZE: usize = 100;
 
 #[derive(Debug, Default)]
@@ -13,7 +13,7 @@ pub struct ControlPlaneState {
 }
 
 impl ControlPlaneState {
-    pub fn new() -> Self {
+    #[must_use] pub fn new() -> Self {
         Self {
             last_heartbeat: None,
             config: Config::default(),

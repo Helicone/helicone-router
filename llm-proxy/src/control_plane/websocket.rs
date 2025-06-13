@@ -70,7 +70,7 @@ impl IntoClientRequest for &HeliconeConfig {
             .unwrap_or_default();
         let host_header = format!("{host}{port}");
 
-        Ok(Request::builder()
+        Request::builder()
             .uri(self.websocket_url.as_str())
             .header("Host", host_header)
             .header("Authorization", format!("Bearer {}", self.api_key.0))
@@ -87,7 +87,7 @@ impl IntoClientRequest for &HeliconeConfig {
                 tokio_tungstenite::tungstenite::Error::Url(
                     tungstenite::error::UrlError::UnsupportedUrlScheme,
                 )
-            })?)
+            })
     }
 }
 
@@ -152,7 +152,6 @@ impl ControlPlaneClient {
 impl ControlPlaneClient {
     async fn run_control_plane_forever(mut self) -> Result<(), RuntimeError> {
         let state_clone = Arc::clone(&self.state);
-        println!("running control plane forever");
         loop {
             while let Some(message) = self.channel.msg_rx.next().await {
                 match message {
@@ -189,7 +188,7 @@ impl ControlPlaneClient {
 impl meltdown::Service for ControlPlaneClient {
     type Future = BoxFuture<'static, Result<(), RuntimeError>>;
 
-    fn run(mut self, mut token: Token) -> Self::Future {
+    fn run(self, mut token: Token) -> Self::Future {
         println!("running control plane client");
 
         Box::pin(async move {
@@ -294,7 +293,7 @@ mod tests {
             helicone_config,
         )
         .await;
-        println!("connected to control plane {:?}", result);
+        println!("connected to control plane {result:?}");
 
         assert!(
             control_plane_state
