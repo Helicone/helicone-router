@@ -50,7 +50,6 @@ impl Config {
             // Validate each provider exists in global config
             for provider in &router_providers {
                 if !self.providers.contains_key(provider) {
-                    println!("wtf");
                     return Err(
                         ModelMappingValidationError::ProviderNotConfigured {
                             router: router_id.clone(),
@@ -121,9 +120,6 @@ impl Config {
                 return Ok(());
             }
         }
-
-        println!("{:?}", source_model.as_ref().to_string());
-        println!("{:?}", target_provider);
 
         Err(ModelMappingValidationError::NoValidMapping {
             router: router_id.clone(),
@@ -196,7 +192,6 @@ mod tests {
         let config = Config::default();
         let result = config.validate_model_mappings();
 
-        println!("{:?}", result);
         assert!(result.is_ok());
     }
 

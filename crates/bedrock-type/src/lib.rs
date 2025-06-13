@@ -17,6 +17,7 @@
 #![allow(rustdoc::invalid_html_tags)]
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
+#![allow(clippy::all)]
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
 //! Describes the API operations for running inference using Amazon Bedrock
 //! models.
@@ -176,8 +177,6 @@
 
 /// Common errors and error handling utilities.
 pub mod error;
-
-/// Information about this crate.
 
 /// All operations that this crate can perform.
 pub mod operation;
