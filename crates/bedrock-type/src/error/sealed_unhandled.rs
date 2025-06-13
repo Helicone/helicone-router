@@ -15,6 +15,6 @@ variable wildcard pattern and check `.code()`:
 See [`ProvideErrorMetadata`](aws_smithy_types::error::metadata::ProvideErrorMetadata) for what information is available for the error.")]
 #[derive(Debug)]
 pub struct Unhandled {
-    pub(crate) source: ::aws_smithy_runtime_api::box_error::BoxError,
+    pub(crate) source: aws_smithy_runtime_api::box_error::BoxError,
     pub(crate) meta: aws_smithy_types::error::metadata::ErrorMetadata,
 }

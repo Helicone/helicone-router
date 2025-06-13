@@ -26,12 +26,6 @@ impl ::std::fmt::Display for AccessDeniedException {
     }
 }
 impl ::std::error::Error for AccessDeniedException {}
-impl ::aws_types::request_id::RequestId for crate::types::error::AccessDeniedException {
-    fn request_id(&self) -> Option<&str> {
-        use aws_smithy_types::error::metadata::ProvideErrorMetadata;
-        self.meta().request_id()
-    }
-}
 impl aws_smithy_types::error::metadata::ProvideErrorMetadata for AccessDeniedException {
     fn meta(&self) -> &aws_smithy_types::error::ErrorMetadata {
         &self.meta

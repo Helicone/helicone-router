@@ -286,10 +286,11 @@ impl
             )));
         }
 
-        let mut builder = bedrock_type::operation::converse::ConverseInput::builder()
-            .model_id(target_model.to_string())
-            .set_messages(Some(mapped_messages))
-            .set_request_metadata(metadata);
+        let mut builder =
+            bedrock_type::operation::converse::ConverseInput::builder()
+                .model_id(target_model.to_string())
+                .set_messages(Some(mapped_messages))
+                .set_request_metadata(metadata);
 
         if let Some(tools) = tools {
             builder = builder.tool_config(
@@ -303,13 +304,12 @@ impl
 
         Ok(builder
             .set_inference_config(Some(
-                bedrock_type::types::InferenceConfiguration::builder(
-                )
-                .top_p(top_p.unwrap_or_default())
-                .temperature(temperature.unwrap_or_default())
-                .max_tokens(max_tokens as i32)
-                .set_stop_sequences(stop_sequences)
-                .build(),
+                bedrock_type::types::InferenceConfiguration::builder()
+                    .top_p(top_p.unwrap_or_default())
+                    .temperature(temperature.unwrap_or_default())
+                    .max_tokens(max_tokens as i32)
+                    .set_stop_sequences(stop_sequences)
+                    .build(),
             ))
             .build()
             .unwrap())
@@ -373,7 +373,9 @@ impl
                         },
                     });
                 }
-                bedrock_type::types::ContentBlock::ToolResult(tool_result_block) => {
+                bedrock_type::types::ContentBlock::ToolResult(
+                    tool_result_block,
+                ) => {
                     tool_calls.push(openai::ChatCompletionMessageToolCall {
                         id: tool_result_block.tool_use_id.clone(),
                         r#type: openai::ChatCompletionToolType::Function,
@@ -494,8 +496,9 @@ impl
                 choices.push(choice);
             }
             bedrock::ContentBlockStart(content_block_start) => {
-                if let bedrock_type::types::ContentBlockStart::ToolUse(tool_use) =
-                    content_block_start.start.unwrap()
+                if let bedrock_type::types::ContentBlockStart::ToolUse(
+                    tool_use,
+                ) = content_block_start.start.unwrap()
                 {
                     let tool_call_chunk =
                         openai::ChatCompletionMessageToolCallChunk {
