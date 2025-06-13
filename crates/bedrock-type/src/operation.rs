@@ -3,6 +3,3 @@
 
 /// Types for the `Converse` operation.
 pub mod converse;
-
-/// Types for the `ConverseStream` operation.
-pub mod converse_stream;

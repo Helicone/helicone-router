@@ -286,33 +286,32 @@ impl
             )));
         }
 
-        let mut builder =
-            bedrock_type::operation::converse::ConverseInput::builder()
-                .model_id(target_model.to_string())
-                .set_messages(Some(mapped_messages))
-                .set_request_metadata(metadata);
-
-        if let Some(tools) = tools {
-            builder = builder.tool_config(
-                bedrock_type::types::ToolConfiguration::builder()
-                    .set_tool_choice(tool_choice)
-                    .set_tools(Some(tools))
-                    .build()
-                    .unwrap(),
-            );
-        }
-
-        Ok(builder
-            .set_inference_config(Some(
+        Ok(bedrock_type::operation::converse::ConverseInput {
+            model_id: Some(target_model.to_string()),
+            messages: Some(mapped_messages),
+            system: None,
+            inference_config: Some(
                 bedrock_type::types::InferenceConfiguration::builder()
                     .top_p(top_p.unwrap_or_default())
                     .temperature(temperature.unwrap_or_default())
                     .max_tokens(max_tokens as i32)
                     .set_stop_sequences(stop_sequences)
                     .build(),
-            ))
-            .build()
-            .unwrap())
+            ),
+            tool_config: Some(
+                bedrock_type::types::ToolConfiguration::builder()
+                    .set_tool_choice(tool_choice)
+                    .set_tools(tools)
+                    .build()
+                    .unwrap(),
+            ),
+            guardrail_config: None,
+            additional_model_request_fields: None,
+            prompt_variables: None,
+            additional_model_response_field_paths: None,
+            request_metadata: metadata,
+            performance_config: None,
+        })
     }
 }
 

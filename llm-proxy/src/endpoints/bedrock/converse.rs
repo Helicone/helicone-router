@@ -1,5 +1,5 @@
 use bedrock_type::operation::converse::{ConverseInput, ConverseOutput};
-use bedrock_type::operation::converse_stream::ConverseStreamOutput;
+use bedrock_type::types::ConverseStreamOutput;
 use crate::{
     endpoints::{AiRequest, Endpoint},
     middleware::mapper::error::MapperError,

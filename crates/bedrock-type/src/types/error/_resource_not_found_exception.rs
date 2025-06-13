@@ -26,12 +26,6 @@ impl ::std::fmt::Display for ResourceNotFoundException {
     }
 }
 impl ::std::error::Error for ResourceNotFoundException {}
-impl aws_types::request_id::RequestId for crate::types::error::ResourceNotFoundException {
-    fn request_id(&self) -> Option<&str> {
-        use aws_smithy_types::error::metadata::ProvideErrorMetadata;
-        self.meta().request_id()
-    }
-}
 impl aws_smithy_types::error::metadata::ProvideErrorMetadata for ResourceNotFoundException {
     fn meta(&self) -> &aws_smithy_types::error::ErrorMetadata {
         &self.meta
