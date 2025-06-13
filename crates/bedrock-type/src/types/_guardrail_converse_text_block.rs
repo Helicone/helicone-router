@@ -39,7 +39,6 @@ impl GuardrailConverseTextBlock {
 impl GuardrailConverseTextBlock {
     /// Creates a new builder-style object to manufacture
     /// [`GuardrailConverseTextBlock`](crate::types::GuardrailConverseTextBlock).
-    ///
     pub fn builder() -> crate::types::builders::GuardrailConverseTextBlockBuilder
     {
         crate::types::builders::GuardrailConverseTextBlockBuilder::default()

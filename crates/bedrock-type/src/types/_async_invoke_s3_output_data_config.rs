@@ -31,7 +31,6 @@ impl AsyncInvokeS3OutputDataConfig {
 impl AsyncInvokeS3OutputDataConfig {
     /// Creates a new builder-style object to manufacture
     /// [`AsyncInvokeS3OutputDataConfig`](crate::types::AsyncInvokeS3OutputDataConfig).
-    ///
     pub fn builder(
     ) -> crate::types::builders::AsyncInvokeS3OutputDataConfigBuilder {
         crate::types::builders::AsyncInvokeS3OutputDataConfigBuilder::default()
@@ -40,7 +39,6 @@ impl AsyncInvokeS3OutputDataConfig {
 
 /// A builder for
 /// [`AsyncInvokeS3OutputDataConfig`](crate::types::AsyncInvokeS3OutputDataConfig).
-///
 #[derive(
     ::std::clone::Clone,
     ::std::cmp::PartialEq,

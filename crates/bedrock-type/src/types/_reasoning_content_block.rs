@@ -67,7 +67,6 @@ impl ReasoningContentBlock {
     }
     /// Returns true if this is a
     /// [`RedactedContent`](crate::types::ReasoningContentBlock::RedactedContent).
-    ///
     pub fn is_redacted_content(&self) -> bool {
         self.as_redacted_content().is_ok()
     }

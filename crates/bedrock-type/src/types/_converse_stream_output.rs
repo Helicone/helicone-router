@@ -52,7 +52,6 @@ impl ConverseStreamOutput {
     }
     /// Returns true if this is a
     /// [`ContentBlockDelta`](crate::types::ConverseStreamOutput::ContentBlockDelta).
-    ///
     pub fn is_content_block_delta(&self) -> bool {
         self.as_content_block_delta().is_ok()
     }
@@ -73,7 +72,6 @@ impl ConverseStreamOutput {
     }
     /// Returns true if this is a
     /// [`ContentBlockStart`](crate::types::ConverseStreamOutput::ContentBlockStart).
-    ///
     pub fn is_content_block_start(&self) -> bool {
         self.as_content_block_start().is_ok()
     }
@@ -94,7 +92,6 @@ impl ConverseStreamOutput {
     }
     /// Returns true if this is a
     /// [`ContentBlockStop`](crate::types::ConverseStreamOutput::ContentBlockStop).
-    ///
     pub fn is_content_block_stop(&self) -> bool {
         self.as_content_block_stop().is_ok()
     }

@@ -40,7 +40,6 @@ impl GuardrailInvocationMetrics {
 impl GuardrailInvocationMetrics {
     /// Creates a new builder-style object to manufacture
     /// [`GuardrailInvocationMetrics`](crate::types::GuardrailInvocationMetrics).
-    ///
     pub fn builder() -> crate::types::builders::GuardrailInvocationMetricsBuilder
     {
         crate::types::builders::GuardrailInvocationMetricsBuilder::default()
@@ -128,7 +127,6 @@ impl GuardrailInvocationMetricsBuilder {
     }
     /// Consumes the builder and constructs a
     /// [`GuardrailInvocationMetrics`](crate::types::GuardrailInvocationMetrics).
-    ///
     pub fn build(self) -> crate::types::GuardrailInvocationMetrics {
         crate::types::GuardrailInvocationMetrics {
             guardrail_processing_latency: self.guardrail_processing_latency,

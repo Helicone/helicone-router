@@ -50,7 +50,6 @@ impl aws_smithy_types::error::metadata::ProvideErrorMetadata
 impl ModelStreamErrorException {
     /// Creates a new builder-style object to manufacture
     /// [`ModelStreamErrorException`](crate::types::error::ModelStreamErrorException).
-    ///
     pub fn builder(
     ) -> crate::types::error::builders::ModelStreamErrorExceptionBuilder {
         crate::types::error::builders::ModelStreamErrorExceptionBuilder::default(
@@ -60,7 +59,6 @@ impl ModelStreamErrorException {
 
 /// A builder for
 /// [`ModelStreamErrorException`](crate::types::error::ModelStreamErrorException).
-///
 #[derive(
     ::std::clone::Clone,
     ::std::cmp::PartialEq,
@@ -153,7 +151,6 @@ impl ModelStreamErrorExceptionBuilder {
     }
     /// Consumes the builder and constructs a
     /// [`ModelStreamErrorException`](crate::types::error::ModelStreamErrorException).
-    ///
     pub fn build(self) -> crate::types::error::ModelStreamErrorException {
         crate::types::error::ModelStreamErrorException {
             message: self.message,

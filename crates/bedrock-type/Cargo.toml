@@ -1,5 +1,6 @@
 [package]
 name = "bedrock-type"
+rust-version = "1.82.0"
 
 
 [dependencies]

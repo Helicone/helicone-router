@@ -6,7 +6,7 @@ gpt-4:
   - amazon.nova-pro-v1:0
   - cohere.command-r-v1:0
   - us.meta.llama3-2-90b-instruct-v1:0
-  - mistral.mistral-large-2402-v1:0 
+  - mistral.mistral-large-2402-v1:0
 gpt-4-turbo:
   - claude-3-7-sonnet
   - gemini-2.5-pro
@@ -97,7 +97,7 @@ o3-mini:
   - amazon.nova-lite-v1:0
   - cohere.command-light-text-v14
   - mistral.mistral-small-2402-v1:0
-  - ai21.jamba-1-5-mini-v1:0 
+  - ai21.jamba-1-5-mini-v1:0
 o4-mini:
   - gemini-2.0-flash
   - gpt-4.1
@@ -105,7 +105,7 @@ o4-mini:
   - amazon.nova-lite-v1:0
   - cohere.command-light-text-v14
   - mistral.mistral-small-2402-v1:0
-  - ai21.jamba-1-5-mini-v1:0   
+  - ai21.jamba-1-5-mini-v1:0
 codex-mini:
   - claude-3-7-sonnet
   - gemini-2.0-flash
@@ -113,7 +113,7 @@ codex-mini:
   - amazon.nova-lite-v1:0
   - cohere.command-light-text-v14
   - mistral.mistral-small-2402-v1:0
-  - ai21.jamba-1-5-mini-v1:0   
+  - ai21.jamba-1-5-mini-v1:0
 gpt-4o-mini-search:
   - claude-3-5-haiku
   - gemini-1.5-flash
@@ -121,7 +121,7 @@ gpt-4o-mini-search:
   - amazon.nova-lite-v1:0
   - cohere.command-light-text-v14
   - mistral.mistral-small-2402-v1:0
-  - ai21.jamba-1-5-mini-v1:0   
+  - ai21.jamba-1-5-mini-v1:0
 gpt-4o-search:
   - claude-3-7-sonnet
   - gemini-2.5-pro
@@ -129,7 +129,7 @@ gpt-4o-search:
   - meta.llama3-70b-instruct-v1:0
   - amazon.nova-pro-v1:0
   - us.mistral.pixtral-large-2502-v1:0
-  - cohere.command-r-plus-v1:0 
+  - cohere.command-r-plus-v1:0
 
 # Anthropic Models
 claude-opus-4-0:
@@ -164,7 +164,7 @@ claude-3-5-haiku:
   - us.deepseek.r1-v1:0
   - mistral.mistral-7b-instruct-v0:2
   - cohere.command-r-v1:0
-  - amazon.nova-lite-v1:0A
+  - amazon.nova-lite-v1:0
   - ai21.jamba-1-5-large-v1:0
   - amazon.titan-text-premier-v1:0
 claude-3-5-sonnet:
@@ -174,7 +174,7 @@ claude-3-5-sonnet:
   - us.deepseek.r1-v1:0
   - mistral.mistral-7b-instruct-v0:2
   - cohere.command-r-v1:0
-  - amazon.nova-lite-v1:0A
+  - amazon.nova-lite-v1:0
   - ai21.jamba-1-5-large-v1:0
   - amazon.titan-text-premier-v1:0
 claude-3-opus:
@@ -184,7 +184,7 @@ claude-3-opus:
   - us.deepseek.r1-v1:0
   - mistral.mistral-7b-instruct-v0:2
   - cohere.command-r-v1:0
-  - amazon.nova-lite-v1:0A
+  - amazon.nova-lite-v1:0
   - ai21.jamba-1-5-large-v1:0
   - meta.llama3-70b-instruct-v1:0
 
@@ -196,7 +196,7 @@ gemini-2.5-flash:
   - us.deepseek.r1-v1:0
   - mistral.mistral-7b-instruct-v0:2
   - cohere.command-r-v1:0
-  - amazon.nova-lite-v1:0A
+  - amazon.nova-lite-v1:0
   - ai21.jamba-1-5-large-v1:0
   - meta.llama3-70b-instruct-v1:0
 gemini-2.5-pro:
@@ -210,7 +210,7 @@ gemini-2.5-pro:
   - us.deepseek.r1-v1:0
   - mistral.mistral-large-2402-v1:0
   - cohere.command-r-v1:0
-  - amazon.nova-lite-v1:0A
+  - amazon.nova-lite-v1:0
   - ai21.jamba-1-5-large-v1:0
   - meta.llama3-70b-instruct-v1:0
 gemini-2.0-flash:
@@ -219,7 +219,7 @@ gemini-2.0-flash:
   - llama3
   - mistral.mistral-7b-instruct-v0:2
   - cohere.command-r-v1:0
-  - amazon.nova-lite-v1:0A
+  - amazon.nova-lite-v1:0
   - ai21.jamba-1-5-large-v1:0
   - meta.llama3-70b-instruct-v1:0
 gemini-2.0-flash-lite:
@@ -228,7 +228,7 @@ gemini-2.0-flash-lite:
   - llama3
   - mistral.mistral-7b-instruct-v0:2
   - cohere.command-r-v1:0
-  - amazon.nova-lite-v1:0A
+  - amazon.nova-lite-v1:0
   - ai21.jamba-1-5-large-v1:0
   - meta.llama3-70b-instruct-v1:0
 gemini-1.5-flash:
@@ -237,7 +237,7 @@ gemini-1.5-flash:
   - llama3
   - mistral.mistral-7b-instruct-v0:2
   - cohere.command-r-v1:0
-  - amazon.nova-lite-v1:0A
+  - amazon.nova-lite-v1:0
   - ai21.jamba-1-5-large-v1:0
   - meta.llama3-70b-instruct-v1:0
 gemini-1.5-flash-8b:
@@ -246,7 +246,7 @@ gemini-1.5-flash-8b:
   - phi4
   - mistral.mistral-7b-instruct-v0:2
   - cohere.command-r-v1:0
-  - amazon.nova-lite-v1:0A
+  - amazon.nova-lite-v1:0
   - ai21.jamba-1-5-large-v1:0
   - meta.llama3-70b-instruct-v1:0
 gemini-1.5-pro:
@@ -255,7 +255,7 @@ gemini-1.5-pro:
   - llama4
   - mistral.mistral-large-2402-v1:0
   - cohere.command-r-v1:0
-  - amazon.nova-lite-v1:0A
+  - amazon.nova-lite-v1:0
   - ai21.jamba-1-5-large-v1:0
   - meta.llama3-70b-instruct-v1:0
 
@@ -266,7 +266,7 @@ deepseek-r1:
   - gemini-2.0-flash
   - mistral.mistral-7b-instruct-v0:2
   - cohere.command-r-v1:0
-  - amazon.nova-lite-v1:0A
+  - amazon.nova-lite-v1:0
   - ai21.jamba-1-5-large-v1:0
   - meta.llama3-70b-instruct-v1:0
   - us.meta.llama3-2-90b-instruct-v1:0
@@ -276,7 +276,7 @@ llama4:
   - gemini-2.0-flash
   - mistral.mistral-7b-instruct-v0:2
   - cohere.command-r-v1:0
-  - amazon.nova-lite-v1:0A
+  - amazon.nova-lite-v1:0
   - ai21.jamba-1-5-large-v1:0
   - meta.llama3-70b-instruct-v1:0
   - us.meta.llama3-2-90b-instruct-v1:0
@@ -286,7 +286,7 @@ llama3.3:
   - gemini-1.5-flash
   - mistral.mistral-7b-instruct-v0:2
   - cohere.command-r-v1:0
-  - amazon.nova-lite-v1:0A
+  - amazon.nova-lite-v1:0
   - ai21.jamba-1-5-large-v1:0
   - meta.llama3-70b-instruct-v1:0
   - us.meta.llama3-2-90b-instruct-v1:0
@@ -296,7 +296,7 @@ llama3:
   - gemini-1.5-flash
   - mistral.mistral-7b-instruct-v0:2
   - cohere.command-r-v1:0
-  - amazon.nova-lite-v1:0A
+  - amazon.nova-lite-v1:0
   - ai21.jamba-1-5-large-v1:0
   - meta.llama3-70b-instruct-v1:0
   - us.meta.llama3-2-90b-instruct-v1:0
@@ -306,7 +306,7 @@ gemma3:
   - gemini-1.5-flash
   - mistral.mistral-7b-instruct-v0:2
   - cohere.command-r-v1:0
-  - amazon.nova-lite-v1:0A
+  - amazon.nova-lite-v1:0
   - ai21.jamba-1-5-large-v1:0
   - meta.llama3-70b-instruct-v1:0
   - us.meta.llama3-2-90b-instruct-v1:0
@@ -316,7 +316,7 @@ qwen3:
   - gemini-1.5-flash
   - mistral.mistral-7b-instruct-v0:2
   - cohere.command-r-v1:0
-  - amazon.nova-lite-v1:0A
+  - amazon.nova-lite-v1:0
   - ai21.jamba-1-5-large-v1:0
   - meta.llama3-70b-instruct-v1:0
   - us.meta.llama3-2-90b-instruct-v1:0
@@ -326,7 +326,7 @@ phi4:
   - gemini-1.5-flash
   - mistral.mistral-7b-instruct-v0:2
   - cohere.command-r-v1:0
-  - amazon.nova-lite-v1:0A
+  - amazon.nova-lite-v1:0
   - ai21.jamba-1-5-large-v1:0
   - meta.llama3-70b-instruct-v1:0
   - us.meta.llama3-2-90b-instruct-v1:0
@@ -336,7 +336,7 @@ llava:
   - gemini-1.5-flash
   - mistral.mistral-7b-instruct-v0:2
   - cohere.command-r-v1:0
-  - amazon.nova-lite-v1:0A
+  - amazon.nova-lite-v1:0
   - ai21.jamba-1-5-large-v1:0
   - meta.llama3-70b-instruct-v1:0
   - us.meta.llama3-2-90b-instruct-v1:0

@@ -36,7 +36,6 @@ impl aws_smithy_types::error::metadata::ProvideErrorMetadata
 impl ServiceUnavailableException {
     /// Creates a new builder-style object to manufacture
     /// [`ServiceUnavailableException`](crate::types::error::ServiceUnavailableException).
-    ///
     pub fn builder(
     ) -> crate::types::error::builders::ServiceUnavailableExceptionBuilder {
         crate::types::error::builders::ServiceUnavailableExceptionBuilder::default()
@@ -45,7 +44,6 @@ impl ServiceUnavailableException {
 
 /// A builder for
 /// [`ServiceUnavailableException`](crate::types::error::ServiceUnavailableException).
-///
 #[derive(
     ::std::clone::Clone,
     ::std::cmp::PartialEq,
@@ -97,7 +95,6 @@ impl ServiceUnavailableExceptionBuilder {
     }
     /// Consumes the builder and constructs a
     /// [`ServiceUnavailableException`](crate::types::error::ServiceUnavailableException).
-    ///
     pub fn build(self) -> crate::types::error::ServiceUnavailableException {
         crate::types::error::ServiceUnavailableException {
             message: self.message,

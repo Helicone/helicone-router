@@ -31,7 +31,6 @@ impl GuardrailContextualGroundingPolicyAssessment {
 impl GuardrailContextualGroundingPolicyAssessment {
     /// Creates a new builder-style object to manufacture
     /// [`GuardrailContextualGroundingPolicyAssessment`](crate::types::GuardrailContextualGroundingPolicyAssessment).
-    ///
     pub fn builder() -> crate::types::builders::GuardrailContextualGroundingPolicyAssessmentBuilder{
         crate::types::builders::GuardrailContextualGroundingPolicyAssessmentBuilder::default()
     }
@@ -39,7 +38,6 @@ impl GuardrailContextualGroundingPolicyAssessment {
 
 /// A builder for
 /// [`GuardrailContextualGroundingPolicyAssessment`](crate::types::GuardrailContextualGroundingPolicyAssessment).
-///
 #[derive(
     ::std::clone::Clone,
     ::std::cmp::PartialEq,
@@ -91,7 +89,6 @@ impl GuardrailContextualGroundingPolicyAssessmentBuilder {
     }
     /// Consumes the builder and constructs a
     /// [`GuardrailContextualGroundingPolicyAssessment`](crate::types::GuardrailContextualGroundingPolicyAssessment).
-    ///
     pub fn build(
         self,
     ) -> crate::types::GuardrailContextualGroundingPolicyAssessment {

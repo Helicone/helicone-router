@@ -45,7 +45,6 @@ impl ::std::fmt::Debug for GuardrailConverseImageBlock {
 impl GuardrailConverseImageBlock {
     /// Creates a new builder-style object to manufacture
     /// [`GuardrailConverseImageBlock`](crate::types::GuardrailConverseImageBlock).
-    ///
     pub fn builder(
     ) -> crate::types::builders::GuardrailConverseImageBlockBuilder {
         crate::types::builders::GuardrailConverseImageBlockBuilder::default()

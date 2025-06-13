@@ -36,7 +36,6 @@ impl aws_smithy_types::error::metadata::ProvideErrorMetadata
 impl ResourceNotFoundException {
     /// Creates a new builder-style object to manufacture
     /// [`ResourceNotFoundException`](crate::types::error::ResourceNotFoundException).
-    ///
     pub fn builder(
     ) -> crate::types::error::builders::ResourceNotFoundExceptionBuilder {
         crate::types::error::builders::ResourceNotFoundExceptionBuilder::default(
@@ -46,7 +45,6 @@ impl ResourceNotFoundException {
 
 /// A builder for
 /// [`ResourceNotFoundException`](crate::types::error::ResourceNotFoundException).
-///
 #[derive(
     ::std::clone::Clone,
     ::std::cmp::PartialEq,
@@ -98,7 +96,6 @@ impl ResourceNotFoundExceptionBuilder {
     }
     /// Consumes the builder and constructs a
     /// [`ResourceNotFoundException`](crate::types::error::ResourceNotFoundException).
-    ///
     pub fn build(self) -> crate::types::error::ResourceNotFoundException {
         crate::types::error::ResourceNotFoundException {
             message: self.message,

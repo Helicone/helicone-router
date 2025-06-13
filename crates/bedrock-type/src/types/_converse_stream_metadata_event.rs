@@ -48,7 +48,6 @@ impl ConverseStreamMetadataEvent {
 impl ConverseStreamMetadataEvent {
     /// Creates a new builder-style object to manufacture
     /// [`ConverseStreamMetadataEvent`](crate::types::ConverseStreamMetadataEvent).
-    ///
     pub fn builder(
     ) -> crate::types::builders::ConverseStreamMetadataEventBuilder {
         crate::types::builders::ConverseStreamMetadataEventBuilder::default()
@@ -162,7 +161,6 @@ impl ConverseStreamMetadataEventBuilder {
     }
     /// Consumes the builder and constructs a
     /// [`ConverseStreamMetadataEvent`](crate::types::ConverseStreamMetadataEvent).
-    ///
     pub fn build(self) -> crate::types::ConverseStreamMetadataEvent {
         crate::types::ConverseStreamMetadataEvent {
             usage: self.usage,

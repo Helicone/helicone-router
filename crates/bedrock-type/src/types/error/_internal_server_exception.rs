@@ -37,7 +37,6 @@ impl aws_smithy_types::error::metadata::ProvideErrorMetadata
 impl InternalServerException {
     /// Creates a new builder-style object to manufacture
     /// [`InternalServerException`](crate::types::error::InternalServerException).
-    ///
     pub fn builder(
     ) -> crate::types::error::builders::InternalServerExceptionBuilder {
         crate::types::error::builders::InternalServerExceptionBuilder::default()
@@ -97,7 +96,6 @@ impl InternalServerExceptionBuilder {
     }
     /// Consumes the builder and constructs a
     /// [`InternalServerException`](crate::types::error::InternalServerException).
-    ///
     pub fn build(self) -> crate::types::error::InternalServerException {
         crate::types::error::InternalServerException {
             message: self.message,

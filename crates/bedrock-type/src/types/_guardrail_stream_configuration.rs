@@ -49,7 +49,6 @@ impl GuardrailStreamConfiguration {
 impl GuardrailStreamConfiguration {
     /// Creates a new builder-style object to manufacture
     /// [`GuardrailStreamConfiguration`](crate::types::GuardrailStreamConfiguration).
-    ///
     pub fn builder(
     ) -> crate::types::builders::GuardrailStreamConfigurationBuilder {
         crate::types::builders::GuardrailStreamConfigurationBuilder::default()
@@ -58,7 +57,6 @@ impl GuardrailStreamConfiguration {
 
 /// A builder for
 /// [`GuardrailStreamConfiguration`](crate::types::GuardrailStreamConfiguration).
-///
 #[derive(
     ::std::clone::Clone,
     ::std::cmp::PartialEq,

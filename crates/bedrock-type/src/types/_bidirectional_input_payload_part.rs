@@ -24,7 +24,6 @@ impl ::std::fmt::Debug for BidirectionalInputPayloadPart {
 impl BidirectionalInputPayloadPart {
     /// Creates a new builder-style object to manufacture
     /// [`BidirectionalInputPayloadPart`](crate::types::BidirectionalInputPayloadPart).
-    ///
     pub fn builder(
     ) -> crate::types::builders::BidirectionalInputPayloadPartBuilder {
         crate::types::builders::BidirectionalInputPayloadPartBuilder::default()
@@ -33,7 +32,6 @@ impl BidirectionalInputPayloadPart {
 
 /// A builder for
 /// [`BidirectionalInputPayloadPart`](crate::types::BidirectionalInputPayloadPart).
-///
 #[derive(
     ::std::clone::Clone, ::std::cmp::PartialEq, ::std::default::Default,
 )]
@@ -61,7 +59,6 @@ impl BidirectionalInputPayloadPartBuilder {
     }
     /// Consumes the builder and constructs a
     /// [`BidirectionalInputPayloadPart`](crate::types::BidirectionalInputPayloadPart).
-    ///
     pub fn build(self) -> crate::types::BidirectionalInputPayloadPart {
         crate::types::BidirectionalInputPayloadPart { bytes: self.bytes }
     }

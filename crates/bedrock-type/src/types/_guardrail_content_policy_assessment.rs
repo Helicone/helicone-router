@@ -22,7 +22,6 @@ impl GuardrailContentPolicyAssessment {
 impl GuardrailContentPolicyAssessment {
     /// Creates a new builder-style object to manufacture
     /// [`GuardrailContentPolicyAssessment`](crate::types::GuardrailContentPolicyAssessment).
-    ///
     pub fn builder(
     ) -> crate::types::builders::GuardrailContentPolicyAssessmentBuilder {
         crate::types::builders::GuardrailContentPolicyAssessmentBuilder::default(
@@ -32,7 +31,6 @@ impl GuardrailContentPolicyAssessment {
 
 /// A builder for
 /// [`GuardrailContentPolicyAssessment`](crate::types::GuardrailContentPolicyAssessment).
-///
 #[derive(
     ::std::clone::Clone,
     ::std::cmp::PartialEq,

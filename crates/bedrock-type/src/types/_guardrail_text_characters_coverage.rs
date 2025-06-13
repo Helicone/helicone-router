@@ -27,7 +27,6 @@ impl GuardrailTextCharactersCoverage {
 impl GuardrailTextCharactersCoverage {
     /// Creates a new builder-style object to manufacture
     /// [`GuardrailTextCharactersCoverage`](crate::types::GuardrailTextCharactersCoverage).
-    ///
     pub fn builder(
     ) -> crate::types::builders::GuardrailTextCharactersCoverageBuilder {
         crate::types::builders::GuardrailTextCharactersCoverageBuilder::default(
@@ -37,7 +36,6 @@ impl GuardrailTextCharactersCoverage {
 
 /// A builder for
 /// [`GuardrailTextCharactersCoverage`](crate::types::GuardrailTextCharactersCoverage).
-///
 #[derive(
     ::std::clone::Clone,
     ::std::cmp::PartialEq,
@@ -80,7 +78,6 @@ impl GuardrailTextCharactersCoverageBuilder {
     }
     /// Consumes the builder and constructs a
     /// [`GuardrailTextCharactersCoverage`](crate::types::GuardrailTextCharactersCoverage).
-    ///
     pub fn build(self) -> crate::types::GuardrailTextCharactersCoverage {
         crate::types::GuardrailTextCharactersCoverage {
             guarded: self.guarded,

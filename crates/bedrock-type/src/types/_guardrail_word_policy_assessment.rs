@@ -29,7 +29,6 @@ impl GuardrailWordPolicyAssessment {
 impl GuardrailWordPolicyAssessment {
     /// Creates a new builder-style object to manufacture
     /// [`GuardrailWordPolicyAssessment`](crate::types::GuardrailWordPolicyAssessment).
-    ///
     pub fn builder(
     ) -> crate::types::builders::GuardrailWordPolicyAssessmentBuilder {
         crate::types::builders::GuardrailWordPolicyAssessmentBuilder::default()
@@ -38,7 +37,6 @@ impl GuardrailWordPolicyAssessment {
 
 /// A builder for
 /// [`GuardrailWordPolicyAssessment`](crate::types::GuardrailWordPolicyAssessment).
-///
 #[derive(
     ::std::clone::Clone,
     ::std::cmp::PartialEq,

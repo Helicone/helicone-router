@@ -57,7 +57,6 @@ impl GuardrailContextualGroundingFilter {
 impl GuardrailContextualGroundingFilter {
     /// Creates a new builder-style object to manufacture
     /// [`GuardrailContextualGroundingFilter`](crate::types::GuardrailContextualGroundingFilter).
-    ///
     pub fn builder(
     ) -> crate::types::builders::GuardrailContextualGroundingFilterBuilder {
         crate::types::builders::GuardrailContextualGroundingFilterBuilder::default()
@@ -66,7 +65,6 @@ impl GuardrailContextualGroundingFilter {
 
 /// A builder for
 /// [`GuardrailContextualGroundingFilter`](crate::types::GuardrailContextualGroundingFilter).
-///
 #[derive(
     ::std::clone::Clone,
     ::std::cmp::PartialEq,

@@ -40,7 +40,6 @@ impl AsyncInvokeOutputDataConfig {
     }
     /// Returns true if this is a
     /// [`S3OutputDataConfig`](crate::types::AsyncInvokeOutputDataConfig::S3OutputDataConfig).
-    ///
     pub fn is_s3_output_data_config(&self) -> bool {
         self.as_s3_output_data_config().is_ok()
     }

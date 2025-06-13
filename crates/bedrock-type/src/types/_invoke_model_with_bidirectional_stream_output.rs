@@ -42,7 +42,6 @@ impl InvokeModelWithBidirectionalStreamOutput {
     }
     /// Returns true if this is a
     /// [`Chunk`](crate::types::InvokeModelWithBidirectionalStreamOutput::Chunk).
-    ///
     pub fn is_chunk(&self) -> bool {
         self.as_chunk().is_ok()
     }

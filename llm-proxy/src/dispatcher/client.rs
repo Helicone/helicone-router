@@ -39,7 +39,7 @@ pub trait ProviderClient {
         request_builder
     }
 
-    fn get_aws_credentials() -> Result<(String, String), InitError> {
+    fn get_aws_credentials(&self) -> Result<(String, String), InitError> {
         let key = std::env::var(AWS_CREDENTIALS_ENV_VAR).map_err(|_| {
             InitError::ProviderError(ProviderError::AwsCredentialsNotFound(
                 InferenceProvider::Bedrock,
@@ -57,15 +57,30 @@ pub trait ProviderClient {
     }
 }
 
-impl ProviderClient for Client {}
+impl ProviderClient for Client {
+    fn extract_and_sign_aws_headers(
+        &self,
+        request_builder: reqwest::RequestBuilder,
+        req_body_bytes: bytes::Bytes,
+    ) -> reqwest::RequestBuilder {
+        match self {
+            Client::Bedrock(inner) => inner
+                .extract_and_sign_aws_headers(request_builder, req_body_bytes),
+            // ... delegate to other variants as needed ...
+            _ => request_builder,
+        }
+    }
+}
+
 impl ProviderClient for BedrockClient {
     fn extract_and_sign_aws_headers(
         &self,
         mut request_builder: reqwest::RequestBuilder,
         req_body_bytes: bytes::Bytes,
     ) -> reqwest::RequestBuilder {
-        let (access_key_id, secret) =
-            Self::get_aws_credentials().expect("cannot get aws credentials");
+        let (access_key_id, secret) = self
+            .get_aws_credentials()
+            .expect("cannot get aws credentials");
         let identity =
             Credentials::new(access_key_id, secret, None, None, "Environment")
                 .into();

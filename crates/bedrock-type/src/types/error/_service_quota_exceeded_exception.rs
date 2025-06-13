@@ -36,7 +36,6 @@ impl aws_smithy_types::error::metadata::ProvideErrorMetadata
 impl ServiceQuotaExceededException {
     /// Creates a new builder-style object to manufacture
     /// [`ServiceQuotaExceededException`](crate::types::error::ServiceQuotaExceededException).
-    ///
     pub fn builder(
     ) -> crate::types::error::builders::ServiceQuotaExceededExceptionBuilder
     {
@@ -46,7 +45,6 @@ impl ServiceQuotaExceededException {
 
 /// A builder for
 /// [`ServiceQuotaExceededException`](crate::types::error::ServiceQuotaExceededException).
-///
 #[derive(
     ::std::clone::Clone,
     ::std::cmp::PartialEq,
@@ -98,7 +96,6 @@ impl ServiceQuotaExceededExceptionBuilder {
     }
     /// Consumes the builder and constructs a
     /// [`ServiceQuotaExceededException`](crate::types::error::ServiceQuotaExceededException).
-    ///
     pub fn build(self) -> crate::types::error::ServiceQuotaExceededException {
         crate::types::error::ServiceQuotaExceededException {
             message: self.message,
