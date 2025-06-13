@@ -26,10 +26,8 @@ impl ControlPlaneState {
             self.history.remove(0);
         }
 
-        println!("updating state with message: {:?}", m);
-
         match m {
-            MessageTypeRX::Config { data: _m } => (),
+            MessageTypeRX::Config { data: m } => (),
             MessageTypeRX::Update(Update::Keys { data }) => {
                 self.config.keys = data;
             }
@@ -37,7 +35,7 @@ impl ControlPlaneState {
                 self.config.auth = data;
             }
             MessageTypeRX::Update(Update::Config { data }) => {
-                // self = data;
+                self.config = data;
             }
 
             /// we don't care about these for updating state, probably want to

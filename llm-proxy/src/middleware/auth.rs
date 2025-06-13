@@ -19,6 +19,25 @@ pub struct AuthService {
     app_state: AppState,
 }
 
+fn hash_key(key: &str) -> String {
+    let key = format!("Bearer {}", key);
+    let mut hasher = Sha256::new();
+    hasher.update(key.as_bytes());
+    let result = hasher.finalize();
+
+    // Convert to hex string
+    let hex_string = result
+        .iter()
+        .map(|b| format!("{:02x}", b))
+        .collect::<String>();
+
+    // Zero out the result array
+    let mut result_vec = result.to_vec();
+    result_vec.fill(0);
+
+    hex_string
+}
+
 impl AuthService {
     #[must_use]
     pub fn new(app_state: AppState) -> Self {
@@ -29,32 +48,22 @@ impl AuthService {
         app_state: AppState,
         api_key: &str,
     ) -> Result<AuthContext, AuthError> {
-        // let keys = app_state.0.control_plane_state.lock().await.config.keys;
+        let config = app_state.0.control_plane_state.lock().await;
+        let keys = &config.config.keys;
 
-        // // Create a Sha256 object
-        // let mut hasher = Sha256::new();
+        let key = keys.iter().find(|k| k.key_hash == hash_key(api_key));
 
-        // // Write input data
-        // hasher.update(api_key);
-
-        // // Read hash digest and consume hasher
-        // let result = hasher.finalize();
-
-        // // Convert to hex string
-        // let hash_hex = hex::encode(result);
-
-        // let key = keys.iter().find(|k| k.key_hash == hash_hex);
-
-        // if let Some(key) = key {
-        //     Ok(AuthContext {
-        //         api_key: api_key.replace("Bearer ", ""),
-        //         user_id: UserId::new(body.user_id),
-        //         org_id: OrgId::new(body.organization_id),
-        //     })
-        // } else {
-        //     return Err(AuthError::InvalidCredentials);
-        // }
-        todo!()
+        if let Some(key) = key {
+            let auth = &config.config.auth;
+            Ok(AuthContext {
+                api_key: api_key.replace("Bearer ", ""),
+                user_id: (&key.owner_id).try_into()?,
+                org_id: (&auth.organization_id).try_into()?,
+            })
+        } else {
+            tracing::error!("key not found: {:?}", api_key);
+            return Err(AuthError::InvalidCredentials);
+        }
     }
 }
 
