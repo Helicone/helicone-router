@@ -109,6 +109,11 @@ impl InferenceProvider {
                     .map(ApiEndpoint::Bedrock)
                     .collect()
             }
+<<<<<<< HEAD
+=======
+            // Inference isn't supported yet for these providers
+            _ => vec![],
+>>>>>>> 5ca573f (feat: Direct proxy to provider based on URL (#74))
         }
     }
 }
@@ -198,8 +203,10 @@ impl ProviderKeys {
     ) -> Result<Self, ProviderError> {
         let mut keys = HashMap::default();
         for (provider, config) in providers_config.iter() {
-            // ollama doesn't support API keys
-            if config.enabled && !matches!(provider, InferenceProvider::Ollama)
+            // ollama doesn't support API keys and bedrock
+            if config.enabled
+                && !matches!(provider, InferenceProvider::Ollama)
+                && !matches!(provider, InferenceProvider::Bedrock)
             {
                 let provider_str = provider.to_string().to_uppercase();
                 let env_var = format!("{provider_str}_API_KEY");
@@ -208,7 +215,7 @@ impl ProviderKeys {
                         provider = %provider,
                         "Got direct proxy provider key"
                     );
-                    keys.insert(*provider, Secret::from(key));
+                    keys.insert(*provider, Secret(key));
                 } else {
                     return Err(ProviderError::ApiKeyNotFound(*provider));
                 }

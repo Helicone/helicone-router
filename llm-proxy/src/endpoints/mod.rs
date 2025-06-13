@@ -56,15 +56,7 @@ impl ApiEndpoint {
                 Some(Self::Ollama(Ollama::try_from(path).ok()?))
             }
             InferenceProvider::Bedrock => {
-<<<<<<< HEAD
-                tracing::debug!("Provider not supported for request mapping");
-=======
                 Some(Self::Bedrock(Bedrock::try_from(path).ok()?))
-            }
-            unsupported => {
-                tracing::debug!(provider = %unsupported, "Provider not supported for request mapping");
->>>>>>> e253da4 ([ENG-1529] WIP)
-                None
             }
         }
     }
