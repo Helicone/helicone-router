@@ -2,6 +2,7 @@ use axum_core::response::IntoResponse;
 use futures::future::BoxFuture;
 use http::Request;
 use serde::Deserialize;
+use sha2::{Digest, Sha256};
 use tower_http::auth::AsyncAuthorizeRequest;
 use tracing::warn;
 use url::Url;
@@ -28,28 +29,32 @@ impl AuthService {
         app_state: AppState,
         api_key: &str,
     ) -> Result<AuthContext, AuthError> {
-        let whoami_result = app_state
-            .0
-            .jawn_http_client
-            .request_client
-            .get(whoami_url(&app_state))
-            .header("authorization", api_key)
-            .send()
-            .await
-            .inspect_err(|e| {
-                tracing::error!("Error sending request to whoami: {:?}", e);
-            })?
-            .error_for_status()
-            .map_err(AuthError::UnsuccessfulAuthResponse)
-            .inspect_err(|e| {
-                tracing::error!("Error calling whoami: {:?}", e);
-            })?;
-        let body = whoami_result.json::<WhoamiResponse>().await?;
-        Ok(AuthContext {
-            api_key: api_key.replace("Bearer ", ""),
-            user_id: UserId::new(body.user_id),
-            org_id: OrgId::new(body.organization_id),
-        })
+        // let keys = app_state.0.control_plane_state.lock().await.config.keys;
+
+        // // Create a Sha256 object
+        // let mut hasher = Sha256::new();
+
+        // // Write input data
+        // hasher.update(api_key);
+
+        // // Read hash digest and consume hasher
+        // let result = hasher.finalize();
+
+        // // Convert to hex string
+        // let hash_hex = hex::encode(result);
+
+        // let key = keys.iter().find(|k| k.key_hash == hash_hex);
+
+        // if let Some(key) = key {
+        //     Ok(AuthContext {
+        //         api_key: api_key.replace("Bearer ", ""),
+        //         user_id: UserId::new(body.user_id),
+        //         org_id: OrgId::new(body.organization_id),
+        //     })
+        // } else {
+        //     return Err(AuthError::InvalidCredentials);
+        // }
+        todo!()
     }
 }
 

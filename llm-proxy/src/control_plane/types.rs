@@ -16,6 +16,7 @@ pub enum MessageTypeTX {
 #[derive(TS, Serialize, Deserialize, Debug, Clone)]
 #[ts(export)]
 #[ts(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase")]
 #[derive(Default)]
 pub struct AuthConfig {
     pub user_id: String,
@@ -25,6 +26,7 @@ pub struct AuthConfig {
 #[derive(TS, Serialize, Deserialize, Debug, Clone)]
 #[ts(export)]
 #[ts(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase")]
 #[derive(Default)]
 pub struct Key {
     pub key_hash: String,
@@ -34,6 +36,7 @@ pub struct Key {
 #[derive(TS, Serialize, Deserialize, Debug, Clone)]
 #[ts(export)]
 #[ts(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase")]
 #[derive(Default)]
 pub struct Config {
     pub auth: AuthConfig,

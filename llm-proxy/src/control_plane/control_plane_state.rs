@@ -26,6 +26,8 @@ impl ControlPlaneState {
             self.history.remove(0);
         }
 
+        println!("updating state with message: {:?}", m);
+
         match m {
             MessageTypeRX::Config { data: _m } => (),
             MessageTypeRX::Update(Update::Keys { data }) => {

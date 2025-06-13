@@ -13,6 +13,7 @@ use tokio_tungstenite::{
         self, Message, client::IntoClientRequest, handshake::client::Request,
     },
 };
+use tracing::{error, info};
 use url::Url;
 
 use super::{
@@ -44,6 +45,7 @@ async fn handle_message(
     state: &Arc<Mutex<ControlPlaneState>>,
     message: Message,
 ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    println!("handling message: {:?}", message);
     let bytes = message.into_data();
     let m: MessageTypeRX = serde_json::from_slice(&bytes)?;
 
@@ -150,44 +152,64 @@ impl ControlPlaneClient {
     }
 }
 
+impl ControlPlaneClient {
+    async fn run_control_plane_forever(mut self) -> Result<(), RuntimeError> {
+        let state_clone = Arc::clone(&self.state);
+        println!("running control plane forever");
+        loop {
+            while let Some(message) = self.channel.msg_rx.next().await {
+                match message {
+                    Ok(message) => {
+                        let _ = handle_message(&state_clone, message)
+                            .await
+                            .map_err(|e| {
+                                tracing::error!(error = ?e, "websocket error");
+                            });
+                    }
+                    Err(tungstenite::Error::AlreadyClosed) => {
+                        tracing::error!(
+                            "websocket connection closed, reconnecting..."
+                        );
+                        self.reconnect_websocket()
+                            .await
+                            .map_err(RuntimeError::Init)?;
+                    }
+                    Err(e) => {
+                        tracing::error!(error = ?e, "websocket error");
+                    }
+                }
+            }
+
+            // if the connection is closed, we need to reconnect
+            self.reconnect_websocket()
+                .await
+                .map_err(RuntimeError::Init)?;
+            tokio::time::sleep(Duration::from_secs(1)).await;
+        }
+    }
+}
+
 impl meltdown::Service for ControlPlaneClient {
     type Future = BoxFuture<'static, Result<(), RuntimeError>>;
 
-    fn run(mut self, _token: Token) -> Self::Future {
+    fn run(mut self, mut token: Token) -> Self::Future {
         println!("running control plane client");
-        let state_clone = Arc::clone(&self.state);
 
         Box::pin(async move {
-            loop {
-                while let Some(message) = self.channel.msg_rx.next().await {
-                    match message {
-                        Ok(message) => {
-                            let _ = handle_message(&state_clone, message)
-                                .await
-                                .map_err(|e| {
-                                    tracing::error!(error = ?e, "websocket error");
-                                });
-                        }
-                        Err(tungstenite::Error::AlreadyClosed) => {
-                            tracing::error!(
-                                "websocket connection closed, reconnecting..."
-                            );
-                            self.reconnect_websocket()
-                                .await
-                                .map_err(RuntimeError::Init)?;
-                        }
-                        Err(e) => {
-                            tracing::error!(error = ?e, "websocket error");
-                        }
+            tokio::select! {
+                result = self.run_control_plane_forever() => {
+                    if let Err(e) = result {
+                        error!(name = "provider-health-monitor-task", error = ?e, "Monitor encountered error, shutting down");
+                    } else {
+                        info!(name = "provider-health-monitor-task", "Monitor shut down successfully");
                     }
+                    token.trigger();
                 }
-
-                // if the connection is closed, we need to reconnect
-                self.reconnect_websocket()
-                    .await
-                    .map_err(RuntimeError::Init)?;
-                tokio::time::sleep(Duration::from_secs(1)).await;
+                () = &mut token => {
+                    info!(name = "control-plane-client-task", "task shut down successfully");
+                }
             }
+            Ok(())
         })
     }
 }
