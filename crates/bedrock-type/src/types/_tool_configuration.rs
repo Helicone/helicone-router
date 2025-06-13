@@ -2,7 +2,7 @@
 
 /// <p>Configuration information for the tools that you pass to a model. For more information, see <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/tool-use.html">Tool use (function calling)</a> in the Amazon Bedrock User Guide.</p>
 #[non_exhaustive]
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, ::serde::Serialize)]
+#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ToolConfiguration {
     /// <p>An array of tools that you want to pass to a model.</p>
@@ -73,10 +73,10 @@ impl ToolConfigurationBuilder {
     /// Consumes the builder and constructs a [`ToolConfiguration`](crate::types::ToolConfiguration).
     /// This method will fail if any of the following fields are not set:
     /// - [`tools`](crate::types::builders::ToolConfigurationBuilder::tools)
-    pub fn build(self) -> ::std::result::Result<crate::types::ToolConfiguration, ::aws_smithy_types::error::operation::BuildError> {
+    pub fn build(self) -> ::std::result::Result<crate::types::ToolConfiguration, aws_smithy_types::error::operation::BuildError> {
         ::std::result::Result::Ok(crate::types::ToolConfiguration {
             tools: self.tools.ok_or_else(|| {
-                ::aws_smithy_types::error::operation::BuildError::missing_field(
+                aws_smithy_types::error::operation::BuildError::missing_field(
                     "tools",
                     "tools was not specified but it is required when building ToolConfiguration",
                 )

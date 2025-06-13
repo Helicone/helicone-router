@@ -5,11 +5,11 @@
 #[derive(::std::clone::Clone, ::std::cmp::PartialEq)]
 pub struct BidirectionalInputPayloadPart {
     /// <p>The audio content for the bidirectional input.</p>
-    pub bytes: ::std::option::Option<::aws_smithy_types::Blob>,
+    pub bytes: ::std::option::Option<aws_smithy_types::Blob>,
 }
 impl BidirectionalInputPayloadPart {
     /// <p>The audio content for the bidirectional input.</p>
-    pub fn bytes(&self) -> ::std::option::Option<&::aws_smithy_types::Blob> {
+    pub fn bytes(&self) -> ::std::option::Option<&aws_smithy_types::Blob> {
         self.bytes.as_ref()
     }
 }
@@ -31,21 +31,21 @@ impl BidirectionalInputPayloadPart {
 #[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::default::Default)]
 #[non_exhaustive]
 pub struct BidirectionalInputPayloadPartBuilder {
-    pub(crate) bytes: ::std::option::Option<::aws_smithy_types::Blob>,
+    pub(crate) bytes: ::std::option::Option<aws_smithy_types::Blob>,
 }
 impl BidirectionalInputPayloadPartBuilder {
     /// <p>The audio content for the bidirectional input.</p>
-    pub fn bytes(mut self, input: ::aws_smithy_types::Blob) -> Self {
+    pub fn bytes(mut self, input: aws_smithy_types::Blob) -> Self {
         self.bytes = ::std::option::Option::Some(input);
         self
     }
     /// <p>The audio content for the bidirectional input.</p>
-    pub fn set_bytes(mut self, input: ::std::option::Option<::aws_smithy_types::Blob>) -> Self {
+    pub fn set_bytes(mut self, input: ::std::option::Option<aws_smithy_types::Blob>) -> Self {
         self.bytes = input;
         self
     }
     /// <p>The audio content for the bidirectional input.</p>
-    pub fn get_bytes(&self) -> &::std::option::Option<::aws_smithy_types::Blob> {
+    pub fn get_bytes(&self) -> &::std::option::Option<aws_smithy_types::Blob> {
         &self.bytes
     }
     /// Consumes the builder and constructs a [`BidirectionalInputPayloadPart`](crate::types::BidirectionalInputPayloadPart).

@@ -2,7 +2,7 @@
 
 /// <p>A Regex filter configured in a guardrail.</p>
 #[non_exhaustive]
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug,  ::serde::Deserialize)]
+#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug,  serde::Deserialize)]
 pub struct GuardrailRegexFilter {
     /// <p>The regex filter name.</p>
     pub name: ::std::option::Option<::std::string::String>,
@@ -129,13 +129,13 @@ impl GuardrailRegexFilterBuilder {
     /// Consumes the builder and constructs a [`GuardrailRegexFilter`](crate::types::GuardrailRegexFilter).
     /// This method will fail if any of the following fields are not set:
     /// - [`action`](crate::types::builders::GuardrailRegexFilterBuilder::action)
-    pub fn build(self) -> ::std::result::Result<crate::types::GuardrailRegexFilter, ::aws_smithy_types::error::operation::BuildError> {
+    pub fn build(self) -> ::std::result::Result<crate::types::GuardrailRegexFilter, aws_smithy_types::error::operation::BuildError> {
         ::std::result::Result::Ok(crate::types::GuardrailRegexFilter {
             name: self.name,
             r#match: self.r#match,
             regex: self.regex,
             action: self.action.ok_or_else(|| {
-                ::aws_smithy_types::error::operation::BuildError::missing_field(
+                aws_smithy_types::error::operation::BuildError::missing_field(
                     "action",
                     "action was not specified but it is required when building GuardrailRegexFilter",
                 )

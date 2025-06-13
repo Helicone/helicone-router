@@ -2,7 +2,7 @@
 
 /// <p>The content filter for a guardrail.</p>
 #[non_exhaustive]
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug,  ::serde::Deserialize)]
+#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug,  serde::Deserialize)]
 pub struct GuardrailContentFilter {
     /// <p>The guardrail type.</p>
     pub r#type: crate::types::GuardrailContentFilterType,
@@ -133,23 +133,23 @@ impl GuardrailContentFilterBuilder {
     /// - [`r#type`](crate::types::builders::GuardrailContentFilterBuilder::type)
     /// - [`confidence`](crate::types::builders::GuardrailContentFilterBuilder::confidence)
     /// - [`action`](crate::types::builders::GuardrailContentFilterBuilder::action)
-    pub fn build(self) -> ::std::result::Result<crate::types::GuardrailContentFilter, ::aws_smithy_types::error::operation::BuildError> {
+    pub fn build(self) -> ::std::result::Result<crate::types::GuardrailContentFilter, aws_smithy_types::error::operation::BuildError> {
         ::std::result::Result::Ok(crate::types::GuardrailContentFilter {
             r#type: self.r#type.ok_or_else(|| {
-                ::aws_smithy_types::error::operation::BuildError::missing_field(
+                aws_smithy_types::error::operation::BuildError::missing_field(
                     "r#type",
                     "r#type was not specified but it is required when building GuardrailContentFilter",
                 )
             })?,
             confidence: self.confidence.ok_or_else(|| {
-                ::aws_smithy_types::error::operation::BuildError::missing_field(
+                aws_smithy_types::error::operation::BuildError::missing_field(
                     "confidence",
                     "confidence was not specified but it is required when building GuardrailContentFilter",
                 )
             })?,
             filter_strength: self.filter_strength,
             action: self.action.ok_or_else(|| {
-                ::aws_smithy_types::error::operation::BuildError::missing_field(
+                aws_smithy_types::error::operation::BuildError::missing_field(
                     "action",
                     "action was not specified but it is required when building GuardrailContentFilter",
                 )

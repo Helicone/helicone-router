@@ -2,7 +2,7 @@
 
 /// <p>The word policy assessment.</p>
 #[non_exhaustive]
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug,  ::serde::Deserialize)]
+#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug,  serde::Deserialize)]
 pub struct GuardrailWordPolicyAssessment {
     /// <p>Custom words in the assessment.</p>
     pub custom_words: ::std::vec::Vec<crate::types::GuardrailCustomWord>,
@@ -80,16 +80,16 @@ impl GuardrailWordPolicyAssessmentBuilder {
     /// This method will fail if any of the following fields are not set:
     /// - [`custom_words`](crate::types::builders::GuardrailWordPolicyAssessmentBuilder::custom_words)
     /// - [`managed_word_lists`](crate::types::builders::GuardrailWordPolicyAssessmentBuilder::managed_word_lists)
-    pub fn build(self) -> ::std::result::Result<crate::types::GuardrailWordPolicyAssessment, ::aws_smithy_types::error::operation::BuildError> {
+    pub fn build(self) -> ::std::result::Result<crate::types::GuardrailWordPolicyAssessment, aws_smithy_types::error::operation::BuildError> {
         ::std::result::Result::Ok(crate::types::GuardrailWordPolicyAssessment {
             custom_words: self.custom_words.ok_or_else(|| {
-                ::aws_smithy_types::error::operation::BuildError::missing_field(
+                aws_smithy_types::error::operation::BuildError::missing_field(
                     "custom_words",
                     "custom_words was not specified but it is required when building GuardrailWordPolicyAssessment",
                 )
             })?,
             managed_word_lists: self.managed_word_lists.ok_or_else(|| {
-                ::aws_smithy_types::error::operation::BuildError::missing_field(
+                aws_smithy_types::error::operation::BuildError::missing_field(
                     "managed_word_lists",
                     "managed_word_lists was not specified but it is required when building GuardrailWordPolicyAssessment",
                 )

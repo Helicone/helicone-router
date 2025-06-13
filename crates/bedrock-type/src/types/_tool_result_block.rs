@@ -2,7 +2,7 @@
 
 /// <p>A tool result block that contains the results for a tool request that the model previously made.</p>
 #[non_exhaustive]
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, ::serde::Deserialize, ::serde::Serialize)]
+#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, serde::Deserialize, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ToolResultBlock {
     /// <p>The ID of the tool request that this is the result for.</p>
@@ -107,16 +107,16 @@ impl ToolResultBlockBuilder {
     /// This method will fail if any of the following fields are not set:
     /// - [`tool_use_id`](crate::types::builders::ToolResultBlockBuilder::tool_use_id)
     /// - [`content`](crate::types::builders::ToolResultBlockBuilder::content)
-    pub fn build(self) -> ::std::result::Result<crate::types::ToolResultBlock, ::aws_smithy_types::error::operation::BuildError> {
+    pub fn build(self) -> ::std::result::Result<crate::types::ToolResultBlock, aws_smithy_types::error::operation::BuildError> {
         ::std::result::Result::Ok(crate::types::ToolResultBlock {
             tool_use_id: self.tool_use_id.ok_or_else(|| {
-                ::aws_smithy_types::error::operation::BuildError::missing_field(
+                aws_smithy_types::error::operation::BuildError::missing_field(
                     "tool_use_id",
                     "tool_use_id was not specified but it is required when building ToolResultBlock",
                 )
             })?,
             content: self.content.ok_or_else(|| {
-                ::aws_smithy_types::error::operation::BuildError::missing_field(
+                aws_smithy_types::error::operation::BuildError::missing_field(
                     "content",
                     "content was not specified but it is required when building ToolResultBlock",
                 )

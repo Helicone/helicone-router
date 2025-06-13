@@ -2,7 +2,7 @@
 
 /// <p>The content block delta event.</p>
 #[non_exhaustive]
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, ::serde::Deserialize)]
+#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, serde::Deserialize)]
 pub struct ContentBlockDeltaEvent {
     /// <p>The delta for a content block delta event.</p>
     pub delta: ::std::option::Option<crate::types::ContentBlockDelta>,
@@ -67,11 +67,11 @@ impl ContentBlockDeltaEventBuilder {
     /// Consumes the builder and constructs a [`ContentBlockDeltaEvent`](crate::types::ContentBlockDeltaEvent).
     /// This method will fail if any of the following fields are not set:
     /// - [`content_block_index`](crate::types::builders::ContentBlockDeltaEventBuilder::content_block_index)
-    pub fn build(self) -> ::std::result::Result<crate::types::ContentBlockDeltaEvent, ::aws_smithy_types::error::operation::BuildError> {
+    pub fn build(self) -> ::std::result::Result<crate::types::ContentBlockDeltaEvent, aws_smithy_types::error::operation::BuildError> {
         ::std::result::Result::Ok(crate::types::ContentBlockDeltaEvent {
             delta: self.delta,
             content_block_index: self.content_block_index.ok_or_else(|| {
-                ::aws_smithy_types::error::operation::BuildError::missing_field(
+                aws_smithy_types::error::operation::BuildError::missing_field(
                     "content_block_index",
                     "content_block_index was not specified but it is required when building ContentBlockDeltaEvent",
                 )

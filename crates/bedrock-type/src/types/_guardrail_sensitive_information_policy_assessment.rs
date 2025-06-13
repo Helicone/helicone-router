@@ -2,7 +2,7 @@
 
 /// <p>The assessment for aPersonally Identifiable Information (PII) policy.</p>
 #[non_exhaustive]
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, ::serde::Deserialize)]
+#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, serde::Deserialize)]
 pub struct GuardrailSensitiveInformationPolicyAssessment {
     /// <p>The PII entities in the assessment.</p>
     pub pii_entities: ::std::vec::Vec<crate::types::GuardrailPiiEntityFilter>,
@@ -82,16 +82,16 @@ impl GuardrailSensitiveInformationPolicyAssessmentBuilder {
     /// - [`regexes`](crate::types::builders::GuardrailSensitiveInformationPolicyAssessmentBuilder::regexes)
     pub fn build(
         self,
-    ) -> ::std::result::Result<crate::types::GuardrailSensitiveInformationPolicyAssessment, ::aws_smithy_types::error::operation::BuildError> {
+    ) -> ::std::result::Result<crate::types::GuardrailSensitiveInformationPolicyAssessment, aws_smithy_types::error::operation::BuildError> {
         ::std::result::Result::Ok(crate::types::GuardrailSensitiveInformationPolicyAssessment {
             pii_entities: self.pii_entities.ok_or_else(|| {
-                ::aws_smithy_types::error::operation::BuildError::missing_field(
+                aws_smithy_types::error::operation::BuildError::missing_field(
                     "pii_entities",
                     "pii_entities was not specified but it is required when building GuardrailSensitiveInformationPolicyAssessment",
                 )
             })?,
             regexes: self.regexes.ok_or_else(|| {
-                ::aws_smithy_types::error::operation::BuildError::missing_field(
+                aws_smithy_types::error::operation::BuildError::missing_field(
                     "regexes",
                     "regexes was not specified but it is required when building GuardrailSensitiveInformationPolicyAssessment",
                 )

@@ -2,7 +2,7 @@
 
 /// <p>Configuration information for a guardrail that you use with the <code>ConverseStream</code> action.</p>
 #[non_exhaustive]
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, ::serde::Serialize)]
+#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, serde::Serialize)]
 pub struct GuardrailStreamConfiguration {
     /// <p>The identifier for the guardrail.</p>
     pub guardrail_identifier: ::std::string::String,
@@ -117,16 +117,16 @@ impl GuardrailStreamConfigurationBuilder {
     /// This method will fail if any of the following fields are not set:
     /// - [`guardrail_identifier`](crate::types::builders::GuardrailStreamConfigurationBuilder::guardrail_identifier)
     /// - [`guardrail_version`](crate::types::builders::GuardrailStreamConfigurationBuilder::guardrail_version)
-    pub fn build(self) -> ::std::result::Result<crate::types::GuardrailStreamConfiguration, ::aws_smithy_types::error::operation::BuildError> {
+    pub fn build(self) -> ::std::result::Result<crate::types::GuardrailStreamConfiguration, aws_smithy_types::error::operation::BuildError> {
         ::std::result::Result::Ok(crate::types::GuardrailStreamConfiguration {
             guardrail_identifier: self.guardrail_identifier.ok_or_else(|| {
-                ::aws_smithy_types::error::operation::BuildError::missing_field(
+                aws_smithy_types::error::operation::BuildError::missing_field(
                     "guardrail_identifier",
                     "guardrail_identifier was not specified but it is required when building GuardrailStreamConfiguration",
                 )
             })?,
             guardrail_version: self.guardrail_version.ok_or_else(|| {
-                ::aws_smithy_types::error::operation::BuildError::missing_field(
+                aws_smithy_types::error::operation::BuildError::missing_field(
                     "guardrail_version",
                     "guardrail_version was not specified but it is required when building GuardrailStreamConfiguration",
                 )

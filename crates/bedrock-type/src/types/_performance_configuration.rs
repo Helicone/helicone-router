@@ -2,7 +2,7 @@
 
 /// <p>Performance settings for a model.</p>
 #[non_exhaustive]
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, ::serde::Serialize, ::serde::Deserialize)]
+#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PerformanceConfiguration {
     /// <p>To use a latency-optimized version of the model, set to <code>optimized</code>.</p>

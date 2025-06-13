@@ -2,7 +2,7 @@
 
 /// <p>A Personally Identifiable Information (PII) entity configured in a guardrail.</p>
 #[non_exhaustive]
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug,  ::serde::Deserialize)]
+#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug,  serde::Deserialize)]
 pub struct GuardrailPiiEntityFilter {
     /// <p>The PII entity filter match.</p>
     pub r#match: ::std::string::String,
@@ -113,22 +113,22 @@ impl GuardrailPiiEntityFilterBuilder {
     /// - [`r#match`](crate::types::builders::GuardrailPiiEntityFilterBuilder::match)
     /// - [`r#type`](crate::types::builders::GuardrailPiiEntityFilterBuilder::type)
     /// - [`action`](crate::types::builders::GuardrailPiiEntityFilterBuilder::action)
-    pub fn build(self) -> ::std::result::Result<crate::types::GuardrailPiiEntityFilter, ::aws_smithy_types::error::operation::BuildError> {
+    pub fn build(self) -> ::std::result::Result<crate::types::GuardrailPiiEntityFilter, aws_smithy_types::error::operation::BuildError> {
         ::std::result::Result::Ok(crate::types::GuardrailPiiEntityFilter {
             r#match: self.r#match.ok_or_else(|| {
-                ::aws_smithy_types::error::operation::BuildError::missing_field(
+                aws_smithy_types::error::operation::BuildError::missing_field(
                     "r#match",
                     "r#match was not specified but it is required when building GuardrailPiiEntityFilter",
                 )
             })?,
             r#type: self.r#type.ok_or_else(|| {
-                ::aws_smithy_types::error::operation::BuildError::missing_field(
+                aws_smithy_types::error::operation::BuildError::missing_field(
                     "r#type",
                     "r#type was not specified but it is required when building GuardrailPiiEntityFilter",
                 )
             })?,
             action: self.action.ok_or_else(|| {
-                ::aws_smithy_types::error::operation::BuildError::missing_field(
+                aws_smithy_types::error::operation::BuildError::missing_field(
                     "action",
                     "action was not specified but it is required when building GuardrailPiiEntityFilter",
                 )

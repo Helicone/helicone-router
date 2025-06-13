@@ -2,7 +2,7 @@
 
 /// <p>A text block that contains text that you want to assess with a guardrail. For more information, see <code>GuardrailConverseContentBlock</code>.</p>
 #[non_exhaustive]
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug,  ::serde::Deserialize, ::serde::Serialize)]
+#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug,  serde::Deserialize, serde::Serialize)]
 pub struct GuardrailConverseTextBlock {
     /// <p>The text that you want to guard.</p>
     pub text: ::std::string::String,
@@ -75,10 +75,10 @@ impl GuardrailConverseTextBlockBuilder {
     /// Consumes the builder and constructs a [`GuardrailConverseTextBlock`](crate::types::GuardrailConverseTextBlock).
     /// This method will fail if any of the following fields are not set:
     /// - [`text`](crate::types::builders::GuardrailConverseTextBlockBuilder::text)
-    pub fn build(self) -> ::std::result::Result<crate::types::GuardrailConverseTextBlock, ::aws_smithy_types::error::operation::BuildError> {
+    pub fn build(self) -> ::std::result::Result<crate::types::GuardrailConverseTextBlock, aws_smithy_types::error::operation::BuildError> {
         ::std::result::Result::Ok(crate::types::GuardrailConverseTextBlock {
             text: self.text.ok_or_else(|| {
-                ::aws_smithy_types::error::operation::BuildError::missing_field(
+                aws_smithy_types::error::operation::BuildError::missing_field(
                     "text",
                     "text was not specified but it is required when building GuardrailConverseTextBlock",
                 )

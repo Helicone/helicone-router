@@ -2,7 +2,7 @@
 
 /// <p>A block of content in a streaming response.</p>
 #[non_exhaustive]
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq,  ::serde::Deserialize)]
+#[derive(::std::clone::Clone, ::std::cmp::PartialEq,  serde::Deserialize)]
 pub enum ContentBlockDelta {
     /// <p>Contains content regarding the reasoning that is carried out by the model. Reasoning refers to a Chain of Thought (CoT) that the model generates to enhance the accuracy of its final response.</p>
     ReasoningContent(crate::types::ReasoningContentBlockDelta),

@@ -2,7 +2,7 @@
 
 /// <p>Metrics for a call to <a href="https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_Converse.html">Converse</a>.</p>
 #[non_exhaustive]
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, ::serde::Deserialize)]
+#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ConverseMetrics {
     /// <p>The latency of the call to <code>Converse</code>, in milliseconds.</p>
@@ -52,11 +52,11 @@ impl ConverseMetricsBuilder {
         self,
     ) -> ::std::result::Result<
         crate::types::ConverseMetrics,
-        ::aws_smithy_types::error::operation::BuildError,
+        aws_smithy_types::error::operation::BuildError,
     > {
         ::std::result::Result::Ok(crate::types::ConverseMetrics {
             latency_ms: self.latency_ms.ok_or_else(|| {
-                ::aws_smithy_types::error::operation::BuildError::missing_field(
+                aws_smithy_types::error::operation::BuildError::missing_field(
                     "latency_ms",
                     "latency_ms was not specified but it is required when building ConverseMetrics",
                 )

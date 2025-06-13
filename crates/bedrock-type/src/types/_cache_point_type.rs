@@ -45,8 +45,8 @@
     ::std::cmp::PartialOrd,
     ::std::fmt::Debug,
     ::std::hash::Hash,
-    ::serde::Serialize,
-    ::serde::Deserialize,
+    serde::Serialize,
+    serde::Deserialize,
 )]
 #[serde(rename_all = "camelCase")]
 pub enum CachePointType {

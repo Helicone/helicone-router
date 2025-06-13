@@ -50,7 +50,7 @@
     ::std::cmp::PartialOrd,
     ::std::fmt::Debug,
     ::std::hash::Hash,
-    ::serde::Deserialize,
+    serde::Deserialize,
 )]
 #[serde(rename_all = "snake_case")]
 pub enum StopReason {

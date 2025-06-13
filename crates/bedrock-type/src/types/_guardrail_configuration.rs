@@ -2,7 +2,7 @@
 
 /// <p>Configuration information for a guardrail that you use with the <a href="https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_Converse.html">Converse</a> operation.</p>
 #[non_exhaustive]
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, ::serde::Serialize)]
+#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct GuardrailConfiguration {
     /// <p>The identifier for the guardrail.</p>
@@ -92,16 +92,16 @@ impl GuardrailConfigurationBuilder {
     /// This method will fail if any of the following fields are not set:
     /// - [`guardrail_identifier`](crate::types::builders::GuardrailConfigurationBuilder::guardrail_identifier)
     /// - [`guardrail_version`](crate::types::builders::GuardrailConfigurationBuilder::guardrail_version)
-    pub fn build(self) -> ::std::result::Result<crate::types::GuardrailConfiguration, ::aws_smithy_types::error::operation::BuildError> {
+    pub fn build(self) -> ::std::result::Result<crate::types::GuardrailConfiguration, aws_smithy_types::error::operation::BuildError> {
         ::std::result::Result::Ok(crate::types::GuardrailConfiguration {
             guardrail_identifier: self.guardrail_identifier.ok_or_else(|| {
-                ::aws_smithy_types::error::operation::BuildError::missing_field(
+                aws_smithy_types::error::operation::BuildError::missing_field(
                     "guardrail_identifier",
                     "guardrail_identifier was not specified but it is required when building GuardrailConfiguration",
                 )
             })?,
             guardrail_version: self.guardrail_version.ok_or_else(|| {
-                ::aws_smithy_types::error::operation::BuildError::missing_field(
+                aws_smithy_types::error::operation::BuildError::missing_field(
                     "guardrail_version",
                     "guardrail_version was not specified but it is required when building GuardrailConfiguration",
                 )

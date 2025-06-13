@@ -2,11 +2,11 @@
 
 /// <p>The image source (image bytes) of the guardrail converse image source.</p>
 #[non_exhaustive]
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::serde::Serialize, ::serde::Deserialize)]
+#[derive(::std::clone::Clone, ::std::cmp::PartialEq, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum GuardrailConverseImageSource {
     /// <p>The raw image bytes for the image.</p>
-    Bytes(::aws_smithy_types::Blob),
+    Bytes(aws_smithy_types::Blob),
     /// The `Unknown` variant represents cases where new union variant was received. Consider upgrading the SDK to the latest available version.
     /// An unknown enum variant
     ///
@@ -19,9 +19,9 @@ pub enum GuardrailConverseImageSource {
 }
 impl GuardrailConverseImageSource {
     #[allow(irrefutable_let_patterns)]
-    /// Tries to convert the enum instance into [`Bytes`](crate::types::GuardrailConverseImageSource::Bytes), extracting the inner [`Blob`](::aws_smithy_types::Blob).
+    /// Tries to convert the enum instance into [`Bytes`](crate::types::GuardrailConverseImageSource::Bytes), extracting the inner [`Blob`](aws_smithy_types::Blob).
     /// Returns `Err(&Self)` if it can't be converted.
-    pub fn as_bytes(&self) -> ::std::result::Result<&::aws_smithy_types::Blob, &Self> {
+    pub fn as_bytes(&self) -> ::std::result::Result<&aws_smithy_types::Blob, &Self> {
         if let GuardrailConverseImageSource::Bytes(val) = &self {
             ::std::result::Result::Ok(val)
         } else {

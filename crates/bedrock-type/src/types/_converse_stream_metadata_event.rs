@@ -2,7 +2,7 @@
 
 /// <p>A conversation stream metadata event.</p>
 #[non_exhaustive]
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, ::serde::Deserialize)]
+#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, serde::Deserialize)]
 pub struct ConverseStreamMetadataEvent {
     /// <p>Usage information for the conversation stream event.</p>
     pub usage: ::std::option::Option<crate::types::TokenUsage>,

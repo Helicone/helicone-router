@@ -4,7 +4,7 @@
 /// <p>This field is only supported by Anthropic Claude 3 models.</p>
 /// </note>
 #[non_exhaustive]
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, ::serde::Serialize)]
+#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SpecificToolChoice {
     /// <p>The name of the tool that the model must request.</p>
@@ -49,10 +49,10 @@ impl SpecificToolChoiceBuilder {
     /// Consumes the builder and constructs a [`SpecificToolChoice`](crate::types::SpecificToolChoice).
     /// This method will fail if any of the following fields are not set:
     /// - [`name`](crate::types::builders::SpecificToolChoiceBuilder::name)
-    pub fn build(self) -> ::std::result::Result<crate::types::SpecificToolChoice, ::aws_smithy_types::error::operation::BuildError> {
+    pub fn build(self) -> ::std::result::Result<crate::types::SpecificToolChoice, aws_smithy_types::error::operation::BuildError> {
         ::std::result::Result::Ok(crate::types::SpecificToolChoice {
             name: self.name.ok_or_else(|| {
-                ::aws_smithy_types::error::operation::BuildError::missing_field(
+                aws_smithy_types::error::operation::BuildError::missing_field(
                     "name",
                     "name was not specified but it is required when building SpecificToolChoice",
                 )

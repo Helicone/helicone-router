@@ -2,7 +2,7 @@
 
 /// <p>A behavior assessment of a topic policy.</p>
 #[non_exhaustive]
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, ::serde::Deserialize)]
+#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, serde::Deserialize)]
 pub struct GuardrailTopicPolicyAssessment {
     /// <p>The topics in the assessment.</p>
     pub topics: ::std::vec::Vec<crate::types::GuardrailTopic>,
@@ -51,10 +51,10 @@ impl GuardrailTopicPolicyAssessmentBuilder {
     /// Consumes the builder and constructs a [`GuardrailTopicPolicyAssessment`](crate::types::GuardrailTopicPolicyAssessment).
     /// This method will fail if any of the following fields are not set:
     /// - [`topics`](crate::types::builders::GuardrailTopicPolicyAssessmentBuilder::topics)
-    pub fn build(self) -> ::std::result::Result<crate::types::GuardrailTopicPolicyAssessment, ::aws_smithy_types::error::operation::BuildError> {
+    pub fn build(self) -> ::std::result::Result<crate::types::GuardrailTopicPolicyAssessment, aws_smithy_types::error::operation::BuildError> {
         ::std::result::Result::Ok(crate::types::GuardrailTopicPolicyAssessment {
             topics: self.topics.ok_or_else(|| {
-                ::aws_smithy_types::error::operation::BuildError::missing_field(
+                aws_smithy_types::error::operation::BuildError::missing_field(
                     "topics",
                     "topics was not specified but it is required when building GuardrailTopicPolicyAssessment",
                 )

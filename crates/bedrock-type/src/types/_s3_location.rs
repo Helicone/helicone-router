@@ -2,7 +2,7 @@
 
 /// <p>A storage location in an Amazon S3 bucket.</p>
 #[non_exhaustive]
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug,  ::serde::Deserialize, ::serde::Serialize)]
+#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug,  serde::Deserialize, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct S3Location {
     /// <p>An object URI starting with <code>s3://</code>.</p>
@@ -68,10 +68,10 @@ impl S3LocationBuilder {
     /// Consumes the builder and constructs a [`S3Location`](crate::types::S3Location).
     /// This method will fail if any of the following fields are not set:
     /// - [`uri`](crate::types::builders::S3LocationBuilder::uri)
-    pub fn build(self) -> ::std::result::Result<crate::types::S3Location, ::aws_smithy_types::error::operation::BuildError> {
+    pub fn build(self) -> ::std::result::Result<crate::types::S3Location, aws_smithy_types::error::operation::BuildError> {
         ::std::result::Result::Ok(crate::types::S3Location {
             uri: self.uri.ok_or_else(|| {
-                ::aws_smithy_types::error::operation::BuildError::missing_field(
+                aws_smithy_types::error::operation::BuildError::missing_field(
                     "uri",
                     "uri was not specified but it is required when building S3Location",
                 )

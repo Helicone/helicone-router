@@ -5,7 +5,7 @@
 #[derive(::std::clone::Clone, ::std::cmp::PartialEq)]
 pub enum GuardrailImageSource {
     /// <p>The bytes details of the guardrail image source. Object used in independent api.</p>
-    Bytes(::aws_smithy_types::Blob),
+    Bytes(aws_smithy_types::Blob),
     /// The `Unknown` variant represents cases where new union variant was received. Consider upgrading the SDK to the latest available version.
     /// An unknown enum variant
     ///
@@ -18,9 +18,9 @@ pub enum GuardrailImageSource {
 }
 impl GuardrailImageSource {
     #[allow(irrefutable_let_patterns)]
-    /// Tries to convert the enum instance into [`Bytes`](crate::types::GuardrailImageSource::Bytes), extracting the inner [`Blob`](::aws_smithy_types::Blob).
+    /// Tries to convert the enum instance into [`Bytes`](crate::types::GuardrailImageSource::Bytes), extracting the inner [`Blob`](aws_smithy_types::Blob).
     /// Returns `Err(&Self)` if it can't be converted.
-    pub fn as_bytes(&self) -> ::std::result::Result<&::aws_smithy_types::Blob, &Self> {
+    pub fn as_bytes(&self) -> ::std::result::Result<&aws_smithy_types::Blob, &Self> {
         if let GuardrailImageSource::Bytes(val) = &self {
             ::std::result::Result::Ok(val)
         } else {

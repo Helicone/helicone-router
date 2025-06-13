@@ -2,7 +2,7 @@
 
 /// <p>A Top level guardrail trace object. For more information, see <code>ConverseTrace</code>.</p>
 #[non_exhaustive]
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, ::serde::Deserialize)]
+#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, serde::Deserialize)]
 pub struct GuardrailTraceAssessment {
     /// <p>The output from the model.</p>
     pub model_output: ::std::option::Option<::std::vec::Vec<::std::string::String>>,

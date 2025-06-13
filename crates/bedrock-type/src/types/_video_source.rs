@@ -2,11 +2,11 @@
 
 /// <p>A video source. You can upload a smaller video as a base64-encoded string as long as the encoded file is less than 25MB. You can also transfer videos up to 1GB in size from an S3 bucket.</p>
 #[non_exhaustive]
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, ::serde::Serialize, ::serde::Deserialize)]
+#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum VideoSource {
     /// <p>Video content encoded in base64.</p>
-    Bytes(::aws_smithy_types::Blob),
+    Bytes(aws_smithy_types::Blob),
     /// <p>The location of a video object in an Amazon S3 bucket. To see which models support S3 uploads, see <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference-supported-models-features.html">Supported models and features for Converse</a>.</p>
     S3Location(crate::types::S3Location),
     /// The `Unknown` variant represents cases where new union variant was received. Consider upgrading the SDK to the latest available version.
@@ -20,9 +20,9 @@ pub enum VideoSource {
     Unknown,
 }
 impl VideoSource {
-    /// Tries to convert the enum instance into [`Bytes`](crate::types::VideoSource::Bytes), extracting the inner [`Blob`](::aws_smithy_types::Blob).
+    /// Tries to convert the enum instance into [`Bytes`](crate::types::VideoSource::Bytes), extracting the inner [`Blob`](aws_smithy_types::Blob).
     /// Returns `Err(&Self)` if it can't be converted.
-    pub fn as_bytes(&self) -> ::std::result::Result<&::aws_smithy_types::Blob, &Self> {
+    pub fn as_bytes(&self) -> ::std::result::Result<&aws_smithy_types::Blob, &Self> {
         if let VideoSource::Bytes(val) = &self {
             ::std::result::Result::Ok(val)
         } else {

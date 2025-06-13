@@ -2,7 +2,7 @@
 
 /// <p>The details of the guardrail image coverage.</p>
 #[non_exhaustive]
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, ::serde::Deserialize)]
+#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, serde::Deserialize)]
 pub struct GuardrailImageCoverage {
     /// <p>The count (integer) of images guardrails guarded.</p>
     pub guarded: ::std::option::Option<i32>,

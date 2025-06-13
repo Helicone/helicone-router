@@ -2,7 +2,7 @@
 
 /// <p>The delta for a tool use block.</p>
 #[non_exhaustive]
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug,  ::serde::Deserialize)]
+#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug,  serde::Deserialize)]
 pub struct ToolUseBlockDelta {
     /// <p>The input for a requested tool.</p>
     pub input: ::std::string::String,
@@ -46,10 +46,10 @@ impl ToolUseBlockDeltaBuilder {
     /// Consumes the builder and constructs a [`ToolUseBlockDelta`](crate::types::ToolUseBlockDelta).
     /// This method will fail if any of the following fields are not set:
     /// - [`input`](crate::types::builders::ToolUseBlockDeltaBuilder::input)
-    pub fn build(self) -> ::std::result::Result<crate::types::ToolUseBlockDelta, ::aws_smithy_types::error::operation::BuildError> {
+    pub fn build(self) -> ::std::result::Result<crate::types::ToolUseBlockDelta, aws_smithy_types::error::operation::BuildError> {
         ::std::result::Result::Ok(crate::types::ToolUseBlockDelta {
             input: self.input.ok_or_else(|| {
-                ::aws_smithy_types::error::operation::BuildError::missing_field(
+                aws_smithy_types::error::operation::BuildError::missing_field(
                     "input",
                     "input was not specified but it is required when building ToolUseBlockDelta",
                 )

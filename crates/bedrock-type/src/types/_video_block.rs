@@ -2,7 +2,7 @@
 
 /// <p>A video block.</p>
 #[non_exhaustive]
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, ::serde::Serialize, ::serde::Deserialize)]
+#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct VideoBlock {
     /// <p>The block's format.</p>
@@ -68,10 +68,10 @@ impl VideoBlockBuilder {
     /// Consumes the builder and constructs a [`VideoBlock`](crate::types::VideoBlock).
     /// This method will fail if any of the following fields are not set:
     /// - [`format`](crate::types::builders::VideoBlockBuilder::format)
-    pub fn build(self) -> ::std::result::Result<crate::types::VideoBlock, ::aws_smithy_types::error::operation::BuildError> {
+    pub fn build(self) -> ::std::result::Result<crate::types::VideoBlock, aws_smithy_types::error::operation::BuildError> {
         ::std::result::Result::Ok(crate::types::VideoBlock {
             format: self.format.ok_or_else(|| {
-                ::aws_smithy_types::error::operation::BuildError::missing_field(
+                aws_smithy_types::error::operation::BuildError::missing_field(
                     "format",
                     "format was not specified but it is required when building VideoBlock",
                 )

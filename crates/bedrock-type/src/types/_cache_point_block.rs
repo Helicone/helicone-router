@@ -2,7 +2,7 @@
 
 /// <p>Defines a section of content to be cached for reuse in subsequent API calls.</p>
 #[non_exhaustive]
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, ::serde::Serialize, ::serde::Deserialize)]
+#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CachePointBlock {
     /// <p>Specifies the type of cache point within the CachePointBlock.</p>
@@ -52,11 +52,11 @@ impl CachePointBlockBuilder {
         self,
     ) -> ::std::result::Result<
         crate::types::CachePointBlock,
-        ::aws_smithy_types::error::operation::BuildError,
+        aws_smithy_types::error::operation::BuildError,
     > {
         ::std::result::Result::Ok(crate::types::CachePointBlock {
             r#type: self.r#type.ok_or_else(|| {
-                ::aws_smithy_types::error::operation::BuildError::missing_field(
+                aws_smithy_types::error::operation::BuildError::missing_field(
                     "r#type",
                     "r#type was not specified but it is required when building CachePointBlock",
                 )

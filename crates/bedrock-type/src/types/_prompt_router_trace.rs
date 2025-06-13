@@ -2,7 +2,7 @@
 
 /// <p>A prompt router trace.</p>
 #[non_exhaustive]
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, ::serde::Deserialize)]
+#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, serde::Deserialize)]
 pub struct PromptRouterTrace {
     /// <p>The ID of the invoked model.</p>
     pub invoked_model_id: ::std::option::Option<::std::string::String>,

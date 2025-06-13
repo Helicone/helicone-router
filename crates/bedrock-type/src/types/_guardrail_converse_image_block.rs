@@ -2,7 +2,7 @@
 
 /// <p>An image block that contains images that you want to assess with a guardrail.</p>
 #[non_exhaustive]
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::serde::Serialize,  ::serde::Deserialize)]
+#[derive(::std::clone::Clone, ::std::cmp::PartialEq, serde::Serialize,  serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct GuardrailConverseImageBlock {
     /// <p>The format details for the image type of the guardrail converse image block.</p>
@@ -86,11 +86,11 @@ impl GuardrailConverseImageBlockBuilder {
         self,
     ) -> ::std::result::Result<
         crate::types::GuardrailConverseImageBlock,
-        ::aws_smithy_types::error::operation::BuildError,
+        aws_smithy_types::error::operation::BuildError,
     > {
         ::std::result::Result::Ok(crate::types::GuardrailConverseImageBlock {
             format: self.format.ok_or_else(|| {
-                ::aws_smithy_types::error::operation::BuildError::missing_field(
+                aws_smithy_types::error::operation::BuildError::missing_field(
                     "format",
                     "format was not specified but it is required when building GuardrailConverseImageBlock",
                 )

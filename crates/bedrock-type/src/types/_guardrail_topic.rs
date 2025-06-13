@@ -2,7 +2,7 @@
 
 /// <p>Information about a topic guardrail.</p>
 #[non_exhaustive]
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug,  ::serde::Deserialize)]
+#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug,  serde::Deserialize)]
 pub struct GuardrailTopic {
     /// <p>The name for the guardrail.</p>
     pub name: ::std::string::String,
@@ -113,22 +113,22 @@ impl GuardrailTopicBuilder {
     /// - [`name`](crate::types::builders::GuardrailTopicBuilder::name)
     /// - [`r#type`](crate::types::builders::GuardrailTopicBuilder::type)
     /// - [`action`](crate::types::builders::GuardrailTopicBuilder::action)
-    pub fn build(self) -> ::std::result::Result<crate::types::GuardrailTopic, ::aws_smithy_types::error::operation::BuildError> {
+    pub fn build(self) -> ::std::result::Result<crate::types::GuardrailTopic, aws_smithy_types::error::operation::BuildError> {
         ::std::result::Result::Ok(crate::types::GuardrailTopic {
             name: self.name.ok_or_else(|| {
-                ::aws_smithy_types::error::operation::BuildError::missing_field(
+                aws_smithy_types::error::operation::BuildError::missing_field(
                     "name",
                     "name was not specified but it is required when building GuardrailTopic",
                 )
             })?,
             r#type: self.r#type.ok_or_else(|| {
-                ::aws_smithy_types::error::operation::BuildError::missing_field(
+                aws_smithy_types::error::operation::BuildError::missing_field(
                     "r#type",
                     "r#type was not specified but it is required when building GuardrailTopic",
                 )
             })?,
             action: self.action.ok_or_else(|| {
-                ::aws_smithy_types::error::operation::BuildError::missing_field(
+                aws_smithy_types::error::operation::BuildError::missing_field(
                     "action",
                     "action was not specified but it is required when building GuardrailTopic",
                 )

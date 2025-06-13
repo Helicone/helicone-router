@@ -131,4 +131,29 @@ impl MessageBuilder {
     ) -> &::std::option::Option<::std::vec::Vec<crate::types::ContentBlock>> {
         &self.content
     }
+    /// Consumes the builder and constructs a [`Message`](crate::types::Message).
+    /// This method will fail if any of the following fields are not set:
+    /// - [`role`](crate::types::builders::MessageBuilder::role)
+    /// - [`content`](crate::types::builders::MessageBuilder::content)
+    pub fn build(
+        self,
+    ) -> ::std::result::Result<
+        crate::types::Message,
+        aws_smithy_types::error::operation::BuildError,
+    > {
+        ::std::result::Result::Ok(crate::types::Message {
+            role: self.role.ok_or_else(|| {
+                aws_smithy_types::error::operation::BuildError::missing_field(
+                    "role",
+                    "role was not specified but it is required when building Message",
+                )
+            })?,
+            content: self.content.ok_or_else(|| {
+                aws_smithy_types::error::operation::BuildError::missing_field(
+                    "content",
+                    "content was not specified but it is required when building Message",
+                )
+            })?,
+        })
+    }
 }

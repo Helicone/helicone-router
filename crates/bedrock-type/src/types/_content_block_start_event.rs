@@ -2,7 +2,7 @@
 
 /// <p>Content block start event.</p>
 #[non_exhaustive]
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, ::serde::Deserialize)]
+#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, serde::Deserialize)]
 pub struct ContentBlockStartEvent {
     /// <p>Start information about a content block start event.</p>
     pub start: ::std::option::Option<crate::types::ContentBlockStart>,
@@ -67,11 +67,11 @@ impl ContentBlockStartEventBuilder {
     /// Consumes the builder and constructs a [`ContentBlockStartEvent`](crate::types::ContentBlockStartEvent).
     /// This method will fail if any of the following fields are not set:
     /// - [`content_block_index`](crate::types::builders::ContentBlockStartEventBuilder::content_block_index)
-    pub fn build(self) -> ::std::result::Result<crate::types::ContentBlockStartEvent, ::aws_smithy_types::error::operation::BuildError> {
+    pub fn build(self) -> ::std::result::Result<crate::types::ContentBlockStartEvent, aws_smithy_types::error::operation::BuildError> {
         ::std::result::Result::Ok(crate::types::ContentBlockStartEvent {
             start: self.start,
             content_block_index: self.content_block_index.ok_or_else(|| {
-                ::aws_smithy_types::error::operation::BuildError::missing_field(
+                aws_smithy_types::error::operation::BuildError::missing_field(
                     "content_block_index",
                     "content_block_index was not specified but it is required when building ContentBlockStartEvent",
                 )

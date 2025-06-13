@@ -2,7 +2,7 @@
 
 /// <p>A document to include in a message.</p>
 #[non_exhaustive]
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, ::serde::Deserialize, ::serde::Serialize)]
+#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, serde::Deserialize, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DocumentBlock {
     /// <p>The format of a document, or its extension.</p>
@@ -162,16 +162,16 @@ impl DocumentBlockBuilder {
     /// This method will fail if any of the following fields are not set:
     /// - [`format`](crate::types::builders::DocumentBlockBuilder::format)
     /// - [`name`](crate::types::builders::DocumentBlockBuilder::name)
-    pub fn build(self) -> ::std::result::Result<crate::types::DocumentBlock, ::aws_smithy_types::error::operation::BuildError> {
+    pub fn build(self) -> ::std::result::Result<crate::types::DocumentBlock, aws_smithy_types::error::operation::BuildError> {
         ::std::result::Result::Ok(crate::types::DocumentBlock {
             format: self.format.ok_or_else(|| {
-                ::aws_smithy_types::error::operation::BuildError::missing_field(
+                aws_smithy_types::error::operation::BuildError::missing_field(
                     "format",
                     "format was not specified but it is required when building DocumentBlock",
                 )
             })?,
             name: self.name.ok_or_else(|| {
-                ::aws_smithy_types::error::operation::BuildError::missing_field(
+                aws_smithy_types::error::operation::BuildError::missing_field(
                     "name",
                     "name was not specified but it is required when building DocumentBlock",
                 )

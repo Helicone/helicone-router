@@ -2,7 +2,7 @@
 
 /// <p>The specification for the tool.</p>
 #[non_exhaustive]
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, ::serde::Serialize)]
+#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ToolSpecification {
     /// <p>The name for the tool.</p>
@@ -90,10 +90,10 @@ impl ToolSpecificationBuilder {
     /// Consumes the builder and constructs a [`ToolSpecification`](crate::types::ToolSpecification).
     /// This method will fail if any of the following fields are not set:
     /// - [`name`](crate::types::builders::ToolSpecificationBuilder::name)
-    pub fn build(self) -> ::std::result::Result<crate::types::ToolSpecification, ::aws_smithy_types::error::operation::BuildError> {
+    pub fn build(self) -> ::std::result::Result<crate::types::ToolSpecification, aws_smithy_types::error::operation::BuildError> {
         ::std::result::Result::Ok(crate::types::ToolSpecification {
             name: self.name.ok_or_else(|| {
-                ::aws_smithy_types::error::operation::BuildError::missing_field(
+                aws_smithy_types::error::operation::BuildError::missing_field(
                     "name",
                     "name was not specified but it is required when building ToolSpecification",
                 )

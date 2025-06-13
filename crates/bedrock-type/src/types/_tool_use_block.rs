@@ -2,7 +2,7 @@
 
 /// <p>A tool use content block. Contains information about a tool that the model is requesting be run., The model uses the result from the tool to generate a response.</p>
 #[non_exhaustive]
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug,  ::serde::Deserialize, ::serde::Serialize)]
+#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug,  serde::Deserialize, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ToolUseBlock {
     /// <p>The ID for the tool request.</p>
@@ -10,7 +10,7 @@ pub struct ToolUseBlock {
     /// <p>The name of the tool that the model wants to use.</p>
     pub name: ::std::string::String,
     /// <p>The input to pass to the tool.</p>
-    pub input: ::aws_smithy_types::Document,
+    pub input: aws_smithy_types::Document,
 }
 impl ToolUseBlock {
     /// <p>The ID for the tool request.</p>
@@ -24,7 +24,7 @@ impl ToolUseBlock {
         self.name.deref()
     }
     /// <p>The input to pass to the tool.</p>
-    pub fn input(&self) -> &::aws_smithy_types::Document {
+    pub fn input(&self) -> &aws_smithy_types::Document {
         &self.input
     }
 }
@@ -41,7 +41,7 @@ impl ToolUseBlock {
 pub struct ToolUseBlockBuilder {
     pub(crate) tool_use_id: ::std::option::Option<::std::string::String>,
     pub(crate) name: ::std::option::Option<::std::string::String>,
-    pub(crate) input: ::std::option::Option<::aws_smithy_types::Document>,
+    pub(crate) input: ::std::option::Option<aws_smithy_types::Document>,
 }
 impl ToolUseBlockBuilder {
     /// <p>The ID for the tool request.</p>
@@ -76,17 +76,17 @@ impl ToolUseBlockBuilder {
     }
     /// <p>The input to pass to the tool.</p>
     /// This field is required.
-    pub fn input(mut self, input: ::aws_smithy_types::Document) -> Self {
+    pub fn input(mut self, input: aws_smithy_types::Document) -> Self {
         self.input = ::std::option::Option::Some(input);
         self
     }
     /// <p>The input to pass to the tool.</p>
-    pub fn set_input(mut self, input: ::std::option::Option<::aws_smithy_types::Document>) -> Self {
+    pub fn set_input(mut self, input: ::std::option::Option<aws_smithy_types::Document>) -> Self {
         self.input = input;
         self
     }
     /// <p>The input to pass to the tool.</p>
-    pub fn get_input(&self) -> &::std::option::Option<::aws_smithy_types::Document> {
+    pub fn get_input(&self) -> &::std::option::Option<aws_smithy_types::Document> {
         &self.input
     }
     /// Consumes the builder and constructs a [`ToolUseBlock`](crate::types::ToolUseBlock).
@@ -94,22 +94,22 @@ impl ToolUseBlockBuilder {
     /// - [`tool_use_id`](crate::types::builders::ToolUseBlockBuilder::tool_use_id)
     /// - [`name`](crate::types::builders::ToolUseBlockBuilder::name)
     /// - [`input`](crate::types::builders::ToolUseBlockBuilder::input)
-    pub fn build(self) -> ::std::result::Result<crate::types::ToolUseBlock, ::aws_smithy_types::error::operation::BuildError> {
+    pub fn build(self) -> ::std::result::Result<crate::types::ToolUseBlock, aws_smithy_types::error::operation::BuildError> {
         ::std::result::Result::Ok(crate::types::ToolUseBlock {
             tool_use_id: self.tool_use_id.ok_or_else(|| {
-                ::aws_smithy_types::error::operation::BuildError::missing_field(
+                aws_smithy_types::error::operation::BuildError::missing_field(
                     "tool_use_id",
                     "tool_use_id was not specified but it is required when building ToolUseBlock",
                 )
             })?,
             name: self.name.ok_or_else(|| {
-                ::aws_smithy_types::error::operation::BuildError::missing_field(
+                aws_smithy_types::error::operation::BuildError::missing_field(
                     "name",
                     "name was not specified but it is required when building ToolUseBlock",
                 )
             })?,
             input: self.input.ok_or_else(|| {
-                ::aws_smithy_types::error::operation::BuildError::missing_field(
+                aws_smithy_types::error::operation::BuildError::missing_field(
                     "input",
                     "input was not specified but it is required when building ToolUseBlock",
                 )

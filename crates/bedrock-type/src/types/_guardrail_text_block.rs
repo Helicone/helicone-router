@@ -75,10 +75,10 @@ impl GuardrailTextBlockBuilder {
     /// Consumes the builder and constructs a [`GuardrailTextBlock`](crate::types::GuardrailTextBlock).
     /// This method will fail if any of the following fields are not set:
     /// - [`text`](crate::types::builders::GuardrailTextBlockBuilder::text)
-    pub fn build(self) -> ::std::result::Result<crate::types::GuardrailTextBlock, ::aws_smithy_types::error::operation::BuildError> {
+    pub fn build(self) -> ::std::result::Result<crate::types::GuardrailTextBlock, aws_smithy_types::error::operation::BuildError> {
         ::std::result::Result::Ok(crate::types::GuardrailTextBlock {
             text: self.text.ok_or_else(|| {
-                ::aws_smithy_types::error::operation::BuildError::missing_field(
+                aws_smithy_types::error::operation::BuildError::missing_field(
                     "text",
                     "text was not specified but it is required when building GuardrailTextBlock",
                 )

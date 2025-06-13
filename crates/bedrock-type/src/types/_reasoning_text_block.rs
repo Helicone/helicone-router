@@ -2,7 +2,7 @@
 
 /// <p>Contains the reasoning that the model used to return the output.</p>
 #[non_exhaustive]
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::serde::Deserialize, ::serde::Serialize)]
+#[derive(::std::clone::Clone, ::std::cmp::PartialEq, serde::Deserialize, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ReasoningTextBlock {
     /// <p>The reasoning that the model used to return the output.</p>
@@ -76,10 +76,10 @@ impl ReasoningTextBlockBuilder {
     /// Consumes the builder and constructs a [`ReasoningTextBlock`](crate::types::ReasoningTextBlock).
     /// This method will fail if any of the following fields are not set:
     /// - [`text`](crate::types::builders::ReasoningTextBlockBuilder::text)
-    pub fn build(self) -> ::std::result::Result<crate::types::ReasoningTextBlock, ::aws_smithy_types::error::operation::BuildError> {
+    pub fn build(self) -> ::std::result::Result<crate::types::ReasoningTextBlock, aws_smithy_types::error::operation::BuildError> {
         ::std::result::Result::Ok(crate::types::ReasoningTextBlock {
             text: self.text.ok_or_else(|| {
-                ::aws_smithy_types::error::operation::BuildError::missing_field(
+                aws_smithy_types::error::operation::BuildError::missing_field(
                     "text",
                     "text was not specified but it is required when building ReasoningTextBlock",
                 )

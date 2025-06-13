@@ -2,7 +2,7 @@
 
 /// <p>The start of a tool use block.</p>
 #[non_exhaustive]
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, ::serde::Deserialize)]
+#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, serde::Deserialize)]
 pub struct ToolUseBlockStart {
     /// <p>The ID for the tool request.</p>
     pub tool_use_id: ::std::string::String,
@@ -70,16 +70,16 @@ impl ToolUseBlockStartBuilder {
     /// This method will fail if any of the following fields are not set:
     /// - [`tool_use_id`](crate::types::builders::ToolUseBlockStartBuilder::tool_use_id)
     /// - [`name`](crate::types::builders::ToolUseBlockStartBuilder::name)
-    pub fn build(self) -> ::std::result::Result<crate::types::ToolUseBlockStart, ::aws_smithy_types::error::operation::BuildError> {
+    pub fn build(self) -> ::std::result::Result<crate::types::ToolUseBlockStart, aws_smithy_types::error::operation::BuildError> {
         ::std::result::Result::Ok(crate::types::ToolUseBlockStart {
             tool_use_id: self.tool_use_id.ok_or_else(|| {
-                ::aws_smithy_types::error::operation::BuildError::missing_field(
+                aws_smithy_types::error::operation::BuildError::missing_field(
                     "tool_use_id",
                     "tool_use_id was not specified but it is required when building ToolUseBlockStart",
                 )
             })?,
             name: self.name.ok_or_else(|| {
-                ::aws_smithy_types::error::operation::BuildError::missing_field(
+                aws_smithy_types::error::operation::BuildError::missing_field(
                     "name",
                     "name was not specified but it is required when building ToolUseBlockStart",
                 )

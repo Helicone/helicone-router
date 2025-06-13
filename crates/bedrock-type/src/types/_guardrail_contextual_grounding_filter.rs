@@ -2,7 +2,7 @@
 
 /// <p>The details for the guardrails contextual grounding filter.</p>
 #[non_exhaustive]
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug,  ::serde::Deserialize)]
+#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug,  serde::Deserialize)]
 pub struct GuardrailContextualGroundingFilter {
     /// <p>The contextual grounding filter type.</p>
     pub r#type: crate::types::GuardrailContextualGroundingFilterType,
@@ -135,28 +135,28 @@ impl GuardrailContextualGroundingFilterBuilder {
     /// - [`threshold`](crate::types::builders::GuardrailContextualGroundingFilterBuilder::threshold)
     /// - [`score`](crate::types::builders::GuardrailContextualGroundingFilterBuilder::score)
     /// - [`action`](crate::types::builders::GuardrailContextualGroundingFilterBuilder::action)
-    pub fn build(self) -> ::std::result::Result<crate::types::GuardrailContextualGroundingFilter, ::aws_smithy_types::error::operation::BuildError> {
+    pub fn build(self) -> ::std::result::Result<crate::types::GuardrailContextualGroundingFilter, aws_smithy_types::error::operation::BuildError> {
         ::std::result::Result::Ok(crate::types::GuardrailContextualGroundingFilter {
             r#type: self.r#type.ok_or_else(|| {
-                ::aws_smithy_types::error::operation::BuildError::missing_field(
+                aws_smithy_types::error::operation::BuildError::missing_field(
                     "r#type",
                     "r#type was not specified but it is required when building GuardrailContextualGroundingFilter",
                 )
             })?,
             threshold: self.threshold.ok_or_else(|| {
-                ::aws_smithy_types::error::operation::BuildError::missing_field(
+                aws_smithy_types::error::operation::BuildError::missing_field(
                     "threshold",
                     "threshold was not specified but it is required when building GuardrailContextualGroundingFilter",
                 )
             })?,
             score: self.score.ok_or_else(|| {
-                ::aws_smithy_types::error::operation::BuildError::missing_field(
+                aws_smithy_types::error::operation::BuildError::missing_field(
                     "score",
                     "score was not specified but it is required when building GuardrailContextualGroundingFilter",
                 )
             })?,
             action: self.action.ok_or_else(|| {
-                ::aws_smithy_types::error::operation::BuildError::missing_field(
+                aws_smithy_types::error::operation::BuildError::missing_field(
                     "action",
                     "action was not specified but it is required when building GuardrailContextualGroundingFilter",
                 )

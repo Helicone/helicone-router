@@ -2,7 +2,7 @@
 
 /// <p>An assessment of a content policy for a guardrail.</p>
 #[non_exhaustive]
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug,  ::serde::Deserialize)]
+#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug,  serde::Deserialize)]
 pub struct GuardrailContentPolicyAssessment {
     /// <p>The content policy filters.</p>
     pub filters: ::std::vec::Vec<crate::types::GuardrailContentFilter>,
@@ -51,10 +51,10 @@ impl GuardrailContentPolicyAssessmentBuilder {
     /// Consumes the builder and constructs a [`GuardrailContentPolicyAssessment`](crate::types::GuardrailContentPolicyAssessment).
     /// This method will fail if any of the following fields are not set:
     /// - [`filters`](crate::types::builders::GuardrailContentPolicyAssessmentBuilder::filters)
-    pub fn build(self) -> ::std::result::Result<crate::types::GuardrailContentPolicyAssessment, ::aws_smithy_types::error::operation::BuildError> {
+    pub fn build(self) -> ::std::result::Result<crate::types::GuardrailContentPolicyAssessment, aws_smithy_types::error::operation::BuildError> {
         ::std::result::Result::Ok(crate::types::GuardrailContentPolicyAssessment {
             filters: self.filters.ok_or_else(|| {
-                ::aws_smithy_types::error::operation::BuildError::missing_field(
+                aws_smithy_types::error::operation::BuildError::missing_field(
                     "filters",
                     "filters was not specified but it is required when building GuardrailContentPolicyAssessment",
                 )

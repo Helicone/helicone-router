@@ -2,7 +2,7 @@
 
 /// <p>The details on the use of the guardrail.</p>
 #[non_exhaustive]
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug,  ::serde::Deserialize)]
+#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug,  serde::Deserialize)]
 pub struct GuardrailUsage {
     /// <p>The topic policy units processed by the guardrail.</p>
     pub topic_policy_units: i32,
@@ -181,40 +181,40 @@ impl GuardrailUsageBuilder {
     /// - [`sensitive_information_policy_units`](crate::types::builders::GuardrailUsageBuilder::sensitive_information_policy_units)
     /// - [`sensitive_information_policy_free_units`](crate::types::builders::GuardrailUsageBuilder::sensitive_information_policy_free_units)
     /// - [`contextual_grounding_policy_units`](crate::types::builders::GuardrailUsageBuilder::contextual_grounding_policy_units)
-    pub fn build(self) -> ::std::result::Result<crate::types::GuardrailUsage, ::aws_smithy_types::error::operation::BuildError> {
+    pub fn build(self) -> ::std::result::Result<crate::types::GuardrailUsage, aws_smithy_types::error::operation::BuildError> {
         ::std::result::Result::Ok(crate::types::GuardrailUsage {
             topic_policy_units: self.topic_policy_units.ok_or_else(|| {
-                ::aws_smithy_types::error::operation::BuildError::missing_field(
+                aws_smithy_types::error::operation::BuildError::missing_field(
                     "topic_policy_units",
                     "topic_policy_units was not specified but it is required when building GuardrailUsage",
                 )
             })?,
             content_policy_units: self.content_policy_units.ok_or_else(|| {
-                ::aws_smithy_types::error::operation::BuildError::missing_field(
+                aws_smithy_types::error::operation::BuildError::missing_field(
                     "content_policy_units",
                     "content_policy_units was not specified but it is required when building GuardrailUsage",
                 )
             })?,
             word_policy_units: self.word_policy_units.ok_or_else(|| {
-                ::aws_smithy_types::error::operation::BuildError::missing_field(
+                aws_smithy_types::error::operation::BuildError::missing_field(
                     "word_policy_units",
                     "word_policy_units was not specified but it is required when building GuardrailUsage",
                 )
             })?,
             sensitive_information_policy_units: self.sensitive_information_policy_units.ok_or_else(|| {
-                ::aws_smithy_types::error::operation::BuildError::missing_field(
+                aws_smithy_types::error::operation::BuildError::missing_field(
                     "sensitive_information_policy_units",
                     "sensitive_information_policy_units was not specified but it is required when building GuardrailUsage",
                 )
             })?,
             sensitive_information_policy_free_units: self.sensitive_information_policy_free_units.ok_or_else(|| {
-                ::aws_smithy_types::error::operation::BuildError::missing_field(
+                aws_smithy_types::error::operation::BuildError::missing_field(
                     "sensitive_information_policy_free_units",
                     "sensitive_information_policy_free_units was not specified but it is required when building GuardrailUsage",
                 )
             })?,
             contextual_grounding_policy_units: self.contextual_grounding_policy_units.ok_or_else(|| {
-                ::aws_smithy_types::error::operation::BuildError::missing_field(
+                aws_smithy_types::error::operation::BuildError::missing_field(
                     "contextual_grounding_policy_units",
                     "contextual_grounding_policy_units was not specified but it is required when building GuardrailUsage",
                 )

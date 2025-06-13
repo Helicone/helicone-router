@@ -6,7 +6,7 @@
 pub struct ResourceNotFoundException {
     #[allow(missing_docs)] // documentation missing in model
     pub message: ::std::option::Option<::std::string::String>,
-    pub(crate) meta: ::aws_smithy_types::error::ErrorMetadata,
+    pub(crate) meta: aws_smithy_types::error::ErrorMetadata,
 }
 impl ResourceNotFoundException {
     /// Returns the error message.
@@ -28,12 +28,12 @@ impl ::std::fmt::Display for ResourceNotFoundException {
 impl ::std::error::Error for ResourceNotFoundException {}
 impl ::aws_types::request_id::RequestId for crate::types::error::ResourceNotFoundException {
     fn request_id(&self) -> Option<&str> {
-        use ::aws_smithy_types::error::metadata::ProvideErrorMetadata;
+        use aws_smithy_types::error::metadata::ProvideErrorMetadata;
         self.meta().request_id()
     }
 }
-impl ::aws_smithy_types::error::metadata::ProvideErrorMetadata for ResourceNotFoundException {
-    fn meta(&self) -> &::aws_smithy_types::error::ErrorMetadata {
+impl aws_smithy_types::error::metadata::ProvideErrorMetadata for ResourceNotFoundException {
+    fn meta(&self) -> &aws_smithy_types::error::ErrorMetadata {
         &self.meta
     }
 }
@@ -49,7 +49,7 @@ impl ResourceNotFoundException {
 #[non_exhaustive]
 pub struct ResourceNotFoundExceptionBuilder {
     pub(crate) message: ::std::option::Option<::std::string::String>,
-    meta: std::option::Option<::aws_smithy_types::error::ErrorMetadata>,
+    meta: std::option::Option<aws_smithy_types::error::ErrorMetadata>,
 }
 impl ResourceNotFoundExceptionBuilder {
     #[allow(missing_docs)] // documentation missing in model
@@ -67,13 +67,13 @@ impl ResourceNotFoundExceptionBuilder {
         &self.message
     }
     /// Sets error metadata
-    pub fn meta(mut self, meta: ::aws_smithy_types::error::ErrorMetadata) -> Self {
+    pub fn meta(mut self, meta: aws_smithy_types::error::ErrorMetadata) -> Self {
         self.meta = Some(meta);
         self
     }
 
     /// Sets error metadata
-    pub fn set_meta(&mut self, meta: std::option::Option<::aws_smithy_types::error::ErrorMetadata>) -> &mut Self {
+    pub fn set_meta(&mut self, meta: std::option::Option<aws_smithy_types::error::ErrorMetadata>) -> &mut Self {
         self.meta = meta;
         self
     }

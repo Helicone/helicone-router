@@ -2,7 +2,7 @@
 
 /// <p>The tokens used in a message API inference call.</p>
 #[non_exhaustive]
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, ::serde::Deserialize)]
+#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TokenUsage {
     /// <p>The number of tokens sent in the request to the model.</p>
@@ -140,23 +140,23 @@ impl TokenUsageBuilder {
         self,
     ) -> ::std::result::Result<
         crate::types::TokenUsage,
-        ::aws_smithy_types::error::operation::BuildError,
+        aws_smithy_types::error::operation::BuildError,
     > {
         ::std::result::Result::Ok(crate::types::TokenUsage {
             input_tokens: self.input_tokens.ok_or_else(|| {
-                ::aws_smithy_types::error::operation::BuildError::missing_field(
+                aws_smithy_types::error::operation::BuildError::missing_field(
                     "input_tokens",
                     "input_tokens was not specified but it is required when building TokenUsage",
                 )
             })?,
             output_tokens: self.output_tokens.ok_or_else(|| {
-                ::aws_smithy_types::error::operation::BuildError::missing_field(
+                aws_smithy_types::error::operation::BuildError::missing_field(
                     "output_tokens",
                     "output_tokens was not specified but it is required when building TokenUsage",
                 )
             })?,
             total_tokens: self.total_tokens.ok_or_else(|| {
-                ::aws_smithy_types::error::operation::BuildError::missing_field(
+                aws_smithy_types::error::operation::BuildError::missing_field(
                     "total_tokens",
                     "total_tokens was not specified but it is required when building TokenUsage",
                 )

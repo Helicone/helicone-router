@@ -2,7 +2,7 @@
 
 /// <p>Image content for a message.</p>
 #[non_exhaustive]
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, ::serde::Deserialize, ::serde::Serialize)]
+#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, serde::Deserialize, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ImageBlock {
     /// <p>The format of the image.</p>
@@ -68,10 +68,10 @@ impl ImageBlockBuilder {
     /// Consumes the builder and constructs a [`ImageBlock`](crate::types::ImageBlock).
     /// This method will fail if any of the following fields are not set:
     /// - [`format`](crate::types::builders::ImageBlockBuilder::format)
-    pub fn build(self) -> ::std::result::Result<crate::types::ImageBlock, ::aws_smithy_types::error::operation::BuildError> {
+    pub fn build(self) -> ::std::result::Result<crate::types::ImageBlock, aws_smithy_types::error::operation::BuildError> {
         ::std::result::Result::Ok(crate::types::ImageBlock {
             format: self.format.ok_or_else(|| {
-                ::aws_smithy_types::error::operation::BuildError::missing_field(
+                aws_smithy_types::error::operation::BuildError::missing_field(
                     "format",
                     "format was not specified but it is required when building ImageBlock",
                 )

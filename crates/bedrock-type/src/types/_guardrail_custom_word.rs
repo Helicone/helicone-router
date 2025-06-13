@@ -2,7 +2,7 @@
 
 /// <p>A custom word configured in a guardrail.</p>
 #[non_exhaustive]
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug,  ::serde::Deserialize)]
+#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug,  serde::Deserialize)]
 pub struct GuardrailCustomWord {
     /// <p>The match for the custom word.</p>
     pub r#match: ::std::string::String,
@@ -90,16 +90,16 @@ impl GuardrailCustomWordBuilder {
     /// This method will fail if any of the following fields are not set:
     /// - [`r#match`](crate::types::builders::GuardrailCustomWordBuilder::match)
     /// - [`action`](crate::types::builders::GuardrailCustomWordBuilder::action)
-    pub fn build(self) -> ::std::result::Result<crate::types::GuardrailCustomWord, ::aws_smithy_types::error::operation::BuildError> {
+    pub fn build(self) -> ::std::result::Result<crate::types::GuardrailCustomWord, aws_smithy_types::error::operation::BuildError> {
         ::std::result::Result::Ok(crate::types::GuardrailCustomWord {
             r#match: self.r#match.ok_or_else(|| {
-                ::aws_smithy_types::error::operation::BuildError::missing_field(
+                aws_smithy_types::error::operation::BuildError::missing_field(
                     "r#match",
                     "r#match was not specified but it is required when building GuardrailCustomWord",
                 )
             })?,
             action: self.action.ok_or_else(|| {
-                ::aws_smithy_types::error::operation::BuildError::missing_field(
+                aws_smithy_types::error::operation::BuildError::missing_field(
                     "action",
                     "action was not specified but it is required when building GuardrailCustomWord",
                 )

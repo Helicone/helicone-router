@@ -2,7 +2,7 @@
 
 /// <p>The start of a message.</p>
 #[non_exhaustive]
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, ::serde::Deserialize)]
+#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, serde::Deserialize)]
 pub struct MessageStartEvent {
     /// <p>The role for the message.</p>
     pub role: crate::types::ConversationRole,
@@ -45,10 +45,10 @@ impl MessageStartEventBuilder {
     /// Consumes the builder and constructs a [`MessageStartEvent`](crate::types::MessageStartEvent).
     /// This method will fail if any of the following fields are not set:
     /// - [`role`](crate::types::builders::MessageStartEventBuilder::role)
-    pub fn build(self) -> ::std::result::Result<crate::types::MessageStartEvent, ::aws_smithy_types::error::operation::BuildError> {
+    pub fn build(self) -> ::std::result::Result<crate::types::MessageStartEvent, aws_smithy_types::error::operation::BuildError> {
         ::std::result::Result::Ok(crate::types::MessageStartEvent {
             role: self.role.ok_or_else(|| {
-                ::aws_smithy_types::error::operation::BuildError::missing_field(
+                aws_smithy_types::error::operation::BuildError::missing_field(
                     "role",
                     "role was not specified but it is required when building MessageStartEvent",
                 )

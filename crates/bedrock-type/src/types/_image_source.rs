@@ -2,11 +2,11 @@
 
 /// <p>The source for an image.</p>
 #[non_exhaustive]
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, ::serde::Deserialize, ::serde::Serialize)]
+#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, serde::Deserialize, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 pub enum ImageSource {
     /// <p>The raw image bytes for the image. If you use an AWS SDK, you don't need to encode the image bytes in base64.</p>
-    Bytes(::aws_smithy_types::Blob),
+    Bytes(aws_smithy_types::Blob),
     /// <p>The location of an image object in an Amazon S3 bucket. To see which models support S3 uploads, see <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference-supported-models-features.html">Supported models and features for Converse</a>.</p>
     S3Location(crate::types::S3Location),
     /// The `Unknown` variant represents cases where new union variant was received. Consider upgrading the SDK to the latest available version.
@@ -20,9 +20,9 @@ pub enum ImageSource {
     Unknown,
 }
 impl ImageSource {
-    /// Tries to convert the enum instance into [`Bytes`](crate::types::ImageSource::Bytes), extracting the inner [`Blob`](::aws_smithy_types::Blob).
+    /// Tries to convert the enum instance into [`Bytes`](crate::types::ImageSource::Bytes), extracting the inner [`Blob`](aws_smithy_types::Blob).
     /// Returns `Err(&Self)` if it can't be converted.
-    pub fn as_bytes(&self) -> ::std::result::Result<&::aws_smithy_types::Blob, &Self> {
+    pub fn as_bytes(&self) -> ::std::result::Result<&aws_smithy_types::Blob, &Self> {
         if let ImageSource::Bytes(val) = &self {
             ::std::result::Result::Ok(val)
         } else {

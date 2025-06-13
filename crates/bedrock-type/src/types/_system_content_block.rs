@@ -2,7 +2,7 @@
 
 /// <p>A system content block.</p>
 #[non_exhaustive]
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, ::serde::Serialize)]
+#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 pub enum SystemContentBlock {
     /// <p>CachePoint to include in the system prompt.</p>

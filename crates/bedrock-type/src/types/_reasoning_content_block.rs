@@ -2,13 +2,13 @@
 
 /// <p>Contains content regarding the reasoning that is carried out by the model with respect to the content in the content block. Reasoning refers to a Chain of Thought (CoT) that the model generates to enhance the accuracy of its final response.</p>
 #[non_exhaustive]
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::serde::Deserialize, ::serde::Serialize)]
+#[derive(::std::clone::Clone, ::std::cmp::PartialEq, serde::Deserialize, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 pub enum ReasoningContentBlock {
     /// <p>The reasoning that the model used to return the output.</p>
     ReasoningText(crate::types::ReasoningTextBlock),
     /// <p>The content in the reasoning that was encrypted by the model provider for safety reasons. The encryption doesn't affect the quality of responses.</p>
-    RedactedContent(::aws_smithy_types::Blob),
+    RedactedContent(aws_smithy_types::Blob),
     /// The `Unknown` variant represents cases where new union variant was received. Consider upgrading the SDK to the latest available version.
     /// An unknown enum variant
     ///
@@ -33,9 +33,9 @@ impl ReasoningContentBlock {
     pub fn is_reasoning_text(&self) -> bool {
         self.as_reasoning_text().is_ok()
     }
-    /// Tries to convert the enum instance into [`RedactedContent`](crate::types::ReasoningContentBlock::RedactedContent), extracting the inner [`Blob`](::aws_smithy_types::Blob).
+    /// Tries to convert the enum instance into [`RedactedContent`](crate::types::ReasoningContentBlock::RedactedContent), extracting the inner [`Blob`](aws_smithy_types::Blob).
     /// Returns `Err(&Self)` if it can't be converted.
-    pub fn as_redacted_content(&self) -> ::std::result::Result<&::aws_smithy_types::Blob, &Self> {
+    pub fn as_redacted_content(&self) -> ::std::result::Result<&aws_smithy_types::Blob, &Self> {
         if let ReasoningContentBlock::RedactedContent(val) = &self {
             ::std::result::Result::Ok(val)
         } else {

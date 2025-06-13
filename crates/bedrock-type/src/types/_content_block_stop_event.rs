@@ -2,7 +2,7 @@
 
 /// <p>A content block stop event.</p>
 #[non_exhaustive]
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, ::serde::Deserialize)]
+#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, serde::Deserialize)]
 pub struct ContentBlockStopEvent {
     /// <p>The index for a content block.</p>
     pub content_block_index: i32,
@@ -45,10 +45,10 @@ impl ContentBlockStopEventBuilder {
     /// Consumes the builder and constructs a [`ContentBlockStopEvent`](crate::types::ContentBlockStopEvent).
     /// This method will fail if any of the following fields are not set:
     /// - [`content_block_index`](crate::types::builders::ContentBlockStopEventBuilder::content_block_index)
-    pub fn build(self) -> ::std::result::Result<crate::types::ContentBlockStopEvent, ::aws_smithy_types::error::operation::BuildError> {
+    pub fn build(self) -> ::std::result::Result<crate::types::ContentBlockStopEvent, aws_smithy_types::error::operation::BuildError> {
         ::std::result::Result::Ok(crate::types::ContentBlockStopEvent {
             content_block_index: self.content_block_index.ok_or_else(|| {
-                ::aws_smithy_types::error::operation::BuildError::missing_field(
+                aws_smithy_types::error::operation::BuildError::missing_field(
                     "content_block_index",
                     "content_block_index was not specified but it is required when building ContentBlockStopEvent",
                 )

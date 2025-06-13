@@ -2,7 +2,7 @@
 
 /// <p>The tool result content block.</p>
 #[non_exhaustive]
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, ::serde::Serialize, ::serde::Deserialize)]
+#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum ToolResultContentBlock {
     /// <p>A tool result that is a document.</p>
@@ -12,7 +12,7 @@ pub enum ToolResultContentBlock {
     /// </note>
     Image(crate::types::ImageBlock),
     /// <p>A tool result that is JSON format data.</p>
-    Json(::aws_smithy_types::Document),
+    Json(aws_smithy_types::Document),
     /// <p>A tool result that is text.</p>
     Text(::std::string::String),
     /// <p>A tool result that is video.</p>
@@ -54,9 +54,9 @@ impl ToolResultContentBlock {
     pub fn is_image(&self) -> bool {
         self.as_image().is_ok()
     }
-    /// Tries to convert the enum instance into [`Json`](crate::types::ToolResultContentBlock::Json), extracting the inner [`Document`](::aws_smithy_types::Document).
+    /// Tries to convert the enum instance into [`Json`](crate::types::ToolResultContentBlock::Json), extracting the inner [`Document`](aws_smithy_types::Document).
     /// Returns `Err(&Self)` if it can't be converted.
-    pub fn as_json(&self) -> ::std::result::Result<&::aws_smithy_types::Document, &Self> {
+    pub fn as_json(&self) -> ::std::result::Result<&aws_smithy_types::Document, &Self> {
         if let ToolResultContentBlock::Json(val) = &self {
             ::std::result::Result::Ok(val)
         } else {

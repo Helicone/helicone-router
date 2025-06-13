@@ -3,13 +3,10 @@ use std::{collections::HashMap, str::FromStr};
 use async_openai::types::{
     CreateChatCompletionResponse, CreateChatCompletionStreamResponse,
 };
-use aws_sdk_bedrockruntime::types::{
-    ContentBlock, ContentBlockDelta, ContentBlockStart, ConversationRole,
-};
 use uuid::Uuid;
 
 use super::{
-    TryConvert, TryConvertStreamData, error::MapperError, model::ModelMapper,
+    error::MapperError, model::ModelMapper, TryConvert, TryConvertStreamData,
 };
 use crate::types::{model_id::ModelId, provider::InferenceProvider};
 
@@ -27,7 +24,7 @@ impl BedrockConverter {
 impl
     TryConvert<
         async_openai::types::CreateChatCompletionRequest,
-        aws_sdk_bedrockruntime::operation::converse::ConverseInput,
+        bedrock_type::operation::converse::ConverseInput,
     > for BedrockConverter
 {
     type Error = MapperError;
@@ -35,14 +32,12 @@ impl
     fn try_convert(
         &self,
         value: async_openai::types::CreateChatCompletionRequest,
-    ) -> Result<
-        aws_sdk_bedrockruntime::operation::converse::ConverseInput,
-        Self::Error,
-    > {
+    ) -> Result<bedrock_type::operation::converse::ConverseInput, Self::Error>
+    {
         let target_provider = InferenceProvider::Bedrock;
         let source_model = ModelId::from_str(&value.model)?;
         use async_openai::types as openai;
-        use aws_sdk_bedrockruntime as bedrock;
+        use bedrock_type as bedrock;
 
         let target_model = self
             .model_mapper
@@ -291,14 +286,14 @@ impl
             )));
         }
 
-        let mut builder = aws_sdk_bedrockruntime::operation::converse::ConverseInput::builder()
+        let mut builder = bedrock_type::operation::converse::ConverseInput::builder()
             .model_id(target_model.to_string())
             .set_messages(Some(mapped_messages))
             .set_request_metadata(metadata);
 
         if let Some(tools) = tools {
             builder = builder.tool_config(
-                aws_sdk_bedrockruntime::types::ToolConfiguration::builder()
+                bedrock_type::types::ToolConfiguration::builder()
                     .set_tool_choice(tool_choice)
                     .set_tools(Some(tools))
                     .build()
@@ -308,7 +303,7 @@ impl
 
         Ok(builder
             .set_inference_config(Some(
-                aws_sdk_bedrockruntime::types::InferenceConfiguration::builder(
+                bedrock_type::types::InferenceConfiguration::builder(
                 )
                 .top_p(top_p.unwrap_or_default())
                 .temperature(temperature.unwrap_or_default())
@@ -323,7 +318,7 @@ impl
 
 impl
     TryConvert<
-        aws_sdk_bedrockruntime::operation::converse::ConverseOutput,
+        bedrock_type::operation::converse::ConverseOutput,
         async_openai::types::CreateChatCompletionResponse,
     > for BedrockConverter
 {
@@ -332,7 +327,7 @@ impl
     #[allow(clippy::too_many_lines)]
     fn try_convert(
         &self,
-        value: aws_sdk_bedrockruntime::operation::converse::ConverseOutput,
+        value: bedrock_type::operation::converse::ConverseOutput,
     ) -> std::result::Result<CreateChatCompletionResponse, Self::Error> {
         use async_openai::types as openai;
         let model = value
@@ -364,7 +359,7 @@ impl
             value.output.unwrap().as_message().unwrap().content.clone()
         {
             match bedrock_content {
-                ContentBlock::ToolUse(tool_use_block) => {
+                bedrock_type::types::ContentBlock::ToolUse(tool_use_block) => {
                     tool_calls.push(openai::ChatCompletionMessageToolCall {
                         id: tool_use_block.tool_use_id.clone(),
                         r#type: openai::ChatCompletionToolType::Function,
@@ -378,7 +373,7 @@ impl
                         },
                     });
                 }
-                ContentBlock::ToolResult(tool_result_block) => {
+                bedrock_type::types::ContentBlock::ToolResult(tool_result_block) => {
                     tool_calls.push(openai::ChatCompletionMessageToolCall {
                         id: tool_result_block.tool_use_id.clone(),
                         r#type: openai::ChatCompletionToolType::Function,
@@ -388,15 +383,15 @@ impl
                         },
                     });
                 }
-                ContentBlock::Text(text) => {
+                bedrock_type::types::ContentBlock::Text(text) => {
                     content = Some(text.clone());
                 }
-                ContentBlock::Image(_)
-                | ContentBlock::Document(_)
-                | ContentBlock::CachePoint(_)
-                | ContentBlock::ReasoningContent(_)
-                | ContentBlock::GuardContent(_)
-                | ContentBlock::Video(_)
+                bedrock_type::types::ContentBlock::Image(_)
+                | bedrock_type::types::ContentBlock::Document(_)
+                | bedrock_type::types::ContentBlock::CachePoint(_)
+                | bedrock_type::types::ContentBlock::ReasoningContent(_)
+                | bedrock_type::types::ContentBlock::GuardContent(_)
+                | bedrock_type::types::ContentBlock::Video(_)
                 | _ => {}
             }
         }
@@ -439,7 +434,7 @@ impl
 
 impl
     TryConvertStreamData<
-        aws_sdk_bedrockruntime::types::ConverseStreamOutput,
+        bedrock_type::types::ConverseStreamOutput,
         async_openai::types::CreateChatCompletionStreamResponse,
     > for BedrockConverter
 {
@@ -448,13 +443,13 @@ impl
     #[allow(clippy::too_many_lines)]
     fn try_convert_chunk(
         &self,
-        value: aws_sdk_bedrockruntime::types::ConverseStreamOutput,
+        value: bedrock_type::types::ConverseStreamOutput,
     ) -> Result<
         std::option::Option<CreateChatCompletionStreamResponse>,
         Self::Error,
     > {
         use async_openai::types as openai;
-        use aws_sdk_bedrockruntime::types::ConverseStreamOutput as bedrock;
+        use bedrock_type::types::ConverseStreamOutput as bedrock;
 
         const CHAT_COMPLETION_CHUNK_OBJECT: &str = "chat.completion.chunk";
         // TODO: These placeholder values for id, model, and created should be
@@ -480,10 +475,10 @@ impl
                     index: 0,
                     delta: openai::ChatCompletionStreamResponseDelta {
                         role: Some(match message.role {
-                            ConversationRole::Assistant => {
+                            bedrock_type::types::ConversationRole::Assistant => {
                                 openai::Role::Assistant
                             }
-                            ConversationRole::User => openai::Role::User,
+                            bedrock_type::types::ConversationRole::User => openai::Role::User,
                             _ => openai::Role::System,
                         }),
                         content: None,
@@ -499,7 +494,7 @@ impl
                 choices.push(choice);
             }
             bedrock::ContentBlockStart(content_block_start) => {
-                if let ContentBlockStart::ToolUse(tool_use) =
+                if let bedrock_type::types::ContentBlockStart::ToolUse(tool_use) =
                     content_block_start.start.unwrap()
                 {
                     let tool_call_chunk =
@@ -536,7 +531,7 @@ impl
             }
             bedrock::ContentBlockDelta(content_block_delta_event) => {
                 match content_block_delta_event.delta.unwrap() {
-                    ContentBlockDelta::Text(text) => {
+                    bedrock_type::types::ContentBlockDelta::Text(text) => {
                         let choice = openai::ChatChoiceStream {
                             index: u32::try_from(
                                 content_block_delta_event.content_block_index,
@@ -555,7 +550,7 @@ impl
                         };
                         choices.push(choice);
                     }
-                    ContentBlockDelta::ToolUse(tool_use) => {
+                    bedrock_type::types::ContentBlockDelta::ToolUse(tool_use) => {
                         let tool_call_chunk =
                             openai::ChatCompletionMessageToolCallChunk {
                                 index: u32::try_from(
@@ -589,7 +584,7 @@ impl
 
                         choices.push(choice);
                     }
-                    ContentBlockDelta::ReasoningContent(_) | _ => {}
+                    bedrock_type::types::ContentBlockDelta::ReasoningContent(_) | _ => {}
                 }
             }
 
