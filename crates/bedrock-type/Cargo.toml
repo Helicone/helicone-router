@@ -1,0 +1,7 @@
+[package]
+name = "bedrock-type"
+
+
+[dependencies]
+serde = { workspace = true }
+aws-smithy-types = { workspace = true }
