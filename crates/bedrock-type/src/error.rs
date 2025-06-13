@@ -28,5 +28,3 @@ impl ::std::fmt::Display for UnknownVariantError {
     }
 }
 impl ::std::error::Error for UnknownVariantError {}
-
-pub(crate) mod sealed_unhandled;

@@ -407,7 +407,6 @@ async fn bedrock_with_openai_request_style() {
             ..Default::default()
         },
     )]));
-    telemetry::init_telemetry(&config.telemetry);
     config.routers = router_config;
     let mock_args = MockArgs::builder()
         .stubs(HashMap::from([
