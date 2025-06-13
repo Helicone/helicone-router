@@ -41,6 +41,7 @@ pub enum ApiEndpoint {
 }
 
 impl ApiEndpoint {
+    #[must_use]
     pub fn new(path: &str, request_style: InferenceProvider) -> Option<Self> {
         match request_style {
             InferenceProvider::OpenAI => {

@@ -22,7 +22,7 @@ impl Bedrock {
     }
 
     #[must_use]
-    pub fn endpoint_type(&self) -> EndpointType {
+    pub fn endpoint_type(self) -> EndpointType {
         match self {
             Self::Converse(_) => EndpointType::Chat,
         }

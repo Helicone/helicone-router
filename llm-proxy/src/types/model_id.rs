@@ -167,9 +167,7 @@ impl ModelId {
                 Ok(ModelId::Anthropic(model_with_version))
             }
             InferenceProvider::Bedrock => {
-                let bedrock_model = BedrockModelId::from_str(s).inspect_err(|e| {
-                    tracing::error!(s = %s, error = %e, "invalid model string format")
-                 })?;
+                let bedrock_model = BedrockModelId::from_str(s)?;
                 Ok(ModelId::Bedrock(bedrock_model))
             }
             InferenceProvider::Ollama => {
