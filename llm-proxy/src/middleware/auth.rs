@@ -10,7 +10,7 @@ use uuid::Uuid;
 use crate::{
     app_state::AppState,
     error::auth::AuthError,
-    types::{org::OrgId, request::AuthContext, user::UserId},
+    types::{org::OrgId, request::AuthContext, secret::Secret, user::UserId},
 };
 
 #[derive(Clone)]
@@ -46,7 +46,7 @@ impl AuthService {
             })?;
         let body = whoami_result.json::<WhoamiResponse>().await?;
         Ok(AuthContext {
-            api_key: api_key.replace("Bearer ", ""),
+            api_key: Secret::from(api_key.replace("Bearer ", "")),
             user_id: UserId::new(body.user_id),
             org_id: OrgId::new(body.organization_id),
         })

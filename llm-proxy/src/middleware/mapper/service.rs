@@ -74,7 +74,11 @@ where
                     "RequestContext",
                 )))?
                 .clone();
-            let request_style = req_ctx.router_config.request_style;
+            let router_config =
+                req_ctx.router_config.as_ref().ok_or(ApiError::Internal(
+                    InternalError::ExtensionNotFound("RouterConfig"),
+                ))?;
+            let request_style = router_config.request_style;
             tracing::trace!(
                 request_style = %request_style,
                 provider = %provider,

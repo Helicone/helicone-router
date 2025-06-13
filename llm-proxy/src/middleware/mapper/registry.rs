@@ -16,7 +16,7 @@ use crate::{
     types::provider::InferenceProvider,
 };
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Default, Clone)]
 pub struct EndpointConverterRegistry(Arc<EndpointConverterRegistryInner>);
 
 impl EndpointConverterRegistry {
@@ -58,6 +58,7 @@ impl RegistryKey {
     }
 }
 
+#[derive(Default)]
 struct EndpointConverterRegistryInner {
     /// In the future when we support other APIs beside just chat completion
     /// we'll want to add another level here.
