@@ -40,20 +40,30 @@ impl ::std::fmt::Display for ModelErrorException {
     }
 }
 impl ::std::error::Error for ModelErrorException {}
-impl aws_smithy_types::error::metadata::ProvideErrorMetadata for ModelErrorException {
+impl aws_smithy_types::error::metadata::ProvideErrorMetadata
+    for ModelErrorException
+{
     fn meta(&self) -> &aws_smithy_types::error::ErrorMetadata {
         &self.meta
     }
 }
 impl ModelErrorException {
-    /// Creates a new builder-style object to manufacture [`ModelErrorException`](crate::types::error::ModelErrorException).
-    pub fn builder() -> crate::types::error::builders::ModelErrorExceptionBuilder {
+    /// Creates a new builder-style object to manufacture
+    /// [`ModelErrorException`](crate::types::error::ModelErrorException).
+    pub fn builder() -> crate::types::error::builders::ModelErrorExceptionBuilder
+    {
         crate::types::error::builders::ModelErrorExceptionBuilder::default()
     }
 }
 
-/// A builder for [`ModelErrorException`](crate::types::error::ModelErrorException).
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::default::Default, ::std::fmt::Debug)]
+/// A builder for
+/// [`ModelErrorException`](crate::types::error::ModelErrorException).
+#[derive(
+    ::std::clone::Clone,
+    ::std::cmp::PartialEq,
+    ::std::default::Default,
+    ::std::fmt::Debug,
+)]
 #[non_exhaustive]
 pub struct ModelErrorExceptionBuilder {
     pub(crate) message: ::std::option::Option<::std::string::String>,
@@ -63,12 +73,18 @@ pub struct ModelErrorExceptionBuilder {
 }
 impl ModelErrorExceptionBuilder {
     #[allow(missing_docs)] // documentation missing in model
-    pub fn message(mut self, input: impl ::std::convert::Into<::std::string::String>) -> Self {
+    pub fn message(
+        mut self,
+        input: impl ::std::convert::Into<::std::string::String>,
+    ) -> Self {
         self.message = ::std::option::Option::Some(input.into());
         self
     }
     #[allow(missing_docs)] // documentation missing in model
-    pub fn set_message(mut self, input: ::std::option::Option<::std::string::String>) -> Self {
+    pub fn set_message(
+        mut self,
+        input: ::std::option::Option<::std::string::String>,
+    ) -> Self {
         self.message = input;
         self
     }
@@ -82,7 +98,10 @@ impl ModelErrorExceptionBuilder {
         self
     }
     /// <p>The original status code.</p>
-    pub fn set_original_status_code(mut self, input: ::std::option::Option<i32>) -> Self {
+    pub fn set_original_status_code(
+        mut self,
+        input: ::std::option::Option<i32>,
+    ) -> Self {
         self.original_status_code = input;
         self
     }
@@ -91,31 +110,46 @@ impl ModelErrorExceptionBuilder {
         &self.original_status_code
     }
     /// <p>The resource name.</p>
-    pub fn resource_name(mut self, input: impl ::std::convert::Into<::std::string::String>) -> Self {
+    pub fn resource_name(
+        mut self,
+        input: impl ::std::convert::Into<::std::string::String>,
+    ) -> Self {
         self.resource_name = ::std::option::Option::Some(input.into());
         self
     }
     /// <p>The resource name.</p>
-    pub fn set_resource_name(mut self, input: ::std::option::Option<::std::string::String>) -> Self {
+    pub fn set_resource_name(
+        mut self,
+        input: ::std::option::Option<::std::string::String>,
+    ) -> Self {
         self.resource_name = input;
         self
     }
     /// <p>The resource name.</p>
-    pub fn get_resource_name(&self) -> &::std::option::Option<::std::string::String> {
+    pub fn get_resource_name(
+        &self,
+    ) -> &::std::option::Option<::std::string::String> {
         &self.resource_name
     }
     /// Sets error metadata
-    pub fn meta(mut self, meta: aws_smithy_types::error::ErrorMetadata) -> Self {
+    pub fn meta(
+        mut self,
+        meta: aws_smithy_types::error::ErrorMetadata,
+    ) -> Self {
         self.meta = Some(meta);
         self
     }
 
     /// Sets error metadata
-    pub fn set_meta(&mut self, meta: std::option::Option<aws_smithy_types::error::ErrorMetadata>) -> &mut Self {
+    pub fn set_meta(
+        &mut self,
+        meta: std::option::Option<aws_smithy_types::error::ErrorMetadata>,
+    ) -> &mut Self {
         self.meta = meta;
         self
     }
-    /// Consumes the builder and constructs a [`ModelErrorException`](crate::types::error::ModelErrorException).
+    /// Consumes the builder and constructs a
+    /// [`ModelErrorException`](crate::types::error::ModelErrorException).
     pub fn build(self) -> crate::types::error::ModelErrorException {
         crate::types::error::ModelErrorException {
             message: self.message,

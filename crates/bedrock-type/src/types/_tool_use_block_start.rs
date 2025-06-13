@@ -2,7 +2,12 @@
 
 /// <p>The start of a tool use block.</p>
 #[non_exhaustive]
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, serde::Deserialize)]
+#[derive(
+    ::std::clone::Clone,
+    ::std::cmp::PartialEq,
+    ::std::fmt::Debug,
+    serde::Deserialize,
+)]
 pub struct ToolUseBlockStart {
     /// <p>The ID for the tool request.</p>
     pub tool_use_id: ::std::string::String,
@@ -22,14 +27,20 @@ impl ToolUseBlockStart {
     }
 }
 impl ToolUseBlockStart {
-    /// Creates a new builder-style object to manufacture [`ToolUseBlockStart`](crate::types::ToolUseBlockStart).
+    /// Creates a new builder-style object to manufacture
+    /// [`ToolUseBlockStart`](crate::types::ToolUseBlockStart).
     pub fn builder() -> crate::types::builders::ToolUseBlockStartBuilder {
         crate::types::builders::ToolUseBlockStartBuilder::default()
     }
 }
 
 /// A builder for [`ToolUseBlockStart`](crate::types::ToolUseBlockStart).
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::default::Default, ::std::fmt::Debug)]
+#[derive(
+    ::std::clone::Clone,
+    ::std::cmp::PartialEq,
+    ::std::default::Default,
+    ::std::fmt::Debug,
+)]
 #[non_exhaustive]
 pub struct ToolUseBlockStartBuilder {
     pub(crate) tool_use_id: ::std::option::Option<::std::string::String>,
@@ -38,27 +49,41 @@ pub struct ToolUseBlockStartBuilder {
 impl ToolUseBlockStartBuilder {
     /// <p>The ID for the tool request.</p>
     /// This field is required.
-    pub fn tool_use_id(mut self, input: impl ::std::convert::Into<::std::string::String>) -> Self {
+    pub fn tool_use_id(
+        mut self,
+        input: impl ::std::convert::Into<::std::string::String>,
+    ) -> Self {
         self.tool_use_id = ::std::option::Option::Some(input.into());
         self
     }
     /// <p>The ID for the tool request.</p>
-    pub fn set_tool_use_id(mut self, input: ::std::option::Option<::std::string::String>) -> Self {
+    pub fn set_tool_use_id(
+        mut self,
+        input: ::std::option::Option<::std::string::String>,
+    ) -> Self {
         self.tool_use_id = input;
         self
     }
     /// <p>The ID for the tool request.</p>
-    pub fn get_tool_use_id(&self) -> &::std::option::Option<::std::string::String> {
+    pub fn get_tool_use_id(
+        &self,
+    ) -> &::std::option::Option<::std::string::String> {
         &self.tool_use_id
     }
     /// <p>The name of the tool that the model is requesting to use.</p>
     /// This field is required.
-    pub fn name(mut self, input: impl ::std::convert::Into<::std::string::String>) -> Self {
+    pub fn name(
+        mut self,
+        input: impl ::std::convert::Into<::std::string::String>,
+    ) -> Self {
         self.name = ::std::option::Option::Some(input.into());
         self
     }
     /// <p>The name of the tool that the model is requesting to use.</p>
-    pub fn set_name(mut self, input: ::std::option::Option<::std::string::String>) -> Self {
+    pub fn set_name(
+        mut self,
+        input: ::std::option::Option<::std::string::String>,
+    ) -> Self {
         self.name = input;
         self
     }
@@ -66,22 +91,30 @@ impl ToolUseBlockStartBuilder {
     pub fn get_name(&self) -> &::std::option::Option<::std::string::String> {
         &self.name
     }
-    /// Consumes the builder and constructs a [`ToolUseBlockStart`](crate::types::ToolUseBlockStart).
-    /// This method will fail if any of the following fields are not set:
+    /// Consumes the builder and constructs a
+    /// [`ToolUseBlockStart`](crate::types::ToolUseBlockStart). This method
+    /// will fail if any of the following fields are not set:
     /// - [`tool_use_id`](crate::types::builders::ToolUseBlockStartBuilder::tool_use_id)
     /// - [`name`](crate::types::builders::ToolUseBlockStartBuilder::name)
-    pub fn build(self) -> ::std::result::Result<crate::types::ToolUseBlockStart, aws_smithy_types::error::operation::BuildError> {
+    pub fn build(
+        self,
+    ) -> ::std::result::Result<
+        crate::types::ToolUseBlockStart,
+        aws_smithy_types::error::operation::BuildError,
+    > {
         ::std::result::Result::Ok(crate::types::ToolUseBlockStart {
             tool_use_id: self.tool_use_id.ok_or_else(|| {
                 aws_smithy_types::error::operation::BuildError::missing_field(
                     "tool_use_id",
-                    "tool_use_id was not specified but it is required when building ToolUseBlockStart",
+                    "tool_use_id was not specified but it is required when \
+                     building ToolUseBlockStart",
                 )
             })?,
             name: self.name.ok_or_else(|| {
                 aws_smithy_types::error::operation::BuildError::missing_field(
                     "name",
-                    "name was not specified but it is required when building ToolUseBlockStart",
+                    "name was not specified but it is required when building \
+                     ToolUseBlockStart",
                 )
             })?,
         })

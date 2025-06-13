@@ -2,7 +2,12 @@
 
 /// <p>A prompt router trace.</p>
 #[non_exhaustive]
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, serde::Deserialize)]
+#[derive(
+    ::std::clone::Clone,
+    ::std::cmp::PartialEq,
+    ::std::fmt::Debug,
+    serde::Deserialize,
+)]
 pub struct PromptRouterTrace {
     /// <p>The ID of the invoked model.</p>
     pub invoked_model_id: ::std::option::Option<::std::string::String>,
@@ -14,7 +19,8 @@ impl PromptRouterTrace {
     }
 }
 impl PromptRouterTrace {
-    /// Creates a new builder-style object to manufacture [`PromptRouterTrace`](crate::types::PromptRouterTrace).
+    /// Creates a new builder-style object to manufacture
+    /// [`PromptRouterTrace`](crate::types::PromptRouterTrace).
     pub fn builder() -> crate::types::builders::PromptRouterTraceBuilder {
         crate::types::builders::PromptRouterTraceBuilder::default()
     }
@@ -22,7 +28,10 @@ impl PromptRouterTrace {
 
 /// A builder for [`PromptRouterTrace`](crate::types::PromptRouterTrace).
 #[derive(
-    ::std::clone::Clone, ::std::cmp::PartialEq, ::std::default::Default, ::std::fmt::Debug,
+    ::std::clone::Clone,
+    ::std::cmp::PartialEq,
+    ::std::default::Default,
+    ::std::fmt::Debug,
 )]
 #[non_exhaustive]
 pub struct PromptRouterTraceBuilder {
@@ -46,10 +55,13 @@ impl PromptRouterTraceBuilder {
         self
     }
     /// <p>The ID of the invoked model.</p>
-    pub fn get_invoked_model_id(&self) -> &::std::option::Option<::std::string::String> {
+    pub fn get_invoked_model_id(
+        &self,
+    ) -> &::std::option::Option<::std::string::String> {
         &self.invoked_model_id
     }
-    /// Consumes the builder and constructs a [`PromptRouterTrace`](crate::types::PromptRouterTrace).
+    /// Consumes the builder and constructs a
+    /// [`PromptRouterTrace`](crate::types::PromptRouterTrace).
     pub fn build(self) -> crate::types::PromptRouterTrace {
         crate::types::PromptRouterTrace {
             invoked_model_id: self.invoked_model_id,

@@ -21,7 +21,8 @@ pub struct AsyncInvokeSummary {
     /// <p>When the invocation ended.</p>
     pub end_time: ::std::option::Option<aws_smithy_types::DateTime>,
     /// <p>The invocation's output data settings.</p>
-    pub output_data_config: ::std::option::Option<crate::types::AsyncInvokeOutputDataConfig>,
+    pub output_data_config:
+        ::std::option::Option<crate::types::AsyncInvokeOutputDataConfig>,
 }
 impl AsyncInvokeSummary {
     /// <p>The invocation's ARN.</p>
@@ -39,7 +40,9 @@ impl AsyncInvokeSummary {
         self.client_request_token.as_deref()
     }
     /// <p>The invocation's status.</p>
-    pub fn status(&self) -> ::std::option::Option<&crate::types::AsyncInvokeStatus> {
+    pub fn status(
+        &self,
+    ) -> ::std::option::Option<&crate::types::AsyncInvokeStatus> {
         self.status.as_ref()
     }
     /// <p>An error message.</p>
@@ -51,15 +54,21 @@ impl AsyncInvokeSummary {
         &self.submit_time
     }
     /// <p>When the invocation was last modified.</p>
-    pub fn last_modified_time(&self) -> ::std::option::Option<&aws_smithy_types::DateTime> {
+    pub fn last_modified_time(
+        &self,
+    ) -> ::std::option::Option<&aws_smithy_types::DateTime> {
         self.last_modified_time.as_ref()
     }
     /// <p>When the invocation ended.</p>
-    pub fn end_time(&self) -> ::std::option::Option<&aws_smithy_types::DateTime> {
+    pub fn end_time(
+        &self,
+    ) -> ::std::option::Option<&aws_smithy_types::DateTime> {
         self.end_time.as_ref()
     }
     /// <p>The invocation's output data settings.</p>
-    pub fn output_data_config(&self) -> ::std::option::Option<&crate::types::AsyncInvokeOutputDataConfig> {
+    pub fn output_data_config(
+        &self,
+    ) -> ::std::option::Option<&crate::types::AsyncInvokeOutputDataConfig> {
         self.output_data_config.as_ref()
     }
 }
@@ -79,69 +88,99 @@ impl ::std::fmt::Debug for AsyncInvokeSummary {
     }
 }
 impl AsyncInvokeSummary {
-    /// Creates a new builder-style object to manufacture [`AsyncInvokeSummary`](crate::types::AsyncInvokeSummary).
+    /// Creates a new builder-style object to manufacture
+    /// [`AsyncInvokeSummary`](crate::types::AsyncInvokeSummary).
     pub fn builder() -> crate::types::builders::AsyncInvokeSummaryBuilder {
         crate::types::builders::AsyncInvokeSummaryBuilder::default()
     }
 }
 
 /// A builder for [`AsyncInvokeSummary`](crate::types::AsyncInvokeSummary).
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::default::Default)]
+#[derive(
+    ::std::clone::Clone, ::std::cmp::PartialEq, ::std::default::Default,
+)]
 #[non_exhaustive]
 pub struct AsyncInvokeSummaryBuilder {
     pub(crate) invocation_arn: ::std::option::Option<::std::string::String>,
     pub(crate) model_arn: ::std::option::Option<::std::string::String>,
-    pub(crate) client_request_token: ::std::option::Option<::std::string::String>,
+    pub(crate) client_request_token:
+        ::std::option::Option<::std::string::String>,
     pub(crate) status: ::std::option::Option<crate::types::AsyncInvokeStatus>,
     pub(crate) failure_message: ::std::option::Option<::std::string::String>,
     pub(crate) submit_time: ::std::option::Option<aws_smithy_types::DateTime>,
-    pub(crate) last_modified_time: ::std::option::Option<aws_smithy_types::DateTime>,
+    pub(crate) last_modified_time:
+        ::std::option::Option<aws_smithy_types::DateTime>,
     pub(crate) end_time: ::std::option::Option<aws_smithy_types::DateTime>,
-    pub(crate) output_data_config: ::std::option::Option<crate::types::AsyncInvokeOutputDataConfig>,
+    pub(crate) output_data_config:
+        ::std::option::Option<crate::types::AsyncInvokeOutputDataConfig>,
 }
 impl AsyncInvokeSummaryBuilder {
     /// <p>The invocation's ARN.</p>
     /// This field is required.
-    pub fn invocation_arn(mut self, input: impl ::std::convert::Into<::std::string::String>) -> Self {
+    pub fn invocation_arn(
+        mut self,
+        input: impl ::std::convert::Into<::std::string::String>,
+    ) -> Self {
         self.invocation_arn = ::std::option::Option::Some(input.into());
         self
     }
     /// <p>The invocation's ARN.</p>
-    pub fn set_invocation_arn(mut self, input: ::std::option::Option<::std::string::String>) -> Self {
+    pub fn set_invocation_arn(
+        mut self,
+        input: ::std::option::Option<::std::string::String>,
+    ) -> Self {
         self.invocation_arn = input;
         self
     }
     /// <p>The invocation's ARN.</p>
-    pub fn get_invocation_arn(&self) -> &::std::option::Option<::std::string::String> {
+    pub fn get_invocation_arn(
+        &self,
+    ) -> &::std::option::Option<::std::string::String> {
         &self.invocation_arn
     }
     /// <p>The invoked model's ARN.</p>
     /// This field is required.
-    pub fn model_arn(mut self, input: impl ::std::convert::Into<::std::string::String>) -> Self {
+    pub fn model_arn(
+        mut self,
+        input: impl ::std::convert::Into<::std::string::String>,
+    ) -> Self {
         self.model_arn = ::std::option::Option::Some(input.into());
         self
     }
     /// <p>The invoked model's ARN.</p>
-    pub fn set_model_arn(mut self, input: ::std::option::Option<::std::string::String>) -> Self {
+    pub fn set_model_arn(
+        mut self,
+        input: ::std::option::Option<::std::string::String>,
+    ) -> Self {
         self.model_arn = input;
         self
     }
     /// <p>The invoked model's ARN.</p>
-    pub fn get_model_arn(&self) -> &::std::option::Option<::std::string::String> {
+    pub fn get_model_arn(
+        &self,
+    ) -> &::std::option::Option<::std::string::String> {
         &self.model_arn
     }
     /// <p>The invocation's idempotency token.</p>
-    pub fn client_request_token(mut self, input: impl ::std::convert::Into<::std::string::String>) -> Self {
+    pub fn client_request_token(
+        mut self,
+        input: impl ::std::convert::Into<::std::string::String>,
+    ) -> Self {
         self.client_request_token = ::std::option::Option::Some(input.into());
         self
     }
     /// <p>The invocation's idempotency token.</p>
-    pub fn set_client_request_token(mut self, input: ::std::option::Option<::std::string::String>) -> Self {
+    pub fn set_client_request_token(
+        mut self,
+        input: ::std::option::Option<::std::string::String>,
+    ) -> Self {
         self.client_request_token = input;
         self
     }
     /// <p>The invocation's idempotency token.</p>
-    pub fn get_client_request_token(&self) -> &::std::option::Option<::std::string::String> {
+    pub fn get_client_request_token(
+        &self,
+    ) -> &::std::option::Option<::std::string::String> {
         &self.client_request_token
     }
     /// <p>The invocation's status.</p>
@@ -150,26 +189,39 @@ impl AsyncInvokeSummaryBuilder {
         self
     }
     /// <p>The invocation's status.</p>
-    pub fn set_status(mut self, input: ::std::option::Option<crate::types::AsyncInvokeStatus>) -> Self {
+    pub fn set_status(
+        mut self,
+        input: ::std::option::Option<crate::types::AsyncInvokeStatus>,
+    ) -> Self {
         self.status = input;
         self
     }
     /// <p>The invocation's status.</p>
-    pub fn get_status(&self) -> &::std::option::Option<crate::types::AsyncInvokeStatus> {
+    pub fn get_status(
+        &self,
+    ) -> &::std::option::Option<crate::types::AsyncInvokeStatus> {
         &self.status
     }
     /// <p>An error message.</p>
-    pub fn failure_message(mut self, input: impl ::std::convert::Into<::std::string::String>) -> Self {
+    pub fn failure_message(
+        mut self,
+        input: impl ::std::convert::Into<::std::string::String>,
+    ) -> Self {
         self.failure_message = ::std::option::Option::Some(input.into());
         self
     }
     /// <p>An error message.</p>
-    pub fn set_failure_message(mut self, input: ::std::option::Option<::std::string::String>) -> Self {
+    pub fn set_failure_message(
+        mut self,
+        input: ::std::option::Option<::std::string::String>,
+    ) -> Self {
         self.failure_message = input;
         self
     }
     /// <p>An error message.</p>
-    pub fn get_failure_message(&self) -> &::std::option::Option<::std::string::String> {
+    pub fn get_failure_message(
+        &self,
+    ) -> &::std::option::Option<::std::string::String> {
         &self.failure_message
     }
     /// <p>When the invocation was submitted.</p>
@@ -179,26 +231,39 @@ impl AsyncInvokeSummaryBuilder {
         self
     }
     /// <p>When the invocation was submitted.</p>
-    pub fn set_submit_time(mut self, input: ::std::option::Option<aws_smithy_types::DateTime>) -> Self {
+    pub fn set_submit_time(
+        mut self,
+        input: ::std::option::Option<aws_smithy_types::DateTime>,
+    ) -> Self {
         self.submit_time = input;
         self
     }
     /// <p>When the invocation was submitted.</p>
-    pub fn get_submit_time(&self) -> &::std::option::Option<aws_smithy_types::DateTime> {
+    pub fn get_submit_time(
+        &self,
+    ) -> &::std::option::Option<aws_smithy_types::DateTime> {
         &self.submit_time
     }
     /// <p>When the invocation was last modified.</p>
-    pub fn last_modified_time(mut self, input: aws_smithy_types::DateTime) -> Self {
+    pub fn last_modified_time(
+        mut self,
+        input: aws_smithy_types::DateTime,
+    ) -> Self {
         self.last_modified_time = ::std::option::Option::Some(input);
         self
     }
     /// <p>When the invocation was last modified.</p>
-    pub fn set_last_modified_time(mut self, input: ::std::option::Option<aws_smithy_types::DateTime>) -> Self {
+    pub fn set_last_modified_time(
+        mut self,
+        input: ::std::option::Option<aws_smithy_types::DateTime>,
+    ) -> Self {
         self.last_modified_time = input;
         self
     }
     /// <p>When the invocation was last modified.</p>
-    pub fn get_last_modified_time(&self) -> &::std::option::Option<aws_smithy_types::DateTime> {
+    pub fn get_last_modified_time(
+        &self,
+    ) -> &::std::option::Option<aws_smithy_types::DateTime> {
         &self.last_modified_time
     }
     /// <p>When the invocation ended.</p>
@@ -207,46 +272,67 @@ impl AsyncInvokeSummaryBuilder {
         self
     }
     /// <p>When the invocation ended.</p>
-    pub fn set_end_time(mut self, input: ::std::option::Option<aws_smithy_types::DateTime>) -> Self {
+    pub fn set_end_time(
+        mut self,
+        input: ::std::option::Option<aws_smithy_types::DateTime>,
+    ) -> Self {
         self.end_time = input;
         self
     }
     /// <p>When the invocation ended.</p>
-    pub fn get_end_time(&self) -> &::std::option::Option<aws_smithy_types::DateTime> {
+    pub fn get_end_time(
+        &self,
+    ) -> &::std::option::Option<aws_smithy_types::DateTime> {
         &self.end_time
     }
     /// <p>The invocation's output data settings.</p>
     /// This field is required.
-    pub fn output_data_config(mut self, input: crate::types::AsyncInvokeOutputDataConfig) -> Self {
+    pub fn output_data_config(
+        mut self,
+        input: crate::types::AsyncInvokeOutputDataConfig,
+    ) -> Self {
         self.output_data_config = ::std::option::Option::Some(input);
         self
     }
     /// <p>The invocation's output data settings.</p>
-    pub fn set_output_data_config(mut self, input: ::std::option::Option<crate::types::AsyncInvokeOutputDataConfig>) -> Self {
+    pub fn set_output_data_config(
+        mut self,
+        input: ::std::option::Option<crate::types::AsyncInvokeOutputDataConfig>,
+    ) -> Self {
         self.output_data_config = input;
         self
     }
     /// <p>The invocation's output data settings.</p>
-    pub fn get_output_data_config(&self) -> &::std::option::Option<crate::types::AsyncInvokeOutputDataConfig> {
+    pub fn get_output_data_config(
+        &self,
+    ) -> &::std::option::Option<crate::types::AsyncInvokeOutputDataConfig> {
         &self.output_data_config
     }
-    /// Consumes the builder and constructs a [`AsyncInvokeSummary`](crate::types::AsyncInvokeSummary).
+    /// Consumes the builder and constructs a
+    /// [`AsyncInvokeSummary`](crate::types::AsyncInvokeSummary).
     /// This method will fail if any of the following fields are not set:
     /// - [`invocation_arn`](crate::types::builders::AsyncInvokeSummaryBuilder::invocation_arn)
     /// - [`model_arn`](crate::types::builders::AsyncInvokeSummaryBuilder::model_arn)
     /// - [`submit_time`](crate::types::builders::AsyncInvokeSummaryBuilder::submit_time)
-    pub fn build(self) -> ::std::result::Result<crate::types::AsyncInvokeSummary, aws_smithy_types::error::operation::BuildError> {
+    pub fn build(
+        self,
+    ) -> ::std::result::Result<
+        crate::types::AsyncInvokeSummary,
+        aws_smithy_types::error::operation::BuildError,
+    > {
         ::std::result::Result::Ok(crate::types::AsyncInvokeSummary {
             invocation_arn: self.invocation_arn.ok_or_else(|| {
                 aws_smithy_types::error::operation::BuildError::missing_field(
                     "invocation_arn",
-                    "invocation_arn was not specified but it is required when building AsyncInvokeSummary",
+                    "invocation_arn was not specified but it is required when \
+                     building AsyncInvokeSummary",
                 )
             })?,
             model_arn: self.model_arn.ok_or_else(|| {
                 aws_smithy_types::error::operation::BuildError::missing_field(
                     "model_arn",
-                    "model_arn was not specified but it is required when building AsyncInvokeSummary",
+                    "model_arn was not specified but it is required when \
+                     building AsyncInvokeSummary",
                 )
             })?,
             client_request_token: self.client_request_token,
@@ -255,7 +341,8 @@ impl AsyncInvokeSummaryBuilder {
             submit_time: self.submit_time.ok_or_else(|| {
                 aws_smithy_types::error::operation::BuildError::missing_field(
                     "submit_time",
-                    "submit_time was not specified but it is required when building AsyncInvokeSummary",
+                    "submit_time was not specified but it is required when \
+                     building AsyncInvokeSummary",
                 )
             })?,
             last_modified_time: self.last_modified_time,

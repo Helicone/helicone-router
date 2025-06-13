@@ -2,7 +2,12 @@
 
 /// <p>A managed word configured in a guardrail.</p>
 #[non_exhaustive]
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, serde::Deserialize)]
+#[derive(
+    ::std::clone::Clone,
+    ::std::cmp::PartialEq,
+    ::std::fmt::Debug,
+    serde::Deserialize,
+)]
 pub struct GuardrailManagedWord {
     /// <p>The match for the managed word.</p>
     pub r#match: ::std::string::String,
@@ -10,7 +15,8 @@ pub struct GuardrailManagedWord {
     pub r#type: crate::types::GuardrailManagedWordType,
     /// <p>The action for the managed word.</p>
     pub action: crate::types::GuardrailWordPolicyAction,
-    /// <p>Indicates whether managed word content that breaches the guardrail configuration is detected.</p>
+    /// <p>Indicates whether managed word content that breaches the guardrail
+    /// configuration is detected.</p>
     pub detected: ::std::option::Option<bool>,
 }
 impl GuardrailManagedWord {
@@ -27,36 +33,51 @@ impl GuardrailManagedWord {
     pub fn action(&self) -> &crate::types::GuardrailWordPolicyAction {
         &self.action
     }
-    /// <p>Indicates whether managed word content that breaches the guardrail configuration is detected.</p>
+    /// <p>Indicates whether managed word content that breaches the guardrail
+    /// configuration is detected.</p>
     pub fn detected(&self) -> ::std::option::Option<bool> {
         self.detected
     }
 }
 impl GuardrailManagedWord {
-    /// Creates a new builder-style object to manufacture [`GuardrailManagedWord`](crate::types::GuardrailManagedWord).
+    /// Creates a new builder-style object to manufacture
+    /// [`GuardrailManagedWord`](crate::types::GuardrailManagedWord).
     pub fn builder() -> crate::types::builders::GuardrailManagedWordBuilder {
         crate::types::builders::GuardrailManagedWordBuilder::default()
     }
 }
 
 /// A builder for [`GuardrailManagedWord`](crate::types::GuardrailManagedWord).
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::default::Default, ::std::fmt::Debug)]
+#[derive(
+    ::std::clone::Clone,
+    ::std::cmp::PartialEq,
+    ::std::default::Default,
+    ::std::fmt::Debug,
+)]
 #[non_exhaustive]
 pub struct GuardrailManagedWordBuilder {
     pub(crate) r#match: ::std::option::Option<::std::string::String>,
-    pub(crate) r#type: ::std::option::Option<crate::types::GuardrailManagedWordType>,
-    pub(crate) action: ::std::option::Option<crate::types::GuardrailWordPolicyAction>,
+    pub(crate) r#type:
+        ::std::option::Option<crate::types::GuardrailManagedWordType>,
+    pub(crate) action:
+        ::std::option::Option<crate::types::GuardrailWordPolicyAction>,
     pub(crate) detected: ::std::option::Option<bool>,
 }
 impl GuardrailManagedWordBuilder {
     /// <p>The match for the managed word.</p>
     /// This field is required.
-    pub fn r#match(mut self, input: impl ::std::convert::Into<::std::string::String>) -> Self {
+    pub fn r#match(
+        mut self,
+        input: impl ::std::convert::Into<::std::string::String>,
+    ) -> Self {
         self.r#match = ::std::option::Option::Some(input.into());
         self
     }
     /// <p>The match for the managed word.</p>
-    pub fn set_match(mut self, input: ::std::option::Option<::std::string::String>) -> Self {
+    pub fn set_match(
+        mut self,
+        input: ::std::option::Option<::std::string::String>,
+    ) -> Self {
         self.r#match = input;
         self
     }
@@ -66,71 +87,99 @@ impl GuardrailManagedWordBuilder {
     }
     /// <p>The type for the managed word.</p>
     /// This field is required.
-    pub fn r#type(mut self, input: crate::types::GuardrailManagedWordType) -> Self {
+    pub fn r#type(
+        mut self,
+        input: crate::types::GuardrailManagedWordType,
+    ) -> Self {
         self.r#type = ::std::option::Option::Some(input);
         self
     }
     /// <p>The type for the managed word.</p>
-    pub fn set_type(mut self, input: ::std::option::Option<crate::types::GuardrailManagedWordType>) -> Self {
+    pub fn set_type(
+        mut self,
+        input: ::std::option::Option<crate::types::GuardrailManagedWordType>,
+    ) -> Self {
         self.r#type = input;
         self
     }
     /// <p>The type for the managed word.</p>
-    pub fn get_type(&self) -> &::std::option::Option<crate::types::GuardrailManagedWordType> {
+    pub fn get_type(
+        &self,
+    ) -> &::std::option::Option<crate::types::GuardrailManagedWordType> {
         &self.r#type
     }
     /// <p>The action for the managed word.</p>
     /// This field is required.
-    pub fn action(mut self, input: crate::types::GuardrailWordPolicyAction) -> Self {
+    pub fn action(
+        mut self,
+        input: crate::types::GuardrailWordPolicyAction,
+    ) -> Self {
         self.action = ::std::option::Option::Some(input);
         self
     }
     /// <p>The action for the managed word.</p>
-    pub fn set_action(mut self, input: ::std::option::Option<crate::types::GuardrailWordPolicyAction>) -> Self {
+    pub fn set_action(
+        mut self,
+        input: ::std::option::Option<crate::types::GuardrailWordPolicyAction>,
+    ) -> Self {
         self.action = input;
         self
     }
     /// <p>The action for the managed word.</p>
-    pub fn get_action(&self) -> &::std::option::Option<crate::types::GuardrailWordPolicyAction> {
+    pub fn get_action(
+        &self,
+    ) -> &::std::option::Option<crate::types::GuardrailWordPolicyAction> {
         &self.action
     }
-    /// <p>Indicates whether managed word content that breaches the guardrail configuration is detected.</p>
+    /// <p>Indicates whether managed word content that breaches the guardrail
+    /// configuration is detected.</p>
     pub fn detected(mut self, input: bool) -> Self {
         self.detected = ::std::option::Option::Some(input);
         self
     }
-    /// <p>Indicates whether managed word content that breaches the guardrail configuration is detected.</p>
+    /// <p>Indicates whether managed word content that breaches the guardrail
+    /// configuration is detected.</p>
     pub fn set_detected(mut self, input: ::std::option::Option<bool>) -> Self {
         self.detected = input;
         self
     }
-    /// <p>Indicates whether managed word content that breaches the guardrail configuration is detected.</p>
+    /// <p>Indicates whether managed word content that breaches the guardrail
+    /// configuration is detected.</p>
     pub fn get_detected(&self) -> &::std::option::Option<bool> {
         &self.detected
     }
-    /// Consumes the builder and constructs a [`GuardrailManagedWord`](crate::types::GuardrailManagedWord).
+    /// Consumes the builder and constructs a
+    /// [`GuardrailManagedWord`](crate::types::GuardrailManagedWord).
     /// This method will fail if any of the following fields are not set:
     /// - [`r#match`](crate::types::builders::GuardrailManagedWordBuilder::match)
     /// - [`r#type`](crate::types::builders::GuardrailManagedWordBuilder::type)
     /// - [`action`](crate::types::builders::GuardrailManagedWordBuilder::action)
-    pub fn build(self) -> ::std::result::Result<crate::types::GuardrailManagedWord, aws_smithy_types::error::operation::BuildError> {
+    pub fn build(
+        self,
+    ) -> ::std::result::Result<
+        crate::types::GuardrailManagedWord,
+        aws_smithy_types::error::operation::BuildError,
+    > {
         ::std::result::Result::Ok(crate::types::GuardrailManagedWord {
             r#match: self.r#match.ok_or_else(|| {
                 aws_smithy_types::error::operation::BuildError::missing_field(
                     "r#match",
-                    "r#match was not specified but it is required when building GuardrailManagedWord",
+                    "r#match was not specified but it is required when \
+                     building GuardrailManagedWord",
                 )
             })?,
             r#type: self.r#type.ok_or_else(|| {
                 aws_smithy_types::error::operation::BuildError::missing_field(
                     "r#type",
-                    "r#type was not specified but it is required when building GuardrailManagedWord",
+                    "r#type was not specified but it is required when \
+                     building GuardrailManagedWord",
                 )
             })?,
             action: self.action.ok_or_else(|| {
                 aws_smithy_types::error::operation::BuildError::missing_field(
                     "action",
-                    "action was not specified but it is required when building GuardrailManagedWord",
+                    "action was not specified but it is required when \
+                     building GuardrailManagedWord",
                 )
             })?,
             detected: self.detected,

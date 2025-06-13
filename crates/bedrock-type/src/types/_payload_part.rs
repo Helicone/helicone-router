@@ -21,14 +21,17 @@ impl ::std::fmt::Debug for PayloadPart {
     }
 }
 impl PayloadPart {
-    /// Creates a new builder-style object to manufacture [`PayloadPart`](crate::types::PayloadPart).
+    /// Creates a new builder-style object to manufacture
+    /// [`PayloadPart`](crate::types::PayloadPart).
     pub fn builder() -> crate::types::builders::PayloadPartBuilder {
         crate::types::builders::PayloadPartBuilder::default()
     }
 }
 
 /// A builder for [`PayloadPart`](crate::types::PayloadPart).
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::default::Default)]
+#[derive(
+    ::std::clone::Clone, ::std::cmp::PartialEq, ::std::default::Default,
+)]
 #[non_exhaustive]
 pub struct PayloadPartBuilder {
     pub(crate) bytes: ::std::option::Option<aws_smithy_types::Blob>,
@@ -40,7 +43,10 @@ impl PayloadPartBuilder {
         self
     }
     /// <p>Base64-encoded bytes of payload data.</p>
-    pub fn set_bytes(mut self, input: ::std::option::Option<aws_smithy_types::Blob>) -> Self {
+    pub fn set_bytes(
+        mut self,
+        input: ::std::option::Option<aws_smithy_types::Blob>,
+    ) -> Self {
         self.bytes = input;
         self
     }
@@ -48,7 +54,8 @@ impl PayloadPartBuilder {
     pub fn get_bytes(&self) -> &::std::option::Option<aws_smithy_types::Blob> {
         &self.bytes
     }
-    /// Consumes the builder and constructs a [`PayloadPart`](crate::types::PayloadPart).
+    /// Consumes the builder and constructs a
+    /// [`PayloadPart`](crate::types::PayloadPart).
     pub fn build(self) -> crate::types::PayloadPart {
         crate::types::PayloadPart { bytes: self.bytes }
     }

@@ -2,11 +2,17 @@
 
 /// <p>The details of the guardrail image coverage.</p>
 #[non_exhaustive]
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, serde::Deserialize)]
+#[derive(
+    ::std::clone::Clone,
+    ::std::cmp::PartialEq,
+    ::std::fmt::Debug,
+    serde::Deserialize,
+)]
 pub struct GuardrailImageCoverage {
     /// <p>The count (integer) of images guardrails guarded.</p>
     pub guarded: ::std::option::Option<i32>,
-    /// <p>Represents the total number of images (integer) that were in the request (guarded and unguarded).</p>
+    /// <p>Represents the total number of images (integer) that were in the
+    /// request (guarded and unguarded).</p>
     pub total: ::std::option::Option<i32>,
 }
 impl GuardrailImageCoverage {
@@ -14,20 +20,28 @@ impl GuardrailImageCoverage {
     pub fn guarded(&self) -> ::std::option::Option<i32> {
         self.guarded
     }
-    /// <p>Represents the total number of images (integer) that were in the request (guarded and unguarded).</p>
+    /// <p>Represents the total number of images (integer) that were in the
+    /// request (guarded and unguarded).</p>
     pub fn total(&self) -> ::std::option::Option<i32> {
         self.total
     }
 }
 impl GuardrailImageCoverage {
-    /// Creates a new builder-style object to manufacture [`GuardrailImageCoverage`](crate::types::GuardrailImageCoverage).
+    /// Creates a new builder-style object to manufacture
+    /// [`GuardrailImageCoverage`](crate::types::GuardrailImageCoverage).
     pub fn builder() -> crate::types::builders::GuardrailImageCoverageBuilder {
         crate::types::builders::GuardrailImageCoverageBuilder::default()
     }
 }
 
-/// A builder for [`GuardrailImageCoverage`](crate::types::GuardrailImageCoverage).
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::default::Default, ::std::fmt::Debug)]
+/// A builder for
+/// [`GuardrailImageCoverage`](crate::types::GuardrailImageCoverage).
+#[derive(
+    ::std::clone::Clone,
+    ::std::cmp::PartialEq,
+    ::std::default::Default,
+    ::std::fmt::Debug,
+)]
 #[non_exhaustive]
 pub struct GuardrailImageCoverageBuilder {
     pub(crate) guarded: ::std::option::Option<i32>,
@@ -48,21 +62,25 @@ impl GuardrailImageCoverageBuilder {
     pub fn get_guarded(&self) -> &::std::option::Option<i32> {
         &self.guarded
     }
-    /// <p>Represents the total number of images (integer) that were in the request (guarded and unguarded).</p>
+    /// <p>Represents the total number of images (integer) that were in the
+    /// request (guarded and unguarded).</p>
     pub fn total(mut self, input: i32) -> Self {
         self.total = ::std::option::Option::Some(input);
         self
     }
-    /// <p>Represents the total number of images (integer) that were in the request (guarded and unguarded).</p>
+    /// <p>Represents the total number of images (integer) that were in the
+    /// request (guarded and unguarded).</p>
     pub fn set_total(mut self, input: ::std::option::Option<i32>) -> Self {
         self.total = input;
         self
     }
-    /// <p>Represents the total number of images (integer) that were in the request (guarded and unguarded).</p>
+    /// <p>Represents the total number of images (integer) that were in the
+    /// request (guarded and unguarded).</p>
     pub fn get_total(&self) -> &::std::option::Option<i32> {
         &self.total
     }
-    /// Consumes the builder and constructs a [`GuardrailImageCoverage`](crate::types::GuardrailImageCoverage).
+    /// Consumes the builder and constructs a
+    /// [`GuardrailImageCoverage`](crate::types::GuardrailImageCoverage).
     pub fn build(self) -> crate::types::GuardrailImageCoverage {
         crate::types::GuardrailImageCoverage {
             guarded: self.guarded,

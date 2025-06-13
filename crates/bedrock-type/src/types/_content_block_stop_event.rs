@@ -2,7 +2,12 @@
 
 /// <p>A content block stop event.</p>
 #[non_exhaustive]
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, serde::Deserialize)]
+#[derive(
+    ::std::clone::Clone,
+    ::std::cmp::PartialEq,
+    ::std::fmt::Debug,
+    serde::Deserialize,
+)]
 pub struct ContentBlockStopEvent {
     /// <p>The index for a content block.</p>
     pub content_block_index: i32,
@@ -14,14 +19,21 @@ impl ContentBlockStopEvent {
     }
 }
 impl ContentBlockStopEvent {
-    /// Creates a new builder-style object to manufacture [`ContentBlockStopEvent`](crate::types::ContentBlockStopEvent).
+    /// Creates a new builder-style object to manufacture
+    /// [`ContentBlockStopEvent`](crate::types::ContentBlockStopEvent).
     pub fn builder() -> crate::types::builders::ContentBlockStopEventBuilder {
         crate::types::builders::ContentBlockStopEventBuilder::default()
     }
 }
 
-/// A builder for [`ContentBlockStopEvent`](crate::types::ContentBlockStopEvent).
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::default::Default, ::std::fmt::Debug)]
+/// A builder for
+/// [`ContentBlockStopEvent`](crate::types::ContentBlockStopEvent).
+#[derive(
+    ::std::clone::Clone,
+    ::std::cmp::PartialEq,
+    ::std::default::Default,
+    ::std::fmt::Debug,
+)]
 #[non_exhaustive]
 pub struct ContentBlockStopEventBuilder {
     pub(crate) content_block_index: ::std::option::Option<i32>,
@@ -34,7 +46,10 @@ impl ContentBlockStopEventBuilder {
         self
     }
     /// <p>The index for a content block.</p>
-    pub fn set_content_block_index(mut self, input: ::std::option::Option<i32>) -> Self {
+    pub fn set_content_block_index(
+        mut self,
+        input: ::std::option::Option<i32>,
+    ) -> Self {
         self.content_block_index = input;
         self
     }
@@ -42,15 +57,22 @@ impl ContentBlockStopEventBuilder {
     pub fn get_content_block_index(&self) -> &::std::option::Option<i32> {
         &self.content_block_index
     }
-    /// Consumes the builder and constructs a [`ContentBlockStopEvent`](crate::types::ContentBlockStopEvent).
-    /// This method will fail if any of the following fields are not set:
+    /// Consumes the builder and constructs a
+    /// [`ContentBlockStopEvent`](crate::types::ContentBlockStopEvent). This
+    /// method will fail if any of the following fields are not set:
     /// - [`content_block_index`](crate::types::builders::ContentBlockStopEventBuilder::content_block_index)
-    pub fn build(self) -> ::std::result::Result<crate::types::ContentBlockStopEvent, aws_smithy_types::error::operation::BuildError> {
+    pub fn build(
+        self,
+    ) -> ::std::result::Result<
+        crate::types::ContentBlockStopEvent,
+        aws_smithy_types::error::operation::BuildError,
+    > {
         ::std::result::Result::Ok(crate::types::ContentBlockStopEvent {
             content_block_index: self.content_block_index.ok_or_else(|| {
                 aws_smithy_types::error::operation::BuildError::missing_field(
                     "content_block_index",
-                    "content_block_index was not specified but it is required when building ContentBlockStopEvent",
+                    "content_block_index was not specified but it is required \
+                     when building ContentBlockStopEvent",
                 )
             })?,
         })

@@ -2,7 +2,12 @@
 
 /// <p>The messages output stream</p>
 #[non_exhaustive]
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, serde::Deserialize)]
+#[derive(
+    ::std::clone::Clone,
+    ::std::cmp::PartialEq,
+    ::std::fmt::Debug,
+    serde::Deserialize,
+)]
 pub enum ConverseStreamOutput {
     /// <p>The messages output content block delta.</p>
     ContentBlockDelta(crate::types::ContentBlockDeltaEvent),
@@ -16,92 +21,137 @@ pub enum ConverseStreamOutput {
     MessageStop(crate::types::MessageStopEvent),
     /// <p>Metadata for the converse output stream.</p>
     Metadata(crate::types::ConverseStreamMetadataEvent),
-    /// The `Unknown` variant represents cases where new union variant was received. Consider upgrading the SDK to the latest available version.
+    /// The `Unknown` variant represents cases where new union variant was
+    /// received. Consider upgrading the SDK to the latest available version.
     /// An unknown enum variant
     ///
-    /// _Note: If you encounter this error, consider upgrading your SDK to the latest version._
-    /// The `Unknown` variant represents cases where the server sent a value that wasn't recognized
-    /// by the client. This can happen when the server adds new functionality, but the client has not been updated.
-    /// To investigate this, consider turning on debug logging to print the raw HTTP response.
+    /// _Note: If you encounter this error, consider upgrading your SDK to the
+    /// latest version._ The `Unknown` variant represents cases where the
+    /// server sent a value that wasn't recognized by the client. This can
+    /// happen when the server adds new functionality, but the client has not
+    /// been updated. To investigate this, consider turning on debug
+    /// logging to print the raw HTTP response.
     #[non_exhaustive]
     Unknown,
 }
 impl ConverseStreamOutput {
-    /// Tries to convert the enum instance into [`ContentBlockDelta`](crate::types::ConverseStreamOutput::ContentBlockDelta), extracting the inner [`ContentBlockDeltaEvent`](crate::types::ContentBlockDeltaEvent).
+    /// Tries to convert the enum instance into
+    /// [`ContentBlockDelta`](crate::types::ConverseStreamOutput::ContentBlockDelta),
+    /// extracting the inner
+    /// [`ContentBlockDeltaEvent`](crate::types::ContentBlockDeltaEvent).
     /// Returns `Err(&Self)` if it can't be converted.
-    pub fn as_content_block_delta(&self) -> ::std::result::Result<&crate::types::ContentBlockDeltaEvent, &Self> {
+    pub fn as_content_block_delta(
+        &self,
+    ) -> ::std::result::Result<&crate::types::ContentBlockDeltaEvent, &Self>
+    {
         if let ConverseStreamOutput::ContentBlockDelta(val) = &self {
             ::std::result::Result::Ok(val)
         } else {
             ::std::result::Result::Err(self)
         }
     }
-    /// Returns true if this is a [`ContentBlockDelta`](crate::types::ConverseStreamOutput::ContentBlockDelta).
+    /// Returns true if this is a
+    /// [`ContentBlockDelta`](crate::types::ConverseStreamOutput::ContentBlockDelta).
+    ///
     pub fn is_content_block_delta(&self) -> bool {
         self.as_content_block_delta().is_ok()
     }
-    /// Tries to convert the enum instance into [`ContentBlockStart`](crate::types::ConverseStreamOutput::ContentBlockStart), extracting the inner [`ContentBlockStartEvent`](crate::types::ContentBlockStartEvent).
+    /// Tries to convert the enum instance into
+    /// [`ContentBlockStart`](crate::types::ConverseStreamOutput::ContentBlockStart),
+    /// extracting the inner
+    /// [`ContentBlockStartEvent`](crate::types::ContentBlockStartEvent).
     /// Returns `Err(&Self)` if it can't be converted.
-    pub fn as_content_block_start(&self) -> ::std::result::Result<&crate::types::ContentBlockStartEvent, &Self> {
+    pub fn as_content_block_start(
+        &self,
+    ) -> ::std::result::Result<&crate::types::ContentBlockStartEvent, &Self>
+    {
         if let ConverseStreamOutput::ContentBlockStart(val) = &self {
             ::std::result::Result::Ok(val)
         } else {
             ::std::result::Result::Err(self)
         }
     }
-    /// Returns true if this is a [`ContentBlockStart`](crate::types::ConverseStreamOutput::ContentBlockStart).
+    /// Returns true if this is a
+    /// [`ContentBlockStart`](crate::types::ConverseStreamOutput::ContentBlockStart).
+    ///
     pub fn is_content_block_start(&self) -> bool {
         self.as_content_block_start().is_ok()
     }
-    /// Tries to convert the enum instance into [`ContentBlockStop`](crate::types::ConverseStreamOutput::ContentBlockStop), extracting the inner [`ContentBlockStopEvent`](crate::types::ContentBlockStopEvent).
+    /// Tries to convert the enum instance into
+    /// [`ContentBlockStop`](crate::types::ConverseStreamOutput::ContentBlockStop),
+    /// extracting the inner
+    /// [`ContentBlockStopEvent`](crate::types::ContentBlockStopEvent).
     /// Returns `Err(&Self)` if it can't be converted.
-    pub fn as_content_block_stop(&self) -> ::std::result::Result<&crate::types::ContentBlockStopEvent, &Self> {
+    pub fn as_content_block_stop(
+        &self,
+    ) -> ::std::result::Result<&crate::types::ContentBlockStopEvent, &Self>
+    {
         if let ConverseStreamOutput::ContentBlockStop(val) = &self {
             ::std::result::Result::Ok(val)
         } else {
             ::std::result::Result::Err(self)
         }
     }
-    /// Returns true if this is a [`ContentBlockStop`](crate::types::ConverseStreamOutput::ContentBlockStop).
+    /// Returns true if this is a
+    /// [`ContentBlockStop`](crate::types::ConverseStreamOutput::ContentBlockStop).
+    ///
     pub fn is_content_block_stop(&self) -> bool {
         self.as_content_block_stop().is_ok()
     }
-    /// Tries to convert the enum instance into [`MessageStart`](crate::types::ConverseStreamOutput::MessageStart), extracting the inner [`MessageStartEvent`](crate::types::MessageStartEvent).
+    /// Tries to convert the enum instance into
+    /// [`MessageStart`](crate::types::ConverseStreamOutput::MessageStart),
+    /// extracting the inner
+    /// [`MessageStartEvent`](crate::types::MessageStartEvent).
     /// Returns `Err(&Self)` if it can't be converted.
-    pub fn as_message_start(&self) -> ::std::result::Result<&crate::types::MessageStartEvent, &Self> {
+    pub fn as_message_start(
+        &self,
+    ) -> ::std::result::Result<&crate::types::MessageStartEvent, &Self> {
         if let ConverseStreamOutput::MessageStart(val) = &self {
             ::std::result::Result::Ok(val)
         } else {
             ::std::result::Result::Err(self)
         }
     }
-    /// Returns true if this is a [`MessageStart`](crate::types::ConverseStreamOutput::MessageStart).
+    /// Returns true if this is a
+    /// [`MessageStart`](crate::types::ConverseStreamOutput::MessageStart).
     pub fn is_message_start(&self) -> bool {
         self.as_message_start().is_ok()
     }
-    /// Tries to convert the enum instance into [`MessageStop`](crate::types::ConverseStreamOutput::MessageStop), extracting the inner [`MessageStopEvent`](crate::types::MessageStopEvent).
-    /// Returns `Err(&Self)` if it can't be converted.
-    pub fn as_message_stop(&self) -> ::std::result::Result<&crate::types::MessageStopEvent, &Self> {
+    /// Tries to convert the enum instance into
+    /// [`MessageStop`](crate::types::ConverseStreamOutput::MessageStop),
+    /// extracting the inner
+    /// [`MessageStopEvent`](crate::types::MessageStopEvent). Returns `Err(&
+    /// Self)` if it can't be converted.
+    pub fn as_message_stop(
+        &self,
+    ) -> ::std::result::Result<&crate::types::MessageStopEvent, &Self> {
         if let ConverseStreamOutput::MessageStop(val) = &self {
             ::std::result::Result::Ok(val)
         } else {
             ::std::result::Result::Err(self)
         }
     }
-    /// Returns true if this is a [`MessageStop`](crate::types::ConverseStreamOutput::MessageStop).
+    /// Returns true if this is a
+    /// [`MessageStop`](crate::types::ConverseStreamOutput::MessageStop).
     pub fn is_message_stop(&self) -> bool {
         self.as_message_stop().is_ok()
     }
-    /// Tries to convert the enum instance into [`Metadata`](crate::types::ConverseStreamOutput::Metadata), extracting the inner [`ConverseStreamMetadataEvent`](crate::types::ConverseStreamMetadataEvent).
+    /// Tries to convert the enum instance into
+    /// [`Metadata`](crate::types::ConverseStreamOutput::Metadata), extracting
+    /// the inner [`ConverseStreamMetadataEvent`](crate::types::ConverseStreamMetadataEvent).
     /// Returns `Err(&Self)` if it can't be converted.
-    pub fn as_metadata(&self) -> ::std::result::Result<&crate::types::ConverseStreamMetadataEvent, &Self> {
+    pub fn as_metadata(
+        &self,
+    ) -> ::std::result::Result<&crate::types::ConverseStreamMetadataEvent, &Self>
+    {
         if let ConverseStreamOutput::Metadata(val) = &self {
             ::std::result::Result::Ok(val)
         } else {
             ::std::result::Result::Err(self)
         }
     }
-    /// Returns true if this is a [`Metadata`](crate::types::ConverseStreamOutput::Metadata).
+    /// Returns true if this is a
+    /// [`Metadata`](crate::types::ConverseStreamOutput::Metadata).
     pub fn is_metadata(&self) -> bool {
         self.as_metadata().is_ok()
     }

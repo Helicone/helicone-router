@@ -2,7 +2,12 @@
 
 /// <p>Configuration information for the tools that you pass to a model. For more information, see <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/tool-use.html">Tool use (function calling)</a> in the Amazon Bedrock User Guide.</p>
 #[non_exhaustive]
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, serde::Serialize)]
+#[derive(
+    ::std::clone::Clone,
+    ::std::cmp::PartialEq,
+    ::std::fmt::Debug,
+    serde::Serialize,
+)]
 #[serde(rename_all = "camelCase")]
 pub struct ToolConfiguration {
     /// <p>An array of tools that you want to pass to a model.</p>
@@ -17,28 +22,38 @@ impl ToolConfiguration {
         self.tools.deref()
     }
     /// <p>If supported by model, forces the model to request a tool.</p>
-    pub fn tool_choice(&self) -> ::std::option::Option<&crate::types::ToolChoice> {
+    pub fn tool_choice(
+        &self,
+    ) -> ::std::option::Option<&crate::types::ToolChoice> {
         self.tool_choice.as_ref()
     }
 }
 impl ToolConfiguration {
-    /// Creates a new builder-style object to manufacture [`ToolConfiguration`](crate::types::ToolConfiguration).
+    /// Creates a new builder-style object to manufacture
+    /// [`ToolConfiguration`](crate::types::ToolConfiguration).
     pub fn builder() -> crate::types::builders::ToolConfigurationBuilder {
         crate::types::builders::ToolConfigurationBuilder::default()
     }
 }
 
 /// A builder for [`ToolConfiguration`](crate::types::ToolConfiguration).
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::default::Default, ::std::fmt::Debug)]
+#[derive(
+    ::std::clone::Clone,
+    ::std::cmp::PartialEq,
+    ::std::default::Default,
+    ::std::fmt::Debug,
+)]
 #[non_exhaustive]
 pub struct ToolConfigurationBuilder {
-    pub(crate) tools: ::std::option::Option<::std::vec::Vec<crate::types::Tool>>,
+    pub(crate) tools:
+        ::std::option::Option<::std::vec::Vec<crate::types::Tool>>,
     pub(crate) tool_choice: ::std::option::Option<crate::types::ToolChoice>,
 }
 impl ToolConfigurationBuilder {
     /// Appends an item to `tools`.
     ///
-    /// To override the contents of this collection use [`set_tools`](Self::set_tools).
+    /// To override the contents of this collection use
+    /// [`set_tools`](Self::set_tools).
     ///
     /// <p>An array of tools that you want to pass to a model.</p>
     pub fn tools(mut self, input: crate::types::Tool) -> Self {
@@ -48,12 +63,17 @@ impl ToolConfigurationBuilder {
         self
     }
     /// <p>An array of tools that you want to pass to a model.</p>
-    pub fn set_tools(mut self, input: ::std::option::Option<::std::vec::Vec<crate::types::Tool>>) -> Self {
+    pub fn set_tools(
+        mut self,
+        input: ::std::option::Option<::std::vec::Vec<crate::types::Tool>>,
+    ) -> Self {
         self.tools = input;
         self
     }
     /// <p>An array of tools that you want to pass to a model.</p>
-    pub fn get_tools(&self) -> &::std::option::Option<::std::vec::Vec<crate::types::Tool>> {
+    pub fn get_tools(
+        &self,
+    ) -> &::std::option::Option<::std::vec::Vec<crate::types::Tool>> {
         &self.tools
     }
     /// <p>If supported by model, forces the model to request a tool.</p>
@@ -62,23 +82,35 @@ impl ToolConfigurationBuilder {
         self
     }
     /// <p>If supported by model, forces the model to request a tool.</p>
-    pub fn set_tool_choice(mut self, input: ::std::option::Option<crate::types::ToolChoice>) -> Self {
+    pub fn set_tool_choice(
+        mut self,
+        input: ::std::option::Option<crate::types::ToolChoice>,
+    ) -> Self {
         self.tool_choice = input;
         self
     }
     /// <p>If supported by model, forces the model to request a tool.</p>
-    pub fn get_tool_choice(&self) -> &::std::option::Option<crate::types::ToolChoice> {
+    pub fn get_tool_choice(
+        &self,
+    ) -> &::std::option::Option<crate::types::ToolChoice> {
         &self.tool_choice
     }
-    /// Consumes the builder and constructs a [`ToolConfiguration`](crate::types::ToolConfiguration).
-    /// This method will fail if any of the following fields are not set:
+    /// Consumes the builder and constructs a
+    /// [`ToolConfiguration`](crate::types::ToolConfiguration). This method
+    /// will fail if any of the following fields are not set:
     /// - [`tools`](crate::types::builders::ToolConfigurationBuilder::tools)
-    pub fn build(self) -> ::std::result::Result<crate::types::ToolConfiguration, aws_smithy_types::error::operation::BuildError> {
+    pub fn build(
+        self,
+    ) -> ::std::result::Result<
+        crate::types::ToolConfiguration,
+        aws_smithy_types::error::operation::BuildError,
+    > {
         ::std::result::Result::Ok(crate::types::ToolConfiguration {
             tools: self.tools.ok_or_else(|| {
                 aws_smithy_types::error::operation::BuildError::missing_field(
                     "tools",
-                    "tools was not specified but it is required when building ToolConfiguration",
+                    "tools was not specified but it is required when building \
+                     ToolConfiguration",
                 )
             })?,
             tool_choice: self.tool_choice,

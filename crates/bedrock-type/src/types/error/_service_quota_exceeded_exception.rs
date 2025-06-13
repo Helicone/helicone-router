@@ -26,20 +26,33 @@ impl ::std::fmt::Display for ServiceQuotaExceededException {
     }
 }
 impl ::std::error::Error for ServiceQuotaExceededException {}
-impl aws_smithy_types::error::metadata::ProvideErrorMetadata for ServiceQuotaExceededException {
+impl aws_smithy_types::error::metadata::ProvideErrorMetadata
+    for ServiceQuotaExceededException
+{
     fn meta(&self) -> &aws_smithy_types::error::ErrorMetadata {
         &self.meta
     }
 }
 impl ServiceQuotaExceededException {
-    /// Creates a new builder-style object to manufacture [`ServiceQuotaExceededException`](crate::types::error::ServiceQuotaExceededException).
-    pub fn builder() -> crate::types::error::builders::ServiceQuotaExceededExceptionBuilder {
+    /// Creates a new builder-style object to manufacture
+    /// [`ServiceQuotaExceededException`](crate::types::error::ServiceQuotaExceededException).
+    ///
+    pub fn builder(
+    ) -> crate::types::error::builders::ServiceQuotaExceededExceptionBuilder
+    {
         crate::types::error::builders::ServiceQuotaExceededExceptionBuilder::default()
     }
 }
 
-/// A builder for [`ServiceQuotaExceededException`](crate::types::error::ServiceQuotaExceededException).
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::default::Default, ::std::fmt::Debug)]
+/// A builder for
+/// [`ServiceQuotaExceededException`](crate::types::error::ServiceQuotaExceededException).
+///
+#[derive(
+    ::std::clone::Clone,
+    ::std::cmp::PartialEq,
+    ::std::default::Default,
+    ::std::fmt::Debug,
+)]
 #[non_exhaustive]
 pub struct ServiceQuotaExceededExceptionBuilder {
     pub(crate) message: ::std::option::Option<::std::string::String>,
@@ -47,12 +60,18 @@ pub struct ServiceQuotaExceededExceptionBuilder {
 }
 impl ServiceQuotaExceededExceptionBuilder {
     #[allow(missing_docs)] // documentation missing in model
-    pub fn message(mut self, input: impl ::std::convert::Into<::std::string::String>) -> Self {
+    pub fn message(
+        mut self,
+        input: impl ::std::convert::Into<::std::string::String>,
+    ) -> Self {
         self.message = ::std::option::Option::Some(input.into());
         self
     }
     #[allow(missing_docs)] // documentation missing in model
-    pub fn set_message(mut self, input: ::std::option::Option<::std::string::String>) -> Self {
+    pub fn set_message(
+        mut self,
+        input: ::std::option::Option<::std::string::String>,
+    ) -> Self {
         self.message = input;
         self
     }
@@ -61,17 +80,25 @@ impl ServiceQuotaExceededExceptionBuilder {
         &self.message
     }
     /// Sets error metadata
-    pub fn meta(mut self, meta: aws_smithy_types::error::ErrorMetadata) -> Self {
+    pub fn meta(
+        mut self,
+        meta: aws_smithy_types::error::ErrorMetadata,
+    ) -> Self {
         self.meta = Some(meta);
         self
     }
 
     /// Sets error metadata
-    pub fn set_meta(&mut self, meta: std::option::Option<aws_smithy_types::error::ErrorMetadata>) -> &mut Self {
+    pub fn set_meta(
+        &mut self,
+        meta: std::option::Option<aws_smithy_types::error::ErrorMetadata>,
+    ) -> &mut Self {
         self.meta = meta;
         self
     }
-    /// Consumes the builder and constructs a [`ServiceQuotaExceededException`](crate::types::error::ServiceQuotaExceededException).
+    /// Consumes the builder and constructs a
+    /// [`ServiceQuotaExceededException`](crate::types::error::ServiceQuotaExceededException).
+    ///
     pub fn build(self) -> crate::types::error::ServiceQuotaExceededException {
         crate::types::error::ServiceQuotaExceededException {
             message: self.message,

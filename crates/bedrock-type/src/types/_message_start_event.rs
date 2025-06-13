@@ -2,7 +2,12 @@
 
 /// <p>The start of a message.</p>
 #[non_exhaustive]
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, serde::Deserialize)]
+#[derive(
+    ::std::clone::Clone,
+    ::std::cmp::PartialEq,
+    ::std::fmt::Debug,
+    serde::Deserialize,
+)]
 pub struct MessageStartEvent {
     /// <p>The role for the message.</p>
     pub role: crate::types::ConversationRole,
@@ -14,14 +19,20 @@ impl MessageStartEvent {
     }
 }
 impl MessageStartEvent {
-    /// Creates a new builder-style object to manufacture [`MessageStartEvent`](crate::types::MessageStartEvent).
+    /// Creates a new builder-style object to manufacture
+    /// [`MessageStartEvent`](crate::types::MessageStartEvent).
     pub fn builder() -> crate::types::builders::MessageStartEventBuilder {
         crate::types::builders::MessageStartEventBuilder::default()
     }
 }
 
 /// A builder for [`MessageStartEvent`](crate::types::MessageStartEvent).
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::default::Default, ::std::fmt::Debug)]
+#[derive(
+    ::std::clone::Clone,
+    ::std::cmp::PartialEq,
+    ::std::default::Default,
+    ::std::fmt::Debug,
+)]
 #[non_exhaustive]
 pub struct MessageStartEventBuilder {
     pub(crate) role: ::std::option::Option<crate::types::ConversationRole>,
@@ -34,23 +45,35 @@ impl MessageStartEventBuilder {
         self
     }
     /// <p>The role for the message.</p>
-    pub fn set_role(mut self, input: ::std::option::Option<crate::types::ConversationRole>) -> Self {
+    pub fn set_role(
+        mut self,
+        input: ::std::option::Option<crate::types::ConversationRole>,
+    ) -> Self {
         self.role = input;
         self
     }
     /// <p>The role for the message.</p>
-    pub fn get_role(&self) -> &::std::option::Option<crate::types::ConversationRole> {
+    pub fn get_role(
+        &self,
+    ) -> &::std::option::Option<crate::types::ConversationRole> {
         &self.role
     }
-    /// Consumes the builder and constructs a [`MessageStartEvent`](crate::types::MessageStartEvent).
-    /// This method will fail if any of the following fields are not set:
+    /// Consumes the builder and constructs a
+    /// [`MessageStartEvent`](crate::types::MessageStartEvent). This method
+    /// will fail if any of the following fields are not set:
     /// - [`role`](crate::types::builders::MessageStartEventBuilder::role)
-    pub fn build(self) -> ::std::result::Result<crate::types::MessageStartEvent, aws_smithy_types::error::operation::BuildError> {
+    pub fn build(
+        self,
+    ) -> ::std::result::Result<
+        crate::types::MessageStartEvent,
+        aws_smithy_types::error::operation::BuildError,
+    > {
         ::std::result::Result::Ok(crate::types::MessageStartEvent {
             role: self.role.ok_or_else(|| {
                 aws_smithy_types::error::operation::BuildError::missing_field(
                     "role",
-                    "role was not specified but it is required when building MessageStartEvent",
+                    "role was not specified but it is required when building \
+                     MessageStartEvent",
                 )
             })?,
         })

@@ -3,8 +3,9 @@
 #[derive(::std::clone::Clone, ::std::cmp::PartialEq, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ConverseInput {
-    /// <p>Specifies the model or throughput with which to run inference, or the prompt resource to use in inference. The value depends on the resource that you use:</p>
-    /// <ul>
+    /// <p>Specifies the model or throughput with which to run inference, or
+    /// the prompt resource to use in inference. The value depends on the
+    /// resource that you use:</p> <ul>
     /// <li>
     /// <p>If you use a base model, specify the model ID or its ARN. For a list of model IDs for base models, see <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/model-ids.html#model-ids-arns">Amazon Bedrock base model IDs (on-demand throughput)</a> in the Amazon Bedrock User Guide.</p></li>
     /// <li>
@@ -20,37 +21,71 @@ pub struct ConverseInput {
     pub model_id: ::std::option::Option<::std::string::String>,
     /// <p>The messages that you want to send to the model.</p>
     pub messages: ::std::option::Option<::std::vec::Vec<crate::types::Message>>,
-    /// <p>A prompt that provides instructions or context to the model about the task it should perform, or the persona it should adopt during the conversation.</p>
-    pub system: ::std::option::Option<::std::vec::Vec<crate::types::SystemContentBlock>>,
-    /// <p>Inference parameters to pass to the model. <code>Converse</code> and <code>ConverseStream</code> support a base set of inference parameters. If you need to pass additional parameters that the model supports, use the <code>additionalModelRequestFields</code> request field.</p>
-    pub inference_config: ::std::option::Option<crate::types::InferenceConfiguration>,
-    /// <p>Configuration information for the tools that the model can use when generating a response.</p>
-    /// <p>For information about models that support tool use, see <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference.html#conversation-inference-supported-models-features">Supported models and model features</a>.</p>
-    pub tool_config: ::std::option::Option<crate::types::ToolConfiguration>,
-    /// <p>Configuration information for a guardrail that you want to use in the request. If you include <code>guardContent</code> blocks in the <code>content</code> field in the <code>messages</code> field, the guardrail operates only on those messages. If you include no <code>guardContent</code> blocks, the guardrail operates on all messages in the request body and in any included prompt resource.</p>
-    pub guardrail_config: ::std::option::Option<crate::types::GuardrailConfiguration>,
-    /// <p>Additional inference parameters that the model supports, beyond the base set of inference parameters that <code>Converse</code> and <code>ConverseStream</code> support in the <code>inferenceConfig</code> field. For more information, see <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/model-parameters.html">Model parameters</a>.</p>
-    pub additional_model_request_fields: ::std::option::Option<aws_smithy_types::Document>,
-    /// <p>Contains a map of variables in a prompt from Prompt management to objects containing the values to fill in for them when running model invocation. This field is ignored if you don't specify a prompt resource in the <code>modelId</code> field.</p>
-    pub prompt_variables: ::std::option::Option<
-        ::std::collections::HashMap<::std::string::String, crate::types::PromptVariableValues>,
+    /// <p>A prompt that provides instructions or context to the model about
+    /// the task it should perform, or the persona it should adopt during the
+    /// conversation.</p>
+    pub system: ::std::option::Option<
+        ::std::vec::Vec<crate::types::SystemContentBlock>,
     >,
-    /// <p>Additional model parameters field paths to return in the response. <code>Converse</code> and <code>ConverseStream</code> return the requested fields as a JSON Pointer object in the <code>additionalModelResponseFields</code> field. The following is example JSON for <code>additionalModelResponseFieldPaths</code>.</p>
+    /// <p>Inference parameters to pass to the model. <code>Converse</code> and
+    /// <code>ConverseStream</code> support a base set of inference parameters.
+    /// If you need to pass additional parameters that the model supports, use
+    /// the <code>additionalModelRequestFields</code> request field.</p>
+    pub inference_config:
+        ::std::option::Option<crate::types::InferenceConfiguration>,
+    /// <p>Configuration information for the tools that the model can use when
+    /// generating a response.</p> <p>For information about models that support tool use, see <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference.html#conversation-inference-supported-models-features">Supported models and model features</a>.</p>
+    pub tool_config: ::std::option::Option<crate::types::ToolConfiguration>,
+    /// <p>Configuration information for a guardrail that you want to use in
+    /// the request. If you include <code>guardContent</code> blocks in the
+    /// <code>content</code> field in the <code>messages</code> field, the
+    /// guardrail operates only on those messages. If you include no
+    /// <code>guardContent</code> blocks, the guardrail operates on all
+    /// messages in the request body and in any included prompt resource.</p>
+    pub guardrail_config:
+        ::std::option::Option<crate::types::GuardrailConfiguration>,
+    /// <p>Additional inference parameters that the model supports, beyond the base set of inference parameters that <code>Converse</code> and <code>ConverseStream</code> support in the <code>inferenceConfig</code> field. For more information, see <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/model-parameters.html">Model parameters</a>.</p>
+    pub additional_model_request_fields:
+        ::std::option::Option<aws_smithy_types::Document>,
+    /// <p>Contains a map of variables in a prompt from Prompt management to
+    /// objects containing the values to fill in for them when running model
+    /// invocation. This field is ignored if you don't specify a prompt
+    /// resource in the <code>modelId</code> field.</p>
+    pub prompt_variables: ::std::option::Option<
+        ::std::collections::HashMap<
+            ::std::string::String,
+            crate::types::PromptVariableValues,
+        >,
+    >,
+    /// <p>Additional model parameters field paths to return in the response.
+    /// <code>Converse</code> and <code>ConverseStream</code> return the
+    /// requested fields as a JSON Pointer object in the
+    /// <code>additionalModelResponseFields</code> field. The following is
+    /// example JSON for <code>additionalModelResponseFieldPaths</code>.</p>
     /// <p><code>\[ "/stop_sequence" \]</code></p>
     /// <p>For information about the JSON Pointer syntax, see the <a href="https://datatracker.ietf.org/doc/html/rfc6901">Internet Engineering Task Force (IETF)</a> documentation.</p>
-    /// <p><code>Converse</code> and <code>ConverseStream</code> reject an empty JSON Pointer or incorrectly structured JSON Pointer with a <code>400</code> error code. if the JSON Pointer is valid, but the requested field is not in the model response, it is ignored by <code>Converse</code>.</p>
+    /// <p><code>Converse</code> and <code>ConverseStream</code> reject an
+    /// empty JSON Pointer or incorrectly structured JSON Pointer with a
+    /// <code>400</code> error code. if the JSON Pointer is valid, but the
+    /// requested field is not in the model response, it is ignored by
+    /// <code>Converse</code>.</p>
     pub additional_model_response_field_paths:
         ::std::option::Option<::std::vec::Vec<::std::string::String>>,
     /// <p>Key-value pairs that you can use to filter invocation logs.</p>
     pub request_metadata: ::std::option::Option<
-        ::std::collections::HashMap<::std::string::String, ::std::string::String>,
+        ::std::collections::HashMap<
+            ::std::string::String,
+            ::std::string::String,
+        >,
     >,
     /// <p>Model performance settings for the request.</p>
-    pub performance_config: ::std::option::Option<crate::types::PerformanceConfiguration>,
+    pub performance_config:
+        ::std::option::Option<crate::types::PerformanceConfiguration>,
 }
 impl ConverseInput {
-    /// <p>Specifies the model or throughput with which to run inference, or the prompt resource to use in inference. The value depends on the resource that you use:</p>
-    /// <ul>
+    /// <p>Specifies the model or throughput with which to run inference, or the
+    /// prompt resource to use in inference. The value depends on the resource
+    /// that you use:</p> <ul>
     /// <li>
     /// <p>If you use a base model, specify the model ID or its ARN. For a list of model IDs for base models, see <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/model-ids.html#model-ids-arns">Amazon Bedrock base model IDs (on-demand throughput)</a> in the Amazon Bedrock User Guide.</p></li>
     /// <li>
@@ -68,27 +103,45 @@ impl ConverseInput {
     }
     /// <p>The messages that you want to send to the model.</p>
     ///
-    /// If no value was sent for this field, a default will be set. If you want to determine if no value was sent, use `.messages.is_none()`.
+    /// If no value was sent for this field, a default will be set. If you want
+    /// to determine if no value was sent, use `.messages.is_none()`.
     pub fn messages(&self) -> &[crate::types::Message] {
         self.messages.as_deref().unwrap_or_default()
     }
-    /// <p>A prompt that provides instructions or context to the model about the task it should perform, or the persona it should adopt during the conversation.</p>
+    /// <p>A prompt that provides instructions or context to the model about the
+    /// task it should perform, or the persona it should adopt during the
+    /// conversation.</p>
     ///
-    /// If no value was sent for this field, a default will be set. If you want to determine if no value was sent, use `.system.is_none()`.
+    /// If no value was sent for this field, a default will be set. If you want
+    /// to determine if no value was sent, use `.system.is_none()`.
     pub fn system(&self) -> &[crate::types::SystemContentBlock] {
         self.system.as_deref().unwrap_or_default()
     }
-    /// <p>Inference parameters to pass to the model. <code>Converse</code> and <code>ConverseStream</code> support a base set of inference parameters. If you need to pass additional parameters that the model supports, use the <code>additionalModelRequestFields</code> request field.</p>
-    pub fn inference_config(&self) -> ::std::option::Option<&crate::types::InferenceConfiguration> {
+    /// <p>Inference parameters to pass to the model. <code>Converse</code> and
+    /// <code>ConverseStream</code> support a base set of inference parameters.
+    /// If you need to pass additional parameters that the model supports, use
+    /// the <code>additionalModelRequestFields</code> request field.</p>
+    pub fn inference_config(
+        &self,
+    ) -> ::std::option::Option<&crate::types::InferenceConfiguration> {
         self.inference_config.as_ref()
     }
-    /// <p>Configuration information for the tools that the model can use when generating a response.</p>
-    /// <p>For information about models that support tool use, see <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference.html#conversation-inference-supported-models-features">Supported models and model features</a>.</p>
-    pub fn tool_config(&self) -> ::std::option::Option<&crate::types::ToolConfiguration> {
+    /// <p>Configuration information for the tools that the model can use when
+    /// generating a response.</p> <p>For information about models that support tool use, see <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference.html#conversation-inference-supported-models-features">Supported models and model features</a>.</p>
+    pub fn tool_config(
+        &self,
+    ) -> ::std::option::Option<&crate::types::ToolConfiguration> {
         self.tool_config.as_ref()
     }
-    /// <p>Configuration information for a guardrail that you want to use in the request. If you include <code>guardContent</code> blocks in the <code>content</code> field in the <code>messages</code> field, the guardrail operates only on those messages. If you include no <code>guardContent</code> blocks, the guardrail operates on all messages in the request body and in any included prompt resource.</p>
-    pub fn guardrail_config(&self) -> ::std::option::Option<&crate::types::GuardrailConfiguration> {
+    /// <p>Configuration information for a guardrail that you want to use in the
+    /// request. If you include <code>guardContent</code> blocks in the
+    /// <code>content</code> field in the <code>messages</code> field, the
+    /// guardrail operates only on those messages. If you include no
+    /// <code>guardContent</code> blocks, the guardrail operates on all messages
+    /// in the request body and in any included prompt resource.</p>
+    pub fn guardrail_config(
+        &self,
+    ) -> ::std::option::Option<&crate::types::GuardrailConfiguration> {
         self.guardrail_config.as_ref()
     }
     /// <p>Additional inference parameters that the model supports, beyond the base set of inference parameters that <code>Converse</code> and <code>ConverseStream</code> support in the <code>inferenceConfig</code> field. For more information, see <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/model-parameters.html">Model parameters</a>.</p>
@@ -97,21 +150,39 @@ impl ConverseInput {
     ) -> ::std::option::Option<&aws_smithy_types::Document> {
         self.additional_model_request_fields.as_ref()
     }
-    /// <p>Contains a map of variables in a prompt from Prompt management to objects containing the values to fill in for them when running model invocation. This field is ignored if you don't specify a prompt resource in the <code>modelId</code> field.</p>
+    /// <p>Contains a map of variables in a prompt from Prompt management to
+    /// objects containing the values to fill in for them when running model
+    /// invocation. This field is ignored if you don't specify a prompt resource
+    /// in the <code>modelId</code> field.</p>
     pub fn prompt_variables(
         &self,
     ) -> ::std::option::Option<
-        &::std::collections::HashMap<::std::string::String, crate::types::PromptVariableValues>,
+        &::std::collections::HashMap<
+            ::std::string::String,
+            crate::types::PromptVariableValues,
+        >,
     > {
         self.prompt_variables.as_ref()
     }
-    /// <p>Additional model parameters field paths to return in the response. <code>Converse</code> and <code>ConverseStream</code> return the requested fields as a JSON Pointer object in the <code>additionalModelResponseFields</code> field. The following is example JSON for <code>additionalModelResponseFieldPaths</code>.</p>
+    /// <p>Additional model parameters field paths to return in the response.
+    /// <code>Converse</code> and <code>ConverseStream</code> return the
+    /// requested fields as a JSON Pointer object in the
+    /// <code>additionalModelResponseFields</code> field. The following is
+    /// example JSON for <code>additionalModelResponseFieldPaths</code>.</p>
     /// <p><code>\[ "/stop_sequence" \]</code></p>
     /// <p>For information about the JSON Pointer syntax, see the <a href="https://datatracker.ietf.org/doc/html/rfc6901">Internet Engineering Task Force (IETF)</a> documentation.</p>
-    /// <p><code>Converse</code> and <code>ConverseStream</code> reject an empty JSON Pointer or incorrectly structured JSON Pointer with a <code>400</code> error code. if the JSON Pointer is valid, but the requested field is not in the model response, it is ignored by <code>Converse</code>.</p>
+    /// <p><code>Converse</code> and <code>ConverseStream</code> reject an empty
+    /// JSON Pointer or incorrectly structured JSON Pointer with a
+    /// <code>400</code> error code. if the JSON Pointer is valid, but the
+    /// requested field is not in the model response, it is ignored by
+    /// <code>Converse</code>.</p>
     ///
-    /// If no value was sent for this field, a default will be set. If you want to determine if no value was sent, use `.additional_model_response_field_paths.is_none()`.
-    pub fn additional_model_response_field_paths(&self) -> &[::std::string::String] {
+    /// If no value was sent for this field, a default will be set. If you want
+    /// to determine if no value was sent, use
+    /// `.additional_model_response_field_paths.is_none()`.
+    pub fn additional_model_response_field_paths(
+        &self,
+    ) -> &[::std::string::String] {
         self.additional_model_response_field_paths
             .as_deref()
             .unwrap_or_default()
@@ -120,7 +191,10 @@ impl ConverseInput {
     pub fn request_metadata(
         &self,
     ) -> ::std::option::Option<
-        &::std::collections::HashMap<::std::string::String, ::std::string::String>,
+        &::std::collections::HashMap<
+            ::std::string::String,
+            ::std::string::String,
+        >,
     > {
         self.request_metadata.as_ref()
     }
@@ -154,4 +228,3 @@ impl ::std::fmt::Debug for ConverseInput {
         formatter.finish()
     }
 }
-

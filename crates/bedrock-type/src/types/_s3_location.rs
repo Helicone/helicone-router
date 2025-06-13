@@ -2,12 +2,19 @@
 
 /// <p>A storage location in an Amazon S3 bucket.</p>
 #[non_exhaustive]
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug,  serde::Deserialize, serde::Serialize)]
+#[derive(
+    ::std::clone::Clone,
+    ::std::cmp::PartialEq,
+    ::std::fmt::Debug,
+    serde::Deserialize,
+    serde::Serialize,
+)]
 #[serde(rename_all = "camelCase")]
 pub struct S3Location {
     /// <p>An object URI starting with <code>s3://</code>.</p>
     pub uri: ::std::string::String,
-    /// <p>If the bucket belongs to another AWS account, specify that account's ID.</p>
+    /// <p>If the bucket belongs to another AWS account, specify that account's
+    /// ID.</p>
     pub bucket_owner: ::std::option::Option<::std::string::String>,
 }
 impl S3Location {
@@ -16,20 +23,27 @@ impl S3Location {
         use std::ops::Deref;
         self.uri.deref()
     }
-    /// <p>If the bucket belongs to another AWS account, specify that account's ID.</p>
+    /// <p>If the bucket belongs to another AWS account, specify that account's
+    /// ID.</p>
     pub fn bucket_owner(&self) -> ::std::option::Option<&str> {
         self.bucket_owner.as_deref()
     }
 }
 impl S3Location {
-    /// Creates a new builder-style object to manufacture [`S3Location`](crate::types::S3Location).
+    /// Creates a new builder-style object to manufacture
+    /// [`S3Location`](crate::types::S3Location).
     pub fn builder() -> crate::types::builders::S3LocationBuilder {
         crate::types::builders::S3LocationBuilder::default()
     }
 }
 
 /// A builder for [`S3Location`](crate::types::S3Location).
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::default::Default, ::std::fmt::Debug)]
+#[derive(
+    ::std::clone::Clone,
+    ::std::cmp::PartialEq,
+    ::std::default::Default,
+    ::std::fmt::Debug,
+)]
 #[non_exhaustive]
 pub struct S3LocationBuilder {
     pub(crate) uri: ::std::option::Option<::std::string::String>,
@@ -38,12 +52,18 @@ pub struct S3LocationBuilder {
 impl S3LocationBuilder {
     /// <p>An object URI starting with <code>s3://</code>.</p>
     /// This field is required.
-    pub fn uri(mut self, input: impl ::std::convert::Into<::std::string::String>) -> Self {
+    pub fn uri(
+        mut self,
+        input: impl ::std::convert::Into<::std::string::String>,
+    ) -> Self {
         self.uri = ::std::option::Option::Some(input.into());
         self
     }
     /// <p>An object URI starting with <code>s3://</code>.</p>
-    pub fn set_uri(mut self, input: ::std::option::Option<::std::string::String>) -> Self {
+    pub fn set_uri(
+        mut self,
+        input: ::std::option::Option<::std::string::String>,
+    ) -> Self {
         self.uri = input;
         self
     }
@@ -51,29 +71,47 @@ impl S3LocationBuilder {
     pub fn get_uri(&self) -> &::std::option::Option<::std::string::String> {
         &self.uri
     }
-    /// <p>If the bucket belongs to another AWS account, specify that account's ID.</p>
-    pub fn bucket_owner(mut self, input: impl ::std::convert::Into<::std::string::String>) -> Self {
+    /// <p>If the bucket belongs to another AWS account, specify that account's
+    /// ID.</p>
+    pub fn bucket_owner(
+        mut self,
+        input: impl ::std::convert::Into<::std::string::String>,
+    ) -> Self {
         self.bucket_owner = ::std::option::Option::Some(input.into());
         self
     }
-    /// <p>If the bucket belongs to another AWS account, specify that account's ID.</p>
-    pub fn set_bucket_owner(mut self, input: ::std::option::Option<::std::string::String>) -> Self {
+    /// <p>If the bucket belongs to another AWS account, specify that account's
+    /// ID.</p>
+    pub fn set_bucket_owner(
+        mut self,
+        input: ::std::option::Option<::std::string::String>,
+    ) -> Self {
         self.bucket_owner = input;
         self
     }
-    /// <p>If the bucket belongs to another AWS account, specify that account's ID.</p>
-    pub fn get_bucket_owner(&self) -> &::std::option::Option<::std::string::String> {
+    /// <p>If the bucket belongs to another AWS account, specify that account's
+    /// ID.</p>
+    pub fn get_bucket_owner(
+        &self,
+    ) -> &::std::option::Option<::std::string::String> {
         &self.bucket_owner
     }
-    /// Consumes the builder and constructs a [`S3Location`](crate::types::S3Location).
-    /// This method will fail if any of the following fields are not set:
+    /// Consumes the builder and constructs a
+    /// [`S3Location`](crate::types::S3Location). This method will fail if
+    /// any of the following fields are not set:
     /// - [`uri`](crate::types::builders::S3LocationBuilder::uri)
-    pub fn build(self) -> ::std::result::Result<crate::types::S3Location, aws_smithy_types::error::operation::BuildError> {
+    pub fn build(
+        self,
+    ) -> ::std::result::Result<
+        crate::types::S3Location,
+        aws_smithy_types::error::operation::BuildError,
+    > {
         ::std::result::Result::Ok(crate::types::S3Location {
             uri: self.uri.ok_or_else(|| {
                 aws_smithy_types::error::operation::BuildError::missing_field(
                     "uri",
-                    "uri was not specified but it is required when building S3Location",
+                    "uri was not specified but it is required when building \
+                     S3Location",
                 )
             })?,
             bucket_owner: self.bucket_owner,

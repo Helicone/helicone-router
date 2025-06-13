@@ -26,20 +26,30 @@ impl ::std::fmt::Display for AccessDeniedException {
     }
 }
 impl ::std::error::Error for AccessDeniedException {}
-impl aws_smithy_types::error::metadata::ProvideErrorMetadata for AccessDeniedException {
+impl aws_smithy_types::error::metadata::ProvideErrorMetadata
+    for AccessDeniedException
+{
     fn meta(&self) -> &aws_smithy_types::error::ErrorMetadata {
         &self.meta
     }
 }
 impl AccessDeniedException {
-    /// Creates a new builder-style object to manufacture [`AccessDeniedException`](crate::types::error::AccessDeniedException).
-    pub fn builder() -> crate::types::error::builders::AccessDeniedExceptionBuilder {
+    /// Creates a new builder-style object to manufacture
+    /// [`AccessDeniedException`](crate::types::error::AccessDeniedException).
+    pub fn builder(
+    ) -> crate::types::error::builders::AccessDeniedExceptionBuilder {
         crate::types::error::builders::AccessDeniedExceptionBuilder::default()
     }
 }
 
-/// A builder for [`AccessDeniedException`](crate::types::error::AccessDeniedException).
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::default::Default, ::std::fmt::Debug)]
+/// A builder for
+/// [`AccessDeniedException`](crate::types::error::AccessDeniedException).
+#[derive(
+    ::std::clone::Clone,
+    ::std::cmp::PartialEq,
+    ::std::default::Default,
+    ::std::fmt::Debug,
+)]
 #[non_exhaustive]
 pub struct AccessDeniedExceptionBuilder {
     pub(crate) message: ::std::option::Option<::std::string::String>,
@@ -47,12 +57,18 @@ pub struct AccessDeniedExceptionBuilder {
 }
 impl AccessDeniedExceptionBuilder {
     #[allow(missing_docs)] // documentation missing in model
-    pub fn message(mut self, input: impl ::std::convert::Into<::std::string::String>) -> Self {
+    pub fn message(
+        mut self,
+        input: impl ::std::convert::Into<::std::string::String>,
+    ) -> Self {
         self.message = ::std::option::Option::Some(input.into());
         self
     }
     #[allow(missing_docs)] // documentation missing in model
-    pub fn set_message(mut self, input: ::std::option::Option<::std::string::String>) -> Self {
+    pub fn set_message(
+        mut self,
+        input: ::std::option::Option<::std::string::String>,
+    ) -> Self {
         self.message = input;
         self
     }
@@ -61,17 +77,24 @@ impl AccessDeniedExceptionBuilder {
         &self.message
     }
     /// Sets error metadata
-    pub fn meta(mut self, meta: aws_smithy_types::error::ErrorMetadata) -> Self {
+    pub fn meta(
+        mut self,
+        meta: aws_smithy_types::error::ErrorMetadata,
+    ) -> Self {
         self.meta = Some(meta);
         self
     }
 
     /// Sets error metadata
-    pub fn set_meta(&mut self, meta: std::option::Option<aws_smithy_types::error::ErrorMetadata>) -> &mut Self {
+    pub fn set_meta(
+        &mut self,
+        meta: std::option::Option<aws_smithy_types::error::ErrorMetadata>,
+    ) -> &mut Self {
         self.meta = meta;
         self
     }
-    /// Consumes the builder and constructs a [`AccessDeniedException`](crate::types::error::AccessDeniedException).
+    /// Consumes the builder and constructs a
+    /// [`AccessDeniedException`](crate::types::error::AccessDeniedException).
     pub fn build(self) -> crate::types::error::AccessDeniedException {
         crate::types::error::AccessDeniedException {
             message: self.message,

@@ -2,7 +2,13 @@
 
 /// <p>Image content for a message.</p>
 #[non_exhaustive]
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, serde::Deserialize, serde::Serialize)]
+#[derive(
+    ::std::clone::Clone,
+    ::std::cmp::PartialEq,
+    ::std::fmt::Debug,
+    serde::Deserialize,
+    serde::Serialize,
+)]
 #[serde(rename_all = "camelCase")]
 pub struct ImageBlock {
     /// <p>The format of the image.</p>
@@ -21,14 +27,20 @@ impl ImageBlock {
     }
 }
 impl ImageBlock {
-    /// Creates a new builder-style object to manufacture [`ImageBlock`](crate::types::ImageBlock).
+    /// Creates a new builder-style object to manufacture
+    /// [`ImageBlock`](crate::types::ImageBlock).
     pub fn builder() -> crate::types::builders::ImageBlockBuilder {
         crate::types::builders::ImageBlockBuilder::default()
     }
 }
 
 /// A builder for [`ImageBlock`](crate::types::ImageBlock).
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::default::Default, ::std::fmt::Debug)]
+#[derive(
+    ::std::clone::Clone,
+    ::std::cmp::PartialEq,
+    ::std::default::Default,
+    ::std::fmt::Debug,
+)]
 #[non_exhaustive]
 pub struct ImageBlockBuilder {
     pub(crate) format: ::std::option::Option<crate::types::ImageFormat>,
@@ -42,12 +54,17 @@ impl ImageBlockBuilder {
         self
     }
     /// <p>The format of the image.</p>
-    pub fn set_format(mut self, input: ::std::option::Option<crate::types::ImageFormat>) -> Self {
+    pub fn set_format(
+        mut self,
+        input: ::std::option::Option<crate::types::ImageFormat>,
+    ) -> Self {
         self.format = input;
         self
     }
     /// <p>The format of the image.</p>
-    pub fn get_format(&self) -> &::std::option::Option<crate::types::ImageFormat> {
+    pub fn get_format(
+        &self,
+    ) -> &::std::option::Option<crate::types::ImageFormat> {
         &self.format
     }
     /// <p>The source for the image.</p>
@@ -57,23 +74,35 @@ impl ImageBlockBuilder {
         self
     }
     /// <p>The source for the image.</p>
-    pub fn set_source(mut self, input: ::std::option::Option<crate::types::ImageSource>) -> Self {
+    pub fn set_source(
+        mut self,
+        input: ::std::option::Option<crate::types::ImageSource>,
+    ) -> Self {
         self.source = input;
         self
     }
     /// <p>The source for the image.</p>
-    pub fn get_source(&self) -> &::std::option::Option<crate::types::ImageSource> {
+    pub fn get_source(
+        &self,
+    ) -> &::std::option::Option<crate::types::ImageSource> {
         &self.source
     }
-    /// Consumes the builder and constructs a [`ImageBlock`](crate::types::ImageBlock).
-    /// This method will fail if any of the following fields are not set:
+    /// Consumes the builder and constructs a
+    /// [`ImageBlock`](crate::types::ImageBlock). This method will fail if
+    /// any of the following fields are not set:
     /// - [`format`](crate::types::builders::ImageBlockBuilder::format)
-    pub fn build(self) -> ::std::result::Result<crate::types::ImageBlock, aws_smithy_types::error::operation::BuildError> {
+    pub fn build(
+        self,
+    ) -> ::std::result::Result<
+        crate::types::ImageBlock,
+        aws_smithy_types::error::operation::BuildError,
+    > {
         ::std::result::Result::Ok(crate::types::ImageBlock {
             format: self.format.ok_or_else(|| {
                 aws_smithy_types::error::operation::BuildError::missing_field(
                     "format",
-                    "format was not specified but it is required when building ImageBlock",
+                    "format was not specified but it is required when \
+                     building ImageBlock",
                 )
             })?,
             source: self.source,

@@ -22,14 +22,20 @@ impl Tag {
     }
 }
 impl Tag {
-    /// Creates a new builder-style object to manufacture [`Tag`](crate::types::Tag).
+    /// Creates a new builder-style object to manufacture
+    /// [`Tag`](crate::types::Tag).
     pub fn builder() -> crate::types::builders::TagBuilder {
         crate::types::builders::TagBuilder::default()
     }
 }
 
 /// A builder for [`Tag`](crate::types::Tag).
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::default::Default, ::std::fmt::Debug)]
+#[derive(
+    ::std::clone::Clone,
+    ::std::cmp::PartialEq,
+    ::std::default::Default,
+    ::std::fmt::Debug,
+)]
 #[non_exhaustive]
 pub struct TagBuilder {
     pub(crate) key: ::std::option::Option<::std::string::String>,
@@ -38,12 +44,18 @@ pub struct TagBuilder {
 impl TagBuilder {
     /// <p>The tag's key.</p>
     /// This field is required.
-    pub fn key(mut self, input: impl ::std::convert::Into<::std::string::String>) -> Self {
+    pub fn key(
+        mut self,
+        input: impl ::std::convert::Into<::std::string::String>,
+    ) -> Self {
         self.key = ::std::option::Option::Some(input.into());
         self
     }
     /// <p>The tag's key.</p>
-    pub fn set_key(mut self, input: ::std::option::Option<::std::string::String>) -> Self {
+    pub fn set_key(
+        mut self,
+        input: ::std::option::Option<::std::string::String>,
+    ) -> Self {
         self.key = input;
         self
     }
@@ -53,12 +65,18 @@ impl TagBuilder {
     }
     /// <p>The tag's value.</p>
     /// This field is required.
-    pub fn value(mut self, input: impl ::std::convert::Into<::std::string::String>) -> Self {
+    pub fn value(
+        mut self,
+        input: impl ::std::convert::Into<::std::string::String>,
+    ) -> Self {
         self.value = ::std::option::Option::Some(input.into());
         self
     }
     /// <p>The tag's value.</p>
-    pub fn set_value(mut self, input: ::std::option::Option<::std::string::String>) -> Self {
+    pub fn set_value(
+        mut self,
+        input: ::std::option::Option<::std::string::String>,
+    ) -> Self {
         self.value = input;
         self
     }
@@ -70,15 +88,25 @@ impl TagBuilder {
     /// This method will fail if any of the following fields are not set:
     /// - [`key`](crate::types::builders::TagBuilder::key)
     /// - [`value`](crate::types::builders::TagBuilder::value)
-    pub fn build(self) -> ::std::result::Result<crate::types::Tag, aws_smithy_types::error::operation::BuildError> {
+    pub fn build(
+        self,
+    ) -> ::std::result::Result<
+        crate::types::Tag,
+        aws_smithy_types::error::operation::BuildError,
+    > {
         ::std::result::Result::Ok(crate::types::Tag {
             key: self.key.ok_or_else(|| {
-                aws_smithy_types::error::operation::BuildError::missing_field("key", "key was not specified but it is required when building Tag")
+                aws_smithy_types::error::operation::BuildError::missing_field(
+                    "key",
+                    "key was not specified but it is required when building \
+                     Tag",
+                )
             })?,
             value: self.value.ok_or_else(|| {
                 aws_smithy_types::error::operation::BuildError::missing_field(
                     "value",
-                    "value was not specified but it is required when building Tag",
+                    "value was not specified but it is required when building \
+                     Tag",
                 )
             })?,
         })

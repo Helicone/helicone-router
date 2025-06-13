@@ -2,7 +2,12 @@
 
 /// <p>The guardrail coverage for the text characters.</p>
 #[non_exhaustive]
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug,  serde::Deserialize)]
+#[derive(
+    ::std::clone::Clone,
+    ::std::cmp::PartialEq,
+    ::std::fmt::Debug,
+    serde::Deserialize,
+)]
 pub struct GuardrailTextCharactersCoverage {
     /// <p>The text characters that were guarded by the guardrail coverage.</p>
     pub guarded: ::std::option::Option<i32>,
@@ -20,14 +25,25 @@ impl GuardrailTextCharactersCoverage {
     }
 }
 impl GuardrailTextCharactersCoverage {
-    /// Creates a new builder-style object to manufacture [`GuardrailTextCharactersCoverage`](crate::types::GuardrailTextCharactersCoverage).
-    pub fn builder() -> crate::types::builders::GuardrailTextCharactersCoverageBuilder {
-        crate::types::builders::GuardrailTextCharactersCoverageBuilder::default()
+    /// Creates a new builder-style object to manufacture
+    /// [`GuardrailTextCharactersCoverage`](crate::types::GuardrailTextCharactersCoverage).
+    ///
+    pub fn builder(
+    ) -> crate::types::builders::GuardrailTextCharactersCoverageBuilder {
+        crate::types::builders::GuardrailTextCharactersCoverageBuilder::default(
+        )
     }
 }
 
-/// A builder for [`GuardrailTextCharactersCoverage`](crate::types::GuardrailTextCharactersCoverage).
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::default::Default, ::std::fmt::Debug)]
+/// A builder for
+/// [`GuardrailTextCharactersCoverage`](crate::types::GuardrailTextCharactersCoverage).
+///
+#[derive(
+    ::std::clone::Clone,
+    ::std::cmp::PartialEq,
+    ::std::default::Default,
+    ::std::fmt::Debug,
+)]
 #[non_exhaustive]
 pub struct GuardrailTextCharactersCoverageBuilder {
     pub(crate) guarded: ::std::option::Option<i32>,
@@ -62,7 +78,9 @@ impl GuardrailTextCharactersCoverageBuilder {
     pub fn get_total(&self) -> &::std::option::Option<i32> {
         &self.total
     }
-    /// Consumes the builder and constructs a [`GuardrailTextCharactersCoverage`](crate::types::GuardrailTextCharactersCoverage).
+    /// Consumes the builder and constructs a
+    /// [`GuardrailTextCharactersCoverage`](crate::types::GuardrailTextCharactersCoverage).
+    ///
     pub fn build(self) -> crate::types::GuardrailTextCharactersCoverage {
         crate::types::GuardrailTextCharactersCoverage {
             guarded: self.guarded,

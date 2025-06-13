@@ -2,7 +2,12 @@
 
 /// <p>The content block delta event.</p>
 #[non_exhaustive]
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, serde::Deserialize)]
+#[derive(
+    ::std::clone::Clone,
+    ::std::cmp::PartialEq,
+    ::std::fmt::Debug,
+    serde::Deserialize,
+)]
 pub struct ContentBlockDeltaEvent {
     /// <p>The delta for a content block delta event.</p>
     pub delta: ::std::option::Option<crate::types::ContentBlockDelta>,
@@ -11,7 +16,9 @@ pub struct ContentBlockDeltaEvent {
 }
 impl ContentBlockDeltaEvent {
     /// <p>The delta for a content block delta event.</p>
-    pub fn delta(&self) -> ::std::option::Option<&crate::types::ContentBlockDelta> {
+    pub fn delta(
+        &self,
+    ) -> ::std::option::Option<&crate::types::ContentBlockDelta> {
         self.delta.as_ref()
     }
     /// <p>The block index for a content block delta event.</p>
@@ -20,14 +27,21 @@ impl ContentBlockDeltaEvent {
     }
 }
 impl ContentBlockDeltaEvent {
-    /// Creates a new builder-style object to manufacture [`ContentBlockDeltaEvent`](crate::types::ContentBlockDeltaEvent).
+    /// Creates a new builder-style object to manufacture
+    /// [`ContentBlockDeltaEvent`](crate::types::ContentBlockDeltaEvent).
     pub fn builder() -> crate::types::builders::ContentBlockDeltaEventBuilder {
         crate::types::builders::ContentBlockDeltaEventBuilder::default()
     }
 }
 
-/// A builder for [`ContentBlockDeltaEvent`](crate::types::ContentBlockDeltaEvent).
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::default::Default, ::std::fmt::Debug)]
+/// A builder for
+/// [`ContentBlockDeltaEvent`](crate::types::ContentBlockDeltaEvent).
+#[derive(
+    ::std::clone::Clone,
+    ::std::cmp::PartialEq,
+    ::std::default::Default,
+    ::std::fmt::Debug,
+)]
 #[non_exhaustive]
 pub struct ContentBlockDeltaEventBuilder {
     pub(crate) delta: ::std::option::Option<crate::types::ContentBlockDelta>,
@@ -41,12 +55,17 @@ impl ContentBlockDeltaEventBuilder {
         self
     }
     /// <p>The delta for a content block delta event.</p>
-    pub fn set_delta(mut self, input: ::std::option::Option<crate::types::ContentBlockDelta>) -> Self {
+    pub fn set_delta(
+        mut self,
+        input: ::std::option::Option<crate::types::ContentBlockDelta>,
+    ) -> Self {
         self.delta = input;
         self
     }
     /// <p>The delta for a content block delta event.</p>
-    pub fn get_delta(&self) -> &::std::option::Option<crate::types::ContentBlockDelta> {
+    pub fn get_delta(
+        &self,
+    ) -> &::std::option::Option<crate::types::ContentBlockDelta> {
         &self.delta
     }
     /// <p>The block index for a content block delta event.</p>
@@ -56,7 +75,10 @@ impl ContentBlockDeltaEventBuilder {
         self
     }
     /// <p>The block index for a content block delta event.</p>
-    pub fn set_content_block_index(mut self, input: ::std::option::Option<i32>) -> Self {
+    pub fn set_content_block_index(
+        mut self,
+        input: ::std::option::Option<i32>,
+    ) -> Self {
         self.content_block_index = input;
         self
     }
@@ -64,16 +86,23 @@ impl ContentBlockDeltaEventBuilder {
     pub fn get_content_block_index(&self) -> &::std::option::Option<i32> {
         &self.content_block_index
     }
-    /// Consumes the builder and constructs a [`ContentBlockDeltaEvent`](crate::types::ContentBlockDeltaEvent).
+    /// Consumes the builder and constructs a
+    /// [`ContentBlockDeltaEvent`](crate::types::ContentBlockDeltaEvent).
     /// This method will fail if any of the following fields are not set:
     /// - [`content_block_index`](crate::types::builders::ContentBlockDeltaEventBuilder::content_block_index)
-    pub fn build(self) -> ::std::result::Result<crate::types::ContentBlockDeltaEvent, aws_smithy_types::error::operation::BuildError> {
+    pub fn build(
+        self,
+    ) -> ::std::result::Result<
+        crate::types::ContentBlockDeltaEvent,
+        aws_smithy_types::error::operation::BuildError,
+    > {
         ::std::result::Result::Ok(crate::types::ContentBlockDeltaEvent {
             delta: self.delta,
             content_block_index: self.content_block_index.ok_or_else(|| {
                 aws_smithy_types::error::operation::BuildError::missing_field(
                     "content_block_index",
-                    "content_block_index was not specified but it is required when building ContentBlockDeltaEvent",
+                    "content_block_index was not specified but it is required \
+                     when building ContentBlockDeltaEvent",
                 )
             })?,
         })

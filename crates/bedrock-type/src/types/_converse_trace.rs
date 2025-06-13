@@ -2,26 +2,37 @@
 
 /// <p>The trace object in a response from <a href="https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_Converse.html">Converse</a>. Currently, you can only trace guardrails.</p>
 #[non_exhaustive]
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, serde::Deserialize)]
+#[derive(
+    ::std::clone::Clone,
+    ::std::cmp::PartialEq,
+    ::std::fmt::Debug,
+    serde::Deserialize,
+)]
 #[serde(rename_all = "camelCase")]
 pub struct ConverseTrace {
     /// <p>The guardrail trace object.</p>
-    pub guardrail: ::std::option::Option<crate::types::GuardrailTraceAssessment>,
+    pub guardrail:
+        ::std::option::Option<crate::types::GuardrailTraceAssessment>,
     /// <p>The request's prompt router.</p>
     pub prompt_router: ::std::option::Option<crate::types::PromptRouterTrace>,
 }
 impl ConverseTrace {
     /// <p>The guardrail trace object.</p>
-    pub fn guardrail(&self) -> ::std::option::Option<&crate::types::GuardrailTraceAssessment> {
+    pub fn guardrail(
+        &self,
+    ) -> ::std::option::Option<&crate::types::GuardrailTraceAssessment> {
         self.guardrail.as_ref()
     }
     /// <p>The request's prompt router.</p>
-    pub fn prompt_router(&self) -> ::std::option::Option<&crate::types::PromptRouterTrace> {
+    pub fn prompt_router(
+        &self,
+    ) -> ::std::option::Option<&crate::types::PromptRouterTrace> {
         self.prompt_router.as_ref()
     }
 }
 impl ConverseTrace {
-    /// Creates a new builder-style object to manufacture [`ConverseTrace`](crate::types::ConverseTrace).
+    /// Creates a new builder-style object to manufacture
+    /// [`ConverseTrace`](crate::types::ConverseTrace).
     pub fn builder() -> crate::types::builders::ConverseTraceBuilder {
         crate::types::builders::ConverseTraceBuilder::default()
     }
@@ -29,16 +40,24 @@ impl ConverseTrace {
 
 /// A builder for [`ConverseTrace`](crate::types::ConverseTrace).
 #[derive(
-    ::std::clone::Clone, ::std::cmp::PartialEq, ::std::default::Default, ::std::fmt::Debug,
+    ::std::clone::Clone,
+    ::std::cmp::PartialEq,
+    ::std::default::Default,
+    ::std::fmt::Debug,
 )]
 #[non_exhaustive]
 pub struct ConverseTraceBuilder {
-    pub(crate) guardrail: ::std::option::Option<crate::types::GuardrailTraceAssessment>,
-    pub(crate) prompt_router: ::std::option::Option<crate::types::PromptRouterTrace>,
+    pub(crate) guardrail:
+        ::std::option::Option<crate::types::GuardrailTraceAssessment>,
+    pub(crate) prompt_router:
+        ::std::option::Option<crate::types::PromptRouterTrace>,
 }
 impl ConverseTraceBuilder {
     /// <p>The guardrail trace object.</p>
-    pub fn guardrail(mut self, input: crate::types::GuardrailTraceAssessment) -> Self {
+    pub fn guardrail(
+        mut self,
+        input: crate::types::GuardrailTraceAssessment,
+    ) -> Self {
         self.guardrail = ::std::option::Option::Some(input);
         self
     }
@@ -51,11 +70,16 @@ impl ConverseTraceBuilder {
         self
     }
     /// <p>The guardrail trace object.</p>
-    pub fn get_guardrail(&self) -> &::std::option::Option<crate::types::GuardrailTraceAssessment> {
+    pub fn get_guardrail(
+        &self,
+    ) -> &::std::option::Option<crate::types::GuardrailTraceAssessment> {
         &self.guardrail
     }
     /// <p>The request's prompt router.</p>
-    pub fn prompt_router(mut self, input: crate::types::PromptRouterTrace) -> Self {
+    pub fn prompt_router(
+        mut self,
+        input: crate::types::PromptRouterTrace,
+    ) -> Self {
         self.prompt_router = ::std::option::Option::Some(input);
         self
     }
@@ -68,10 +92,13 @@ impl ConverseTraceBuilder {
         self
     }
     /// <p>The request's prompt router.</p>
-    pub fn get_prompt_router(&self) -> &::std::option::Option<crate::types::PromptRouterTrace> {
+    pub fn get_prompt_router(
+        &self,
+    ) -> &::std::option::Option<crate::types::PromptRouterTrace> {
         &self.prompt_router
     }
-    /// Consumes the builder and constructs a [`ConverseTrace`](crate::types::ConverseTrace).
+    /// Consumes the builder and constructs a
+    /// [`ConverseTrace`](crate::types::ConverseTrace).
     pub fn build(self) -> crate::types::ConverseTrace {
         crate::types::ConverseTrace {
             guardrail: self.guardrail,

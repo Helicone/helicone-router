@@ -2,7 +2,12 @@
 
 /// <p>Configuration information for a guardrail that you use with the <a href="https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_Converse.html">Converse</a> operation.</p>
 #[non_exhaustive]
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, serde::Serialize)]
+#[derive(
+    ::std::clone::Clone,
+    ::std::cmp::PartialEq,
+    ::std::fmt::Debug,
+    serde::Serialize,
+)]
 #[serde(rename_all = "camelCase")]
 pub struct GuardrailConfiguration {
     /// <p>The identifier for the guardrail.</p>
@@ -29,49 +34,73 @@ impl GuardrailConfiguration {
     }
 }
 impl GuardrailConfiguration {
-    /// Creates a new builder-style object to manufacture [`GuardrailConfiguration`](crate::types::GuardrailConfiguration).
+    /// Creates a new builder-style object to manufacture
+    /// [`GuardrailConfiguration`](crate::types::GuardrailConfiguration).
     pub fn builder() -> crate::types::builders::GuardrailConfigurationBuilder {
         crate::types::builders::GuardrailConfigurationBuilder::default()
     }
 }
 
-/// A builder for [`GuardrailConfiguration`](crate::types::GuardrailConfiguration).
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::default::Default, ::std::fmt::Debug)]
+/// A builder for
+/// [`GuardrailConfiguration`](crate::types::GuardrailConfiguration).
+#[derive(
+    ::std::clone::Clone,
+    ::std::cmp::PartialEq,
+    ::std::default::Default,
+    ::std::fmt::Debug,
+)]
 #[non_exhaustive]
 pub struct GuardrailConfigurationBuilder {
-    pub(crate) guardrail_identifier: ::std::option::Option<::std::string::String>,
+    pub(crate) guardrail_identifier:
+        ::std::option::Option<::std::string::String>,
     pub(crate) guardrail_version: ::std::option::Option<::std::string::String>,
     pub(crate) trace: ::std::option::Option<crate::types::GuardrailTrace>,
 }
 impl GuardrailConfigurationBuilder {
     /// <p>The identifier for the guardrail.</p>
     /// This field is required.
-    pub fn guardrail_identifier(mut self, input: impl ::std::convert::Into<::std::string::String>) -> Self {
+    pub fn guardrail_identifier(
+        mut self,
+        input: impl ::std::convert::Into<::std::string::String>,
+    ) -> Self {
         self.guardrail_identifier = ::std::option::Option::Some(input.into());
         self
     }
     /// <p>The identifier for the guardrail.</p>
-    pub fn set_guardrail_identifier(mut self, input: ::std::option::Option<::std::string::String>) -> Self {
+    pub fn set_guardrail_identifier(
+        mut self,
+        input: ::std::option::Option<::std::string::String>,
+    ) -> Self {
         self.guardrail_identifier = input;
         self
     }
     /// <p>The identifier for the guardrail.</p>
-    pub fn get_guardrail_identifier(&self) -> &::std::option::Option<::std::string::String> {
+    pub fn get_guardrail_identifier(
+        &self,
+    ) -> &::std::option::Option<::std::string::String> {
         &self.guardrail_identifier
     }
     /// <p>The version of the guardrail.</p>
     /// This field is required.
-    pub fn guardrail_version(mut self, input: impl ::std::convert::Into<::std::string::String>) -> Self {
+    pub fn guardrail_version(
+        mut self,
+        input: impl ::std::convert::Into<::std::string::String>,
+    ) -> Self {
         self.guardrail_version = ::std::option::Option::Some(input.into());
         self
     }
     /// <p>The version of the guardrail.</p>
-    pub fn set_guardrail_version(mut self, input: ::std::option::Option<::std::string::String>) -> Self {
+    pub fn set_guardrail_version(
+        mut self,
+        input: ::std::option::Option<::std::string::String>,
+    ) -> Self {
         self.guardrail_version = input;
         self
     }
     /// <p>The version of the guardrail.</p>
-    pub fn get_guardrail_version(&self) -> &::std::option::Option<::std::string::String> {
+    pub fn get_guardrail_version(
+        &self,
+    ) -> &::std::option::Option<::std::string::String> {
         &self.guardrail_version
     }
     /// <p>The trace behavior for the guardrail.</p>
@@ -80,19 +109,30 @@ impl GuardrailConfigurationBuilder {
         self
     }
     /// <p>The trace behavior for the guardrail.</p>
-    pub fn set_trace(mut self, input: ::std::option::Option<crate::types::GuardrailTrace>) -> Self {
+    pub fn set_trace(
+        mut self,
+        input: ::std::option::Option<crate::types::GuardrailTrace>,
+    ) -> Self {
         self.trace = input;
         self
     }
     /// <p>The trace behavior for the guardrail.</p>
-    pub fn get_trace(&self) -> &::std::option::Option<crate::types::GuardrailTrace> {
+    pub fn get_trace(
+        &self,
+    ) -> &::std::option::Option<crate::types::GuardrailTrace> {
         &self.trace
     }
-    /// Consumes the builder and constructs a [`GuardrailConfiguration`](crate::types::GuardrailConfiguration).
+    /// Consumes the builder and constructs a
+    /// [`GuardrailConfiguration`](crate::types::GuardrailConfiguration).
     /// This method will fail if any of the following fields are not set:
     /// - [`guardrail_identifier`](crate::types::builders::GuardrailConfigurationBuilder::guardrail_identifier)
     /// - [`guardrail_version`](crate::types::builders::GuardrailConfigurationBuilder::guardrail_version)
-    pub fn build(self) -> ::std::result::Result<crate::types::GuardrailConfiguration, aws_smithy_types::error::operation::BuildError> {
+    pub fn build(
+        self,
+    ) -> ::std::result::Result<
+        crate::types::GuardrailConfiguration,
+        aws_smithy_types::error::operation::BuildError,
+    > {
         ::std::result::Result::Ok(crate::types::GuardrailConfiguration {
             guardrail_identifier: self.guardrail_identifier.ok_or_else(|| {
                 aws_smithy_types::error::operation::BuildError::missing_field(

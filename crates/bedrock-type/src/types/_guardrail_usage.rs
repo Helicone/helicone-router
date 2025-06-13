@@ -2,7 +2,12 @@
 
 /// <p>The details on the use of the guardrail.</p>
 #[non_exhaustive]
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug,  serde::Deserialize)]
+#[derive(
+    ::std::clone::Clone,
+    ::std::cmp::PartialEq,
+    ::std::fmt::Debug,
+    serde::Deserialize,
+)]
 pub struct GuardrailUsage {
     /// <p>The topic policy units processed by the guardrail.</p>
     pub topic_policy_units: i32,
@@ -10,11 +15,14 @@ pub struct GuardrailUsage {
     pub content_policy_units: i32,
     /// <p>The word policy units processed by the guardrail.</p>
     pub word_policy_units: i32,
-    /// <p>The sensitive information policy units processed by the guardrail.</p>
+    /// <p>The sensitive information policy units processed by the
+    /// guardrail.</p>
     pub sensitive_information_policy_units: i32,
-    /// <p>The sensitive information policy free units processed by the guardrail.</p>
+    /// <p>The sensitive information policy free units processed by the
+    /// guardrail.</p>
     pub sensitive_information_policy_free_units: i32,
-    /// <p>The contextual grounding policy units processed by the guardrail.</p>
+    /// <p>The contextual grounding policy units processed by the
+    /// guardrail.</p>
     pub contextual_grounding_policy_units: i32,
     /// <p>The content policy image units processed by the guardrail.</p>
     pub content_policy_image_units: ::std::option::Option<i32>,
@@ -32,11 +40,13 @@ impl GuardrailUsage {
     pub fn word_policy_units(&self) -> i32 {
         self.word_policy_units
     }
-    /// <p>The sensitive information policy units processed by the guardrail.</p>
+    /// <p>The sensitive information policy units processed by the
+    /// guardrail.</p>
     pub fn sensitive_information_policy_units(&self) -> i32 {
         self.sensitive_information_policy_units
     }
-    /// <p>The sensitive information policy free units processed by the guardrail.</p>
+    /// <p>The sensitive information policy free units processed by the
+    /// guardrail.</p>
     pub fn sensitive_information_policy_free_units(&self) -> i32 {
         self.sensitive_information_policy_free_units
     }
@@ -50,21 +60,28 @@ impl GuardrailUsage {
     }
 }
 impl GuardrailUsage {
-    /// Creates a new builder-style object to manufacture [`GuardrailUsage`](crate::types::GuardrailUsage).
+    /// Creates a new builder-style object to manufacture
+    /// [`GuardrailUsage`](crate::types::GuardrailUsage).
     pub fn builder() -> crate::types::builders::GuardrailUsageBuilder {
         crate::types::builders::GuardrailUsageBuilder::default()
     }
 }
 
 /// A builder for [`GuardrailUsage`](crate::types::GuardrailUsage).
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::default::Default, ::std::fmt::Debug)]
+#[derive(
+    ::std::clone::Clone,
+    ::std::cmp::PartialEq,
+    ::std::default::Default,
+    ::std::fmt::Debug,
+)]
 #[non_exhaustive]
 pub struct GuardrailUsageBuilder {
     pub(crate) topic_policy_units: ::std::option::Option<i32>,
     pub(crate) content_policy_units: ::std::option::Option<i32>,
     pub(crate) word_policy_units: ::std::option::Option<i32>,
     pub(crate) sensitive_information_policy_units: ::std::option::Option<i32>,
-    pub(crate) sensitive_information_policy_free_units: ::std::option::Option<i32>,
+    pub(crate) sensitive_information_policy_free_units:
+        ::std::option::Option<i32>,
     pub(crate) contextual_grounding_policy_units: ::std::option::Option<i32>,
     pub(crate) content_policy_image_units: ::std::option::Option<i32>,
 }
@@ -76,7 +93,10 @@ impl GuardrailUsageBuilder {
         self
     }
     /// <p>The topic policy units processed by the guardrail.</p>
-    pub fn set_topic_policy_units(mut self, input: ::std::option::Option<i32>) -> Self {
+    pub fn set_topic_policy_units(
+        mut self,
+        input: ::std::option::Option<i32>,
+    ) -> Self {
         self.topic_policy_units = input;
         self
     }
@@ -91,7 +111,10 @@ impl GuardrailUsageBuilder {
         self
     }
     /// <p>The content policy units processed by the guardrail.</p>
-    pub fn set_content_policy_units(mut self, input: ::std::option::Option<i32>) -> Self {
+    pub fn set_content_policy_units(
+        mut self,
+        input: ::std::option::Option<i32>,
+    ) -> Self {
         self.content_policy_units = input;
         self
     }
@@ -106,7 +129,10 @@ impl GuardrailUsageBuilder {
         self
     }
     /// <p>The word policy units processed by the guardrail.</p>
-    pub fn set_word_policy_units(mut self, input: ::std::option::Option<i32>) -> Self {
+    pub fn set_word_policy_units(
+        mut self,
+        input: ::std::option::Option<i32>,
+    ) -> Self {
         self.word_policy_units = input;
         self
     }
@@ -114,49 +140,74 @@ impl GuardrailUsageBuilder {
     pub fn get_word_policy_units(&self) -> &::std::option::Option<i32> {
         &self.word_policy_units
     }
-    /// <p>The sensitive information policy units processed by the guardrail.</p>
-    /// This field is required.
+    /// <p>The sensitive information policy units processed by the
+    /// guardrail.</p> This field is required.
     pub fn sensitive_information_policy_units(mut self, input: i32) -> Self {
-        self.sensitive_information_policy_units = ::std::option::Option::Some(input);
+        self.sensitive_information_policy_units =
+            ::std::option::Option::Some(input);
         self
     }
-    /// <p>The sensitive information policy units processed by the guardrail.</p>
-    pub fn set_sensitive_information_policy_units(mut self, input: ::std::option::Option<i32>) -> Self {
+    /// <p>The sensitive information policy units processed by the
+    /// guardrail.</p>
+    pub fn set_sensitive_information_policy_units(
+        mut self,
+        input: ::std::option::Option<i32>,
+    ) -> Self {
         self.sensitive_information_policy_units = input;
         self
     }
-    /// <p>The sensitive information policy units processed by the guardrail.</p>
-    pub fn get_sensitive_information_policy_units(&self) -> &::std::option::Option<i32> {
+    /// <p>The sensitive information policy units processed by the
+    /// guardrail.</p>
+    pub fn get_sensitive_information_policy_units(
+        &self,
+    ) -> &::std::option::Option<i32> {
         &self.sensitive_information_policy_units
     }
-    /// <p>The sensitive information policy free units processed by the guardrail.</p>
-    /// This field is required.
-    pub fn sensitive_information_policy_free_units(mut self, input: i32) -> Self {
-        self.sensitive_information_policy_free_units = ::std::option::Option::Some(input);
+    /// <p>The sensitive information policy free units processed by the
+    /// guardrail.</p> This field is required.
+    pub fn sensitive_information_policy_free_units(
+        mut self,
+        input: i32,
+    ) -> Self {
+        self.sensitive_information_policy_free_units =
+            ::std::option::Option::Some(input);
         self
     }
-    /// <p>The sensitive information policy free units processed by the guardrail.</p>
-    pub fn set_sensitive_information_policy_free_units(mut self, input: ::std::option::Option<i32>) -> Self {
+    /// <p>The sensitive information policy free units processed by the
+    /// guardrail.</p>
+    pub fn set_sensitive_information_policy_free_units(
+        mut self,
+        input: ::std::option::Option<i32>,
+    ) -> Self {
         self.sensitive_information_policy_free_units = input;
         self
     }
-    /// <p>The sensitive information policy free units processed by the guardrail.</p>
-    pub fn get_sensitive_information_policy_free_units(&self) -> &::std::option::Option<i32> {
+    /// <p>The sensitive information policy free units processed by the
+    /// guardrail.</p>
+    pub fn get_sensitive_information_policy_free_units(
+        &self,
+    ) -> &::std::option::Option<i32> {
         &self.sensitive_information_policy_free_units
     }
     /// <p>The contextual grounding policy units processed by the guardrail.</p>
     /// This field is required.
     pub fn contextual_grounding_policy_units(mut self, input: i32) -> Self {
-        self.contextual_grounding_policy_units = ::std::option::Option::Some(input);
+        self.contextual_grounding_policy_units =
+            ::std::option::Option::Some(input);
         self
     }
     /// <p>The contextual grounding policy units processed by the guardrail.</p>
-    pub fn set_contextual_grounding_policy_units(mut self, input: ::std::option::Option<i32>) -> Self {
+    pub fn set_contextual_grounding_policy_units(
+        mut self,
+        input: ::std::option::Option<i32>,
+    ) -> Self {
         self.contextual_grounding_policy_units = input;
         self
     }
     /// <p>The contextual grounding policy units processed by the guardrail.</p>
-    pub fn get_contextual_grounding_policy_units(&self) -> &::std::option::Option<i32> {
+    pub fn get_contextual_grounding_policy_units(
+        &self,
+    ) -> &::std::option::Option<i32> {
         &self.contextual_grounding_policy_units
     }
     /// <p>The content policy image units processed by the guardrail.</p>
@@ -165,23 +216,34 @@ impl GuardrailUsageBuilder {
         self
     }
     /// <p>The content policy image units processed by the guardrail.</p>
-    pub fn set_content_policy_image_units(mut self, input: ::std::option::Option<i32>) -> Self {
+    pub fn set_content_policy_image_units(
+        mut self,
+        input: ::std::option::Option<i32>,
+    ) -> Self {
         self.content_policy_image_units = input;
         self
     }
     /// <p>The content policy image units processed by the guardrail.</p>
-    pub fn get_content_policy_image_units(&self) -> &::std::option::Option<i32> {
+    pub fn get_content_policy_image_units(
+        &self,
+    ) -> &::std::option::Option<i32> {
         &self.content_policy_image_units
     }
-    /// Consumes the builder and constructs a [`GuardrailUsage`](crate::types::GuardrailUsage).
-    /// This method will fail if any of the following fields are not set:
+    /// Consumes the builder and constructs a
+    /// [`GuardrailUsage`](crate::types::GuardrailUsage). This method will
+    /// fail if any of the following fields are not set:
     /// - [`topic_policy_units`](crate::types::builders::GuardrailUsageBuilder::topic_policy_units)
     /// - [`content_policy_units`](crate::types::builders::GuardrailUsageBuilder::content_policy_units)
     /// - [`word_policy_units`](crate::types::builders::GuardrailUsageBuilder::word_policy_units)
     /// - [`sensitive_information_policy_units`](crate::types::builders::GuardrailUsageBuilder::sensitive_information_policy_units)
     /// - [`sensitive_information_policy_free_units`](crate::types::builders::GuardrailUsageBuilder::sensitive_information_policy_free_units)
     /// - [`contextual_grounding_policy_units`](crate::types::builders::GuardrailUsageBuilder::contextual_grounding_policy_units)
-    pub fn build(self) -> ::std::result::Result<crate::types::GuardrailUsage, aws_smithy_types::error::operation::BuildError> {
+    pub fn build(
+        self,
+    ) -> ::std::result::Result<
+        crate::types::GuardrailUsage,
+        aws_smithy_types::error::operation::BuildError,
+    > {
         ::std::result::Result::Ok(crate::types::GuardrailUsage {
             topic_policy_units: self.topic_policy_units.ok_or_else(|| {
                 aws_smithy_types::error::operation::BuildError::missing_field(

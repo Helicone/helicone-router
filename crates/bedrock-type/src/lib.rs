@@ -103,7 +103,6 @@
 //!
 //! The other modules within this crate are not required for normal usage.
 
-
 /// Client for calling Amazon Bedrock Runtime.
 /// ## Constructing a `Client`
 ///
@@ -177,7 +176,6 @@
 
 /// Common errors and error handling utilities.
 pub mod error;
-
 
 /// Information about this crate.
 

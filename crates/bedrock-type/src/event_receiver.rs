@@ -15,7 +15,9 @@ pub struct EventReceiver<T, E> {
 }
 
 impl<T, E> EventReceiver<T, E> {
-    pub(crate) fn new(inner: aws_smithy_http::event_stream::Receiver<T, E>) -> Self {
+    pub(crate) fn new(
+        inner: aws_smithy_http::event_stream::Receiver<T, E>,
+    ) -> Self {
         Self { inner }
     }
 }

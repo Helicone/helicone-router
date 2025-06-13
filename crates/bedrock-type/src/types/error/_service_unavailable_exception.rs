@@ -26,20 +26,32 @@ impl ::std::fmt::Display for ServiceUnavailableException {
     }
 }
 impl ::std::error::Error for ServiceUnavailableException {}
-impl aws_smithy_types::error::metadata::ProvideErrorMetadata for ServiceUnavailableException {
+impl aws_smithy_types::error::metadata::ProvideErrorMetadata
+    for ServiceUnavailableException
+{
     fn meta(&self) -> &aws_smithy_types::error::ErrorMetadata {
         &self.meta
     }
 }
 impl ServiceUnavailableException {
-    /// Creates a new builder-style object to manufacture [`ServiceUnavailableException`](crate::types::error::ServiceUnavailableException).
-    pub fn builder() -> crate::types::error::builders::ServiceUnavailableExceptionBuilder {
+    /// Creates a new builder-style object to manufacture
+    /// [`ServiceUnavailableException`](crate::types::error::ServiceUnavailableException).
+    ///
+    pub fn builder(
+    ) -> crate::types::error::builders::ServiceUnavailableExceptionBuilder {
         crate::types::error::builders::ServiceUnavailableExceptionBuilder::default()
     }
 }
 
-/// A builder for [`ServiceUnavailableException`](crate::types::error::ServiceUnavailableException).
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::default::Default, ::std::fmt::Debug)]
+/// A builder for
+/// [`ServiceUnavailableException`](crate::types::error::ServiceUnavailableException).
+///
+#[derive(
+    ::std::clone::Clone,
+    ::std::cmp::PartialEq,
+    ::std::default::Default,
+    ::std::fmt::Debug,
+)]
 #[non_exhaustive]
 pub struct ServiceUnavailableExceptionBuilder {
     pub(crate) message: ::std::option::Option<::std::string::String>,
@@ -47,12 +59,18 @@ pub struct ServiceUnavailableExceptionBuilder {
 }
 impl ServiceUnavailableExceptionBuilder {
     #[allow(missing_docs)] // documentation missing in model
-    pub fn message(mut self, input: impl ::std::convert::Into<::std::string::String>) -> Self {
+    pub fn message(
+        mut self,
+        input: impl ::std::convert::Into<::std::string::String>,
+    ) -> Self {
         self.message = ::std::option::Option::Some(input.into());
         self
     }
     #[allow(missing_docs)] // documentation missing in model
-    pub fn set_message(mut self, input: ::std::option::Option<::std::string::String>) -> Self {
+    pub fn set_message(
+        mut self,
+        input: ::std::option::Option<::std::string::String>,
+    ) -> Self {
         self.message = input;
         self
     }
@@ -61,17 +79,25 @@ impl ServiceUnavailableExceptionBuilder {
         &self.message
     }
     /// Sets error metadata
-    pub fn meta(mut self, meta: aws_smithy_types::error::ErrorMetadata) -> Self {
+    pub fn meta(
+        mut self,
+        meta: aws_smithy_types::error::ErrorMetadata,
+    ) -> Self {
         self.meta = Some(meta);
         self
     }
 
     /// Sets error metadata
-    pub fn set_meta(&mut self, meta: std::option::Option<aws_smithy_types::error::ErrorMetadata>) -> &mut Self {
+    pub fn set_meta(
+        &mut self,
+        meta: std::option::Option<aws_smithy_types::error::ErrorMetadata>,
+    ) -> &mut Self {
         self.meta = meta;
         self
     }
-    /// Consumes the builder and constructs a [`ServiceUnavailableException`](crate::types::error::ServiceUnavailableException).
+    /// Consumes the builder and constructs a
+    /// [`ServiceUnavailableException`](crate::types::error::ServiceUnavailableException).
+    ///
     pub fn build(self) -> crate::types::error::ServiceUnavailableException {
         crate::types::error::ServiceUnavailableException {
             message: self.message,

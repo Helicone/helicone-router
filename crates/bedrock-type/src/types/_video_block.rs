@@ -2,7 +2,13 @@
 
 /// <p>A video block.</p>
 #[non_exhaustive]
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, serde::Serialize, serde::Deserialize)]
+#[derive(
+    ::std::clone::Clone,
+    ::std::cmp::PartialEq,
+    ::std::fmt::Debug,
+    serde::Serialize,
+    serde::Deserialize,
+)]
 #[serde(rename_all = "camelCase")]
 pub struct VideoBlock {
     /// <p>The block's format.</p>
@@ -21,14 +27,20 @@ impl VideoBlock {
     }
 }
 impl VideoBlock {
-    /// Creates a new builder-style object to manufacture [`VideoBlock`](crate::types::VideoBlock).
+    /// Creates a new builder-style object to manufacture
+    /// [`VideoBlock`](crate::types::VideoBlock).
     pub fn builder() -> crate::types::builders::VideoBlockBuilder {
         crate::types::builders::VideoBlockBuilder::default()
     }
 }
 
 /// A builder for [`VideoBlock`](crate::types::VideoBlock).
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::default::Default, ::std::fmt::Debug)]
+#[derive(
+    ::std::clone::Clone,
+    ::std::cmp::PartialEq,
+    ::std::default::Default,
+    ::std::fmt::Debug,
+)]
 #[non_exhaustive]
 pub struct VideoBlockBuilder {
     pub(crate) format: ::std::option::Option<crate::types::VideoFormat>,
@@ -42,12 +54,17 @@ impl VideoBlockBuilder {
         self
     }
     /// <p>The block's format.</p>
-    pub fn set_format(mut self, input: ::std::option::Option<crate::types::VideoFormat>) -> Self {
+    pub fn set_format(
+        mut self,
+        input: ::std::option::Option<crate::types::VideoFormat>,
+    ) -> Self {
         self.format = input;
         self
     }
     /// <p>The block's format.</p>
-    pub fn get_format(&self) -> &::std::option::Option<crate::types::VideoFormat> {
+    pub fn get_format(
+        &self,
+    ) -> &::std::option::Option<crate::types::VideoFormat> {
         &self.format
     }
     /// <p>The block's source.</p>
@@ -57,23 +74,35 @@ impl VideoBlockBuilder {
         self
     }
     /// <p>The block's source.</p>
-    pub fn set_source(mut self, input: ::std::option::Option<crate::types::VideoSource>) -> Self {
+    pub fn set_source(
+        mut self,
+        input: ::std::option::Option<crate::types::VideoSource>,
+    ) -> Self {
         self.source = input;
         self
     }
     /// <p>The block's source.</p>
-    pub fn get_source(&self) -> &::std::option::Option<crate::types::VideoSource> {
+    pub fn get_source(
+        &self,
+    ) -> &::std::option::Option<crate::types::VideoSource> {
         &self.source
     }
-    /// Consumes the builder and constructs a [`VideoBlock`](crate::types::VideoBlock).
-    /// This method will fail if any of the following fields are not set:
+    /// Consumes the builder and constructs a
+    /// [`VideoBlock`](crate::types::VideoBlock). This method will fail if
+    /// any of the following fields are not set:
     /// - [`format`](crate::types::builders::VideoBlockBuilder::format)
-    pub fn build(self) -> ::std::result::Result<crate::types::VideoBlock, aws_smithy_types::error::operation::BuildError> {
+    pub fn build(
+        self,
+    ) -> ::std::result::Result<
+        crate::types::VideoBlock,
+        aws_smithy_types::error::operation::BuildError,
+    > {
         ::std::result::Result::Ok(crate::types::VideoBlock {
             format: self.format.ok_or_else(|| {
                 aws_smithy_types::error::operation::BuildError::missing_field(
                     "format",
-                    "format was not specified but it is required when building VideoBlock",
+                    "format was not specified but it is required when \
+                     building VideoBlock",
                 )
             })?,
             source: self.source,

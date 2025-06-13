@@ -9,7 +9,8 @@ pub struct ModelNotReadyException {
     pub(crate) meta: aws_smithy_types::error::ErrorMetadata,
 }
 impl ModelNotReadyException {
-    /// Returns `Some(ErrorKind)` if the error is retryable. Otherwise, returns `None`.
+    /// Returns `Some(ErrorKind)` if the error is retryable. Otherwise, returns
+    /// `None`.
     pub fn retryable_error_kind(&self) -> aws_smithy_types::retry::ErrorKind {
         aws_smithy_types::retry::ErrorKind::ClientError
     }
@@ -30,20 +31,30 @@ impl ::std::fmt::Display for ModelNotReadyException {
     }
 }
 impl ::std::error::Error for ModelNotReadyException {}
-impl aws_smithy_types::error::metadata::ProvideErrorMetadata for ModelNotReadyException {
+impl aws_smithy_types::error::metadata::ProvideErrorMetadata
+    for ModelNotReadyException
+{
     fn meta(&self) -> &aws_smithy_types::error::ErrorMetadata {
         &self.meta
     }
 }
 impl ModelNotReadyException {
-    /// Creates a new builder-style object to manufacture [`ModelNotReadyException`](crate::types::error::ModelNotReadyException).
-    pub fn builder() -> crate::types::error::builders::ModelNotReadyExceptionBuilder {
+    /// Creates a new builder-style object to manufacture
+    /// [`ModelNotReadyException`](crate::types::error::ModelNotReadyException).
+    pub fn builder(
+    ) -> crate::types::error::builders::ModelNotReadyExceptionBuilder {
         crate::types::error::builders::ModelNotReadyExceptionBuilder::default()
     }
 }
 
-/// A builder for [`ModelNotReadyException`](crate::types::error::ModelNotReadyException).
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::default::Default, ::std::fmt::Debug)]
+/// A builder for
+/// [`ModelNotReadyException`](crate::types::error::ModelNotReadyException).
+#[derive(
+    ::std::clone::Clone,
+    ::std::cmp::PartialEq,
+    ::std::default::Default,
+    ::std::fmt::Debug,
+)]
 #[non_exhaustive]
 pub struct ModelNotReadyExceptionBuilder {
     pub(crate) message: ::std::option::Option<::std::string::String>,
@@ -51,12 +62,18 @@ pub struct ModelNotReadyExceptionBuilder {
 }
 impl ModelNotReadyExceptionBuilder {
     #[allow(missing_docs)] // documentation missing in model
-    pub fn message(mut self, input: impl ::std::convert::Into<::std::string::String>) -> Self {
+    pub fn message(
+        mut self,
+        input: impl ::std::convert::Into<::std::string::String>,
+    ) -> Self {
         self.message = ::std::option::Option::Some(input.into());
         self
     }
     #[allow(missing_docs)] // documentation missing in model
-    pub fn set_message(mut self, input: ::std::option::Option<::std::string::String>) -> Self {
+    pub fn set_message(
+        mut self,
+        input: ::std::option::Option<::std::string::String>,
+    ) -> Self {
         self.message = input;
         self
     }
@@ -65,17 +82,24 @@ impl ModelNotReadyExceptionBuilder {
         &self.message
     }
     /// Sets error metadata
-    pub fn meta(mut self, meta: aws_smithy_types::error::ErrorMetadata) -> Self {
+    pub fn meta(
+        mut self,
+        meta: aws_smithy_types::error::ErrorMetadata,
+    ) -> Self {
         self.meta = Some(meta);
         self
     }
 
     /// Sets error metadata
-    pub fn set_meta(&mut self, meta: std::option::Option<aws_smithy_types::error::ErrorMetadata>) -> &mut Self {
+    pub fn set_meta(
+        &mut self,
+        meta: std::option::Option<aws_smithy_types::error::ErrorMetadata>,
+    ) -> &mut Self {
         self.meta = meta;
         self
     }
-    /// Consumes the builder and constructs a [`ModelNotReadyException`](crate::types::error::ModelNotReadyException).
+    /// Consumes the builder and constructs a
+    /// [`ModelNotReadyException`](crate::types::error::ModelNotReadyException).
     pub fn build(self) -> crate::types::error::ModelNotReadyException {
         crate::types::error::ModelNotReadyException {
             message: self.message,

@@ -2,40 +2,60 @@
 
 /// <p>Performance settings for a model.</p>
 #[non_exhaustive]
-#[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug, serde::Serialize, serde::Deserialize)]
+#[derive(
+    ::std::clone::Clone,
+    ::std::cmp::PartialEq,
+    ::std::fmt::Debug,
+    serde::Serialize,
+    serde::Deserialize,
+)]
 #[serde(rename_all = "camelCase")]
 pub struct PerformanceConfiguration {
-    /// <p>To use a latency-optimized version of the model, set to <code>optimized</code>.</p>
+    /// <p>To use a latency-optimized version of the model, set to
+    /// <code>optimized</code>.</p>
     pub latency: crate::types::PerformanceConfigLatency,
 }
 impl PerformanceConfiguration {
-    /// <p>To use a latency-optimized version of the model, set to <code>optimized</code>.</p>
+    /// <p>To use a latency-optimized version of the model, set to
+    /// <code>optimized</code>.</p>
     pub fn latency(&self) -> &crate::types::PerformanceConfigLatency {
         &self.latency
     }
 }
 impl PerformanceConfiguration {
-    /// Creates a new builder-style object to manufacture [`PerformanceConfiguration`](crate::types::PerformanceConfiguration).
-    pub fn builder() -> crate::types::builders::PerformanceConfigurationBuilder {
+    /// Creates a new builder-style object to manufacture
+    /// [`PerformanceConfiguration`](crate::types::PerformanceConfiguration).
+    pub fn builder() -> crate::types::builders::PerformanceConfigurationBuilder
+    {
         crate::types::builders::PerformanceConfigurationBuilder::default()
     }
 }
 
-/// A builder for [`PerformanceConfiguration`](crate::types::PerformanceConfiguration).
+/// A builder for
+/// [`PerformanceConfiguration`](crate::types::PerformanceConfiguration).
 #[derive(
-    ::std::clone::Clone, ::std::cmp::PartialEq, ::std::default::Default, ::std::fmt::Debug,
+    ::std::clone::Clone,
+    ::std::cmp::PartialEq,
+    ::std::default::Default,
+    ::std::fmt::Debug,
 )]
 #[non_exhaustive]
 pub struct PerformanceConfigurationBuilder {
-    pub(crate) latency: ::std::option::Option<crate::types::PerformanceConfigLatency>,
+    pub(crate) latency:
+        ::std::option::Option<crate::types::PerformanceConfigLatency>,
 }
 impl PerformanceConfigurationBuilder {
-    /// <p>To use a latency-optimized version of the model, set to <code>optimized</code>.</p>
-    pub fn latency(mut self, input: crate::types::PerformanceConfigLatency) -> Self {
+    /// <p>To use a latency-optimized version of the model, set to
+    /// <code>optimized</code>.</p>
+    pub fn latency(
+        mut self,
+        input: crate::types::PerformanceConfigLatency,
+    ) -> Self {
         self.latency = ::std::option::Option::Some(input);
         self
     }
-    /// <p>To use a latency-optimized version of the model, set to <code>optimized</code>.</p>
+    /// <p>To use a latency-optimized version of the model, set to
+    /// <code>optimized</code>.</p>
     pub fn set_latency(
         mut self,
         input: ::std::option::Option<crate::types::PerformanceConfigLatency>,
@@ -43,11 +63,15 @@ impl PerformanceConfigurationBuilder {
         self.latency = input;
         self
     }
-    /// <p>To use a latency-optimized version of the model, set to <code>optimized</code>.</p>
-    pub fn get_latency(&self) -> &::std::option::Option<crate::types::PerformanceConfigLatency> {
+    /// <p>To use a latency-optimized version of the model, set to
+    /// <code>optimized</code>.</p>
+    pub fn get_latency(
+        &self,
+    ) -> &::std::option::Option<crate::types::PerformanceConfigLatency> {
         &self.latency
     }
-    /// Consumes the builder and constructs a [`PerformanceConfiguration`](crate::types::PerformanceConfiguration).
+    /// Consumes the builder and constructs a
+    /// [`PerformanceConfiguration`](crate::types::PerformanceConfiguration).
     pub fn build(self) -> crate::types::PerformanceConfiguration {
         crate::types::PerformanceConfiguration {
             latency: self.latency.unwrap_or(
