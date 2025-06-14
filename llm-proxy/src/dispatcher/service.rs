@@ -34,6 +34,7 @@ use crate::{
         mapper::{model::ModelMapper, registry::EndpointConverterRegistry},
     },
     types::{
+        body::BodyReader,
         extensions::{AuthContext, MapperContext, RequestContext},
         provider::InferenceProvider,
         rate_limit::RateLimitEvent,
@@ -49,6 +50,8 @@ pub type DispatcherFuture = BoxFuture<
 >;
 pub type DispatcherService =
     AddExtensions<ErrorHandler<crate::middleware::mapper::Service<Dispatcher>>>;
+pub type DispatcherServiceWithoutMapper =
+    AddExtensions<ErrorHandler<Dispatcher>>;
 
 /// Leaf service that dispatches requests to the correct provider.
 #[derive(Debug, Clone)]
@@ -192,6 +195,68 @@ impl Dispatcher {
             .layer(extensions_layer)
             .layer(ErrorHandlerLayer::new(app_state))
             .layer(crate::middleware::mapper::Layer)
+            // other middleware: rate limiting, logging, etc, etc
+            // will be added here as well
+            .service(dispatcher))
+    }
+
+    pub fn new_without_mapper(
+        app_state: AppState,
+        provider: InferenceProvider,
+    ) -> Result<DispatcherServiceWithoutMapper, InitError> {
+        // connection timeout, timeout, etc.
+        let base_client = reqwest::Client::builder()
+            .connect_timeout(app_state.0.config.dispatcher.connection_timeout)
+            .timeout(app_state.0.config.dispatcher.timeout)
+            .tcp_nodelay(true);
+
+        let client = match provider {
+            InferenceProvider::OpenAI => Client::OpenAI(OpenAIClient::new(
+                &app_state,
+                base_client,
+                &app_state.get_provider_api_key_for_direct_proxy(provider)?,
+            )?),
+            InferenceProvider::Anthropic => {
+                Client::Anthropic(AnthropicClient::new(
+                    &app_state,
+                    base_client,
+                    &app_state
+                        .get_provider_api_key_for_direct_proxy(provider)?,
+                )?)
+            }
+            InferenceProvider::GoogleGemini => {
+                Client::GoogleGemini(GoogleGeminiClient::new(
+                    &app_state,
+                    base_client,
+                    &app_state
+                        .get_provider_api_key_for_direct_proxy(provider)?,
+                )?)
+            }
+            InferenceProvider::Ollama => {
+                Client::Ollama(OllamaClient::new(&app_state, base_client)?)
+            }
+            InferenceProvider::Bedrock => {
+                todo!("only openai and anthropic are supported at the moment")
+            }
+        };
+
+        let dispatcher = Self {
+            client,
+            app_state: app_state.clone(),
+            provider,
+            rate_limit_tx: None,
+        };
+        let converter_registry = EndpointConverterRegistry::default();
+
+        let extensions_layer = AddExtensionsLayer::builder()
+            .inference_provider(provider)
+            .endpoint_converter_registry(converter_registry)
+            .router_id(None)
+            .build();
+
+        Ok(ServiceBuilder::new()
+            .layer(extensions_layer)
+            .layer(ErrorHandlerLayer::new(app_state))
             // other middleware: rate limiting, logging, etc, etc
             // will be added here as well
             .service(dispatcher))
@@ -428,7 +493,7 @@ impl Dispatcher {
         resp_builder = resp_builder.status(StatusCode::OK);
         if auth_context.is_some() {
             let (user_resp_body, body_reader) =
-                crate::types::body::Body::wrap_stream(response_stream, true);
+                BodyReader::wrap_stream(response_stream, true);
             let response = resp_builder
                 .body(user_resp_body)
                 .map_err(InternalError::HttpError)?;
@@ -477,7 +542,7 @@ impl Dispatcher {
                 InternalError,
             >(bytes));
             let (error_body, error_reader) =
-                crate::types::body::Body::wrap_stream(stream, false);
+                BodyReader::wrap_stream(stream, false);
             let response = resp_builder
                 .body(error_body)
                 .map_err(InternalError::HttpError)?;
@@ -485,13 +550,10 @@ impl Dispatcher {
         }
 
         if auth_context.is_some() {
-            let (user_resp_body, body_reader) =
-                crate::types::body::Body::wrap_stream(
-                    response
-                        .bytes_stream()
-                        .map_err(InternalError::ReqwestError),
-                    false,
-                );
+            let (user_resp_body, body_reader) = BodyReader::wrap_stream(
+                response.bytes_stream().map_err(InternalError::ReqwestError),
+                false,
+            );
             let response = resp_builder
                 .body(user_resp_body)
                 .map_err(InternalError::HttpError)?;

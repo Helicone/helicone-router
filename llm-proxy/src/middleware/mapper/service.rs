@@ -5,7 +5,6 @@ use std::{
 
 use futures::{TryStreamExt, future::BoxFuture};
 use http::uri::PathAndQuery;
-use http_body_util::BodyExt;
 use tracing::{Instrument, info_span};
 
 use crate::{
@@ -105,13 +104,7 @@ where
                     req.extensions_mut().insert(extracted_path_and_query);
                     req
                 };
-                inner.call(req).await.map(|response| {
-                    // no need to deserialize the response body, just stream to
-                    // user
-                    let (parts, body) = response.into_parts();
-                    let body = axum_core::body::Body::new(body.inner);
-                    http::Response::from_parts(parts, body)
-                })
+                inner.call(req).await
             } else {
                 let source_endpoint =
                     source_endpoint.ok_or(ApiError::Internal(
@@ -164,6 +157,7 @@ async fn map_request(
     target_path_and_query: &PathAndQuery,
     req: Request,
 ) -> Result<Request, ApiError> {
+    use http_body_util::BodyExt;
     let (parts, body) = req.into_parts();
     let body = body
         .collect()
@@ -207,6 +201,7 @@ async fn map_request_no_op(
     target_path_and_query: PathAndQuery,
     req: Request,
 ) -> Result<Request, ApiError> {
+    use http_body_util::BodyExt;
     let (parts, body) = req.into_parts();
     let body = body
         .collect()
@@ -264,7 +259,7 @@ async fn map_response(
         // SSE event in this branch
         let mapped_stream = body
             .into_data_stream()
-            .map_err(|e| ApiError::Internal(InternalError::ReqwestError(e)))
+            .map_err(|e| ApiError::Internal(InternalError::CollectBodyError(e)))
             .try_filter_map({
                 let captured_registry = converter_registry.clone();
                 move |bytes| {
@@ -295,10 +290,11 @@ async fn map_response(
         );
         Ok(new_resp)
     } else {
+        use http_body_util::BodyExt;
         let body_bytes = body
             .collect()
             .await
-            .map_err(InternalError::ReqwestError)?
+            .map_err(InternalError::CollectBodyError)?
             .to_bytes();
 
         let mapped_body_bytes = converter

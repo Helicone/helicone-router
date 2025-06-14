@@ -19,11 +19,14 @@ use crate::{
         invalid_req::InvalidRequestError,
     },
     router::{
-        direct::{DirectProxies, DirectProxyService},
+        direct::{DirectProxiesWithoutMapper, DirectProxyServiceWithoutMapper},
         service::{Router, RouterFuture},
         unified_api,
     },
-    types::{provider::InferenceProvider, router::RouterId},
+    types::{
+        extensions::MapperContext, provider::InferenceProvider,
+        router::RouterId,
+    },
 };
 
 /// Regex for the following URL format:
@@ -46,7 +49,7 @@ const URL_REGEX: &str =
 pub struct MetaRouter {
     inner: HashMap<RouterId, Router>,
     unified_api: unified_api::Service,
-    direct_proxies: DirectProxies,
+    direct_proxies: DirectProxiesWithoutMapper,
     url_regex: Regex,
 }
 
@@ -77,7 +80,7 @@ impl MetaRouter {
             inner.insert(router_id.clone(), router);
         }
         let unified_api = unified_api::Service::new(&app_state)?;
-        let direct_proxies = DirectProxies::new(&app_state)?;
+        let direct_proxies = DirectProxiesWithoutMapper::new(&app_state)?;
         let meta_router = Self {
             inner,
             unified_api,
@@ -194,6 +197,15 @@ impl MetaRouter {
                     };
                 };
                 req.extensions_mut().insert(extracted_path_and_query);
+                // for the passthrough endpoints, we don't want to
+                // collect/deserialize the request
+                // body, and thus we must assume the request is not a stream
+                // request and cannot support streaming.
+                let mapper_ctx = MapperContext {
+                    is_stream: false,
+                    model: None,
+                };
+                req.extensions_mut().insert(mapper_ctx);
 
                 let Some(mut direct_proxy) =
                     self.direct_proxies.get(&provider).cloned()
@@ -332,7 +344,7 @@ pin_project! {
         },
         DirectProxy {
             #[pin]
-            future: <DirectProxyService as tower::Service<crate::types::request::Request>>::Future,
+            future: <DirectProxyServiceWithoutMapper as tower::Service<crate::types::request::Request>>::Future,
         },
     }
 }
