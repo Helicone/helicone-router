@@ -8,8 +8,9 @@ use chrono::Utc;
 use crate::{
     config::router::RouterConfig,
     types::{
+        extensions::{AuthContext, RequestContext},
         provider::ProviderKeys,
-        request::{AuthContext, Request, RequestContext},
+        request::Request,
         response::Response,
     },
 };

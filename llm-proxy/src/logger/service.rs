@@ -16,12 +16,12 @@ use crate::{
     error::{init::InitError, logger::LoggerError},
     types::{
         body::BodyReader,
+        extensions::{AuthContext, RequestContext},
         logger::{
             HeliconeLogMetadata, Log, LogMessage, RequestLog, ResponseLog,
             S3Log,
         },
         provider::InferenceProvider,
-        request::{AuthContext, RequestContext},
     },
 };
 

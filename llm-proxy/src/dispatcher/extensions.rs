@@ -2,8 +2,9 @@ use http::Extensions;
 use typed_builder::TypedBuilder;
 
 use crate::types::{
-    extensions::ProviderRequestId, provider::InferenceProvider,
-    request::AuthContext, router::RouterId,
+    extensions::{AuthContext, ProviderRequestId},
+    provider::InferenceProvider,
+    router::RouterId,
 };
 
 #[derive(Debug, TypedBuilder)]

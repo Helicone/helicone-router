@@ -10,7 +10,9 @@ use uuid::Uuid;
 use crate::{
     app_state::AppState,
     error::auth::AuthError,
-    types::{org::OrgId, request::AuthContext, secret::Secret, user::UserId},
+    types::{
+        extensions::AuthContext, org::OrgId, secret::Secret, user::UserId,
+    },
 };
 
 #[derive(Clone)]

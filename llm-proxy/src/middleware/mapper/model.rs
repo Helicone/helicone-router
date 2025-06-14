@@ -6,7 +6,7 @@ use crate::{
         model_mapping::ModelMappingConfig, providers::ProvidersConfig,
         router::RouterConfig,
     },
-    middleware::mapper::error::MapperError,
+    error::mapper::MapperError,
     types::{
         model_id::{ModelId, ModelName},
         provider::InferenceProvider,

@@ -34,9 +34,10 @@ use crate::{
         mapper::{model::ModelMapper, registry::EndpointConverterRegistry},
     },
     types::{
+        extensions::{AuthContext, MapperContext, RequestContext},
         provider::InferenceProvider,
         rate_limit::RateLimitEvent,
-        request::{AuthContext, MapperContext, Request, RequestContext},
+        request::Request,
         router::RouterId,
     },
     utils::handle_error::{ErrorHandler, ErrorHandlerLayer},

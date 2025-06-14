@@ -103,7 +103,7 @@ impl MetaRouter {
         tracing::trace!(
             router_id = %router_id,
             api_path = extracted_api_path,
-            "MetaRouter received request"
+            "received /router request"
         );
         let extracted_path_and_query =
             if let Some(query_params) = req.uri().query() {
@@ -143,6 +143,7 @@ impl MetaRouter {
         mut req: crate::types::request::Request,
     ) -> ResponseFuture {
         let rest = req.uri().path().trim_start_matches("/ai/");
+        tracing::trace!(api_path = rest, "received /ai request");
         let extracted_path_and_query =
             if let Some(query_params) = req.uri().query() {
                 PathAndQuery::try_from(format!("{rest}?{query_params}"))
@@ -171,6 +172,10 @@ impl MetaRouter {
         let path = req.uri().path();
         let mut segment_iter = path.trim_start_matches('/').split('/');
         let first_segment = segment_iter.next().unwrap_or("");
+        tracing::trace!(
+            provider = %first_segment,
+            "received /{{provider}} request"
+        );
         match InferenceProvider::from_str(first_segment) {
             Ok(provider) => {
                 let rest = segment_iter.collect::<Vec<_>>().join("/");

@@ -1,6 +1,5 @@
 use std::{
     str::FromStr,
-    sync::Arc,
     task::{Context, Poll},
 };
 
@@ -11,14 +10,11 @@ use tracing::{Instrument, info_span};
 
 use crate::{
     endpoints::ApiEndpoint,
-    error::{api::ApiError, internal::InternalError},
-    middleware::mapper::{
-        error::MapperError, registry::EndpointConverterRegistry,
-    },
+    error::{api::ApiError, internal::InternalError, mapper::MapperError},
+    middleware::mapper::registry::EndpointConverterRegistry,
     types::{
-        provider::InferenceProvider,
-        request::{MapperContext, Request, RequestContext},
-        response::Response,
+        extensions::MapperContext, provider::InferenceProvider,
+        request::Request, response::Response,
     },
 };
 
@@ -61,29 +57,12 @@ where
         let mut inner = self.inner.clone();
         std::mem::swap(&mut self.inner, &mut inner);
         Box::pin(async move {
-            let provider = *req
+            let target_provider = *req
                 .extensions_mut()
                 .get::<InferenceProvider>()
                 .ok_or(ApiError::Internal(InternalError::ExtensionNotFound(
                     "Provider",
                 )))?;
-            let req_ctx = req
-                .extensions()
-                .get::<Arc<RequestContext>>()
-                .ok_or(ApiError::Internal(InternalError::ExtensionNotFound(
-                    "RequestContext",
-                )))?
-                .clone();
-            let router_config =
-                req_ctx.router_config.as_ref().ok_or(ApiError::Internal(
-                    InternalError::ExtensionNotFound("RouterConfig"),
-                ))?;
-            let request_style = router_config.request_style;
-            tracing::trace!(
-                request_style = %request_style,
-                provider = %provider,
-                "Mapper"
-            );
             let converter_registry = req
                 .extensions()
                 .get::<EndpointConverterRegistry>()
@@ -99,9 +78,11 @@ where
                 )))?;
             let source_endpoint =
                 req.extensions().get::<ApiEndpoint>().copied();
-            if provider == request_style {
+            if target_provider == InferenceProvider::OpenAI {
                 let req = if let Some(source_endpoint) = source_endpoint {
-                    // even though we don't need to map the request body, we
+                    // Since we support the OpenAI API only, then we can
+                    // special case when our target provider is OpenAI.
+                    // Even though we don't need to map the request body, we
                     // still need to deserialize the body in
                     // order to extract the `stream` param
                     map_request_no_op(
@@ -137,7 +118,7 @@ where
                         InternalError::ExtensionNotFound("ApiEndpoint"),
                     ))?;
                 let target_endpoint =
-                    ApiEndpoint::mapped(source_endpoint, provider)?;
+                    ApiEndpoint::mapped(source_endpoint, target_provider)?;
                 // serialization/deserialization should be done on a dedicated
                 // thread
                 let converter_registry_cloned = converter_registry.clone();
