@@ -97,7 +97,7 @@ impl AppState {
         rate_limit_channels.insert(router_id, rate_limit_rx);
     }
 
-    pub async fn add_provider_keys(
+    pub async fn add_provider_keys_for_router(
         &self,
         router_id: RouterId,
         router_config: &Arc<RouterConfig>,

@@ -21,7 +21,7 @@ use crate::{
     },
     middleware::{rate_limit, request_context},
     router::direct::DirectProxyService,
-    types::{provider::ProviderKeys, router::RouterId},
+    types::router::RouterId,
 };
 
 pub type RouterService =
@@ -59,9 +59,9 @@ impl Router {
         };
         router_config.validate()?;
 
-        let provider_keys =
-            Self::add_provider_keys(id.clone(), &router_config, &app_state)
-                .await?;
+        let provider_keys = app_state
+            .add_provider_keys_for_router(id.clone(), &router_config)
+            .await?;
 
         let mut inner = HashMap::default();
         let rl_layer = rate_limit::Layer::per_router(
@@ -119,21 +119,6 @@ impl Router {
             direct_proxy,
             router_config,
         })
-    }
-
-    async fn add_provider_keys(
-        router_id: RouterId,
-        router_config: &Arc<RouterConfig>,
-        app_state: &AppState,
-    ) -> Result<ProviderKeys, InitError> {
-        // This should be the only place we call .provider_keys(), everywhere
-        // else we should use the `router_id` to get the provider keys
-        // from the app state
-        let provider_keys =
-            app_state.0.config.discover.provider_keys(router_config)?;
-        let mut provider_keys_map = app_state.0.provider_keys.write().await;
-        provider_keys_map.insert(router_id, provider_keys.clone());
-        Ok(provider_keys)
     }
 }
 

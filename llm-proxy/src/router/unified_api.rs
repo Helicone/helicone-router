@@ -112,123 +112,128 @@ impl Future for ResponseFuture {
     #[allow(clippy::too_many_lines)]
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         let mut this = self.project();
-        match this.state.as_mut().project() {
-            StateProj::CollectBody {
-                collect_future,
-                parts,
-            } => {
-                let collected = match ready!(pin!(collect_future).poll(cx)) {
-                    Ok(collected) => collected,
-                    Err(e) => {
+        loop {
+            match this.state.as_mut().project() {
+                StateProj::CollectBody {
+                    collect_future,
+                    parts,
+                } => {
+                    let collected = match ready!(pin!(collect_future).poll(cx))
+                    {
+                        Ok(collected) => collected,
+                        Err(e) => {
+                            return Poll::Ready(Err(
+                                InternalError::CollectBodyError(e).into(),
+                            ));
+                        }
+                    };
+                    let parts =
+                        parts.take().expect("future polled after completion");
+                    let Some(extracted_path_and_query) =
+                        parts.extensions.get::<PathAndQuery>()
+                    else {
                         return Poll::Ready(Err(
-                            InternalError::CollectBodyError(e).into(),
+                            InternalError::ExtensionNotFound("PathAndQuery")
+                                .into(),
                         ));
-                    }
-                };
-                let parts =
-                    parts.take().expect("future polled after completion");
-                let Some(extracted_path_and_query) =
-                    parts.extensions.get::<PathAndQuery>()
-                else {
-                    return Poll::Ready(Err(InternalError::ExtensionNotFound(
-                        "PathAndQuery",
-                    )
-                    .into()));
-                };
-                let Some(api_endpoint) = ApiEndpoint::new(
-                    extracted_path_and_query.path(),
-                    InferenceProvider::OpenAI,
-                ) else {
-                    return Poll::Ready(Err(
-                        InvalidRequestError::UnsupportedEndpoint(
-                            extracted_path_and_query.path().to_string(),
-                        )
-                        .into(),
-                    ));
-                };
-                // since we *need* to have first class support for the OpenAI
-                // endpoint in order to deserialize it and
-                // extract the model id (in order to know the appropriate
-                // provider), we can only support OpenAI chat completions
-                // as the endpoint for now.
-                match api_endpoint {
-                    ApiEndpoint::OpenAI(OpenAI::ChatCompletions(_)) => {}
-                    _ => {
+                    };
+                    let Some(api_endpoint) = ApiEndpoint::new(
+                        extracted_path_and_query.path(),
+                        InferenceProvider::OpenAI,
+                    ) else {
                         return Poll::Ready(Err(
                             InvalidRequestError::UnsupportedEndpoint(
                                 extracted_path_and_query.path().to_string(),
                             )
                             .into(),
                         ));
+                    };
+                    // since we *need* to have first class support for the
+                    // OpenAI endpoint in order to
+                    // deserialize it and extract the model
+                    // id (in order to know the appropriate
+                    // provider), we can only support OpenAI chat completions
+                    // as the endpoint for now.
+                    match api_endpoint {
+                        ApiEndpoint::OpenAI(OpenAI::ChatCompletions(_)) => {}
+                        _ => {
+                            return Poll::Ready(Err(
+                                InvalidRequestError::UnsupportedEndpoint(
+                                    extracted_path_and_query.path().to_string(),
+                                )
+                                .into(),
+                            ));
+                        }
                     }
+                    this.state.set(State::DetermineProvider {
+                        collected_body: Some(collected.to_bytes()),
+                        parts: Some(parts),
+                    });
                 }
-                this.state.set(State::DetermineProvider {
-                    collected_body: Some(collected.to_bytes()),
-                    parts: Some(parts),
-                });
-                cx.waker().wake_by_ref();
-                Poll::Pending
-            }
-            StateProj::DetermineProvider {
-                collected_body,
-                parts,
-            } => {
-                let body = collected_body
-                    .take()
-                    .expect("future polled after completion");
-                let deserialized_body = serde_json::from_slice::<
-                    async_openai::types::CreateChatCompletionRequest,
-                >(&body)
-                .map_err(InvalidRequestError::InvalidRequestBody)?;
-                let source_model = ModelId::from_str(&deserialized_body.model)
-                    .map_err(InternalError::MapperError)?;
-                let mut parts =
-                    parts.take().expect("future polled after completion");
-                let provider = match source_model {
-                    ModelId::OpenAI(_) => InferenceProvider::OpenAI,
-                    ModelId::Anthropic(_) => InferenceProvider::Anthropic,
-                    ModelId::GoogleGemini(_) => InferenceProvider::GoogleGemini,
-                    ModelId::Bedrock(_) => InferenceProvider::Bedrock,
-                    ModelId::Ollama(_) => InferenceProvider::Ollama,
-                    ModelId::Unknown(_) => {
-                        return Poll::Ready(Err(
-                            InvalidRequestError::UnsupportedEndpoint(format!(
-                                "provider for the given model: \
-                                 '{source_model}' not supported"
-                            ))
-                            .into(),
-                        ));
-                    }
-                };
-                parts.extensions.insert(provider);
-                let request = Request::from_parts(
+                StateProj::DetermineProvider {
+                    collected_body,
                     parts,
-                    axum_core::body::Body::from(body),
-                );
-                this.state.set(State::Proxy {
-                    request: Some(request),
-                    provider,
-                });
-                cx.waker().wake_by_ref();
-                Poll::Pending
-            }
-            StateProj::Proxy { request, provider } => {
-                let request =
-                    request.take().expect("future polled after completion");
-                let mut direct_proxy = this.direct_proxies.get(provider).ok_or_else(|| {
-                    tracing::warn!(provider = %provider, "requested provider is not configured for direct proxy");
-                    InvalidRequestError::UnsupportedProvider(*provider)
-                })?.clone();
-                let response_future = pin!(direct_proxy.call(request));
-                let response =
-                    ready!(response_future.poll(cx)).map_err(|_| {
-                        tracing::error!(
-                            "encountered error from what should be infallible \
-                             service"
-                        );
-                        InternalError::Internal
-                    })?;
-                Poll::Ready(Ok(response))
+                } => {
+                    let body = collected_body
+                        .take()
+                        .expect("future polled after completion");
+                    let deserialized_body = serde_json::from_slice::<
+                        async_openai::types::CreateChatCompletionRequest,
+                    >(&body)
+                    .map_err(InvalidRequestError::InvalidRequestBody)?;
+                    let source_model =
+                        ModelId::from_str(&deserialized_body.model)
+                            .map_err(InternalError::MapperError)?;
+                    let mut parts =
+                        parts.take().expect("future polled after completion");
+                    let provider = match source_model {
+                        ModelId::OpenAI(_) => InferenceProvider::OpenAI,
+                        ModelId::Anthropic(_) => InferenceProvider::Anthropic,
+                        ModelId::GoogleGemini(_) => {
+                            InferenceProvider::GoogleGemini
+                        }
+                        ModelId::Bedrock(_) => InferenceProvider::Bedrock,
+                        ModelId::Ollama(_) => InferenceProvider::Ollama,
+                        ModelId::Unknown(_) => {
+                            return Poll::Ready(Err(
+                                InvalidRequestError::UnsupportedEndpoint(
+                                    format!(
+                                        "provider for the given model: \
+                                         '{source_model}' not supported"
+                                    ),
+                                )
+                                .into(),
+                            ));
+                        }
+                    };
+                    parts.extensions.insert(provider);
+                    let request = Request::from_parts(
+                        parts,
+                        axum_core::body::Body::from(body),
+                    );
+                    this.state.set(State::Proxy {
+                        request: Some(request),
+                        provider,
+                    });
+                }
+                StateProj::Proxy { request, provider } => {
+                    let request =
+                        request.take().expect("future polled after completion");
+                    let mut direct_proxy = this.direct_proxies.get(provider).ok_or_else(|| {
+                        tracing::warn!(provider = %provider, "requested provider is not configured for direct proxy");
+                        InvalidRequestError::UnsupportedProvider(*provider)
+                    })?.clone();
+                    let response_future = pin!(direct_proxy.call(request));
+                    let response =
+                        ready!(response_future.poll(cx)).map_err(|_| {
+                            tracing::error!(
+                                "encountered error from what should be \
+                                 infallible service"
+                            );
+                            InternalError::Internal
+                        })?;
+                    return Poll::Ready(Ok(response));
+                }
             }
         }
     }

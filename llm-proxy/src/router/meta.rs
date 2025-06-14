@@ -239,6 +239,12 @@ impl tower::Service<crate::types::request::Request> for MetaRouter {
                 any_pending = true;
             }
         }
+        if self.unified_api.poll_ready(ctx).is_pending() {
+            any_pending = true;
+        }
+        // we don't need to poll the direct proxies since they
+        // always return `Poll::Ready(Ok(()))`. However, if this
+        // were to change, we would need to poll them here.
         if any_pending {
             Poll::Pending
         } else {
