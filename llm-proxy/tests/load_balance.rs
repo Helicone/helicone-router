@@ -20,9 +20,9 @@ fn p2c_config_openai_anthropic_google() -> RouterConfigs {
         RouterId::Default,
         RouterConfig {
             request_style: InferenceProvider::OpenAI,
-            balance: BalanceConfig(HashMap::from([(
+            load_balance: BalanceConfig(HashMap::from([(
                 EndpointType::Chat,
-                BalanceConfigInner::P2C {
+                BalanceConfigInner::Latency {
                     targets: nes![
                         InferenceProvider::OpenAI,
                         InferenceProvider::Anthropic,
@@ -84,7 +84,9 @@ async fn openai_slow() {
         let request = Request::builder()
             .method(Method::POST)
             // default router
-            .uri("http://router.helicone.com/router/v1/chat/completions")
+            .uri(
+                "http://router.helicone.com/router/default/v1/chat/completions",
+            )
             .body(request_body)
             .unwrap();
         let response = harness.call(request).await.unwrap();
@@ -137,7 +139,9 @@ async fn anthropic_slow() {
         let request = Request::builder()
             .method(Method::POST)
             // default router
-            .uri("http://router.helicone.com/router/v1/chat/completions")
+            .uri(
+                "http://router.helicone.com/router/default/v1/chat/completions",
+            )
             .body(request_body)
             .unwrap();
         let response = harness.call(request).await.unwrap();

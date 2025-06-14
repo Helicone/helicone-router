@@ -1,5 +1,6 @@
 use std::{collections::HashMap, time::Duration};
 
+use compact_str::CompactString;
 use http::{Method, Request, StatusCode};
 use http_body_util::BodyExt;
 use llm_proxy::{
@@ -30,7 +31,7 @@ fn create_test_limits(capacity: u32, duration_ms: u64) -> LimitsConfig {
 fn create_router_config(rate_limit: RouterRateLimitConfig) -> RouterConfig {
     RouterConfig {
         rate_limit,
-        balance: llm_proxy::config::balance::BalanceConfig::openai_chat(),
+        load_balance: llm_proxy::config::balance::BalanceConfig::openai_chat(),
         ..Default::default()
     }
 }
@@ -59,7 +60,7 @@ async fn make_chat_request(
     let request = Request::builder()
         .method(Method::POST)
         .header("authorization", auth_header)
-        .uri("http://router.helicone.com/router/v1/chat/completions")
+        .uri("http://router.helicone.com/router/default/v1/chat/completions")
         .body(request_body)
         .unwrap();
 
@@ -91,11 +92,12 @@ async fn make_chat_request_for_router(
     }))
     .unwrap();
     let uri = match router_id {
-        RouterId::Uuid(uuid) => format!(
-            "http://router.helicone.com/router/{uuid}/v1/chat/completions"
+        RouterId::Named(name) => format!(
+            "http://router.helicone.com/router/{name}/v1/chat/completions"
         ),
         RouterId::Default => {
-            "http://router.helicone.com/router/v1/chat/completions".to_string()
+            "http://router.helicone.com/router/default/v1/chat/completions"
+                .to_string()
         }
     };
 
@@ -288,7 +290,8 @@ async fn test_router_specific_with_custom_limits() {
             rate_limit: RouterRateLimitConfig::Custom {
                 limits: create_test_limits(2, 1000), // 2 requests per second
             },
-            balance: llm_proxy::config::balance::BalanceConfig::openai_chat(),
+            load_balance:
+                llm_proxy::config::balance::BalanceConfig::openai_chat(),
             ..Default::default()
         },
     )]));
@@ -361,7 +364,8 @@ async fn test_global_with_custom_router_override() {
                 limits: create_test_limits(2, 1000), /* 2 requests per second
                                                       * for this router */
             },
-            balance: llm_proxy::config::balance::BalanceConfig::openai_chat(),
+            load_balance:
+                llm_proxy::config::balance::BalanceConfig::openai_chat(),
             ..Default::default()
         },
     )]));
@@ -481,32 +485,32 @@ async fn test_router_independence_different_rate_limits() {
         cleanup_interval: Duration::from_secs(60),
     };
 
-    let strict_router_id = RouterId::Uuid(Uuid::new_v4());
-    let lenient_router_id = RouterId::Uuid(Uuid::new_v4());
+    let strict_router_id = RouterId::Named(CompactString::from("strict"));
+    let lenient_router_id = RouterId::Named(CompactString::from("lenient"));
 
     // Create two routers with different rate limits
     config.routers = RouterConfigs::new(HashMap::from([
         (
-            strict_router_id,
+            strict_router_id.clone(),
             RouterConfig {
                 rate_limit: RouterRateLimitConfig::Custom {
                     limits: create_test_limits(1, 1000), /* 1 request per
                                                          second - strict */
                 },
-                balance: llm_proxy::config::balance::BalanceConfig::openai_chat(
-                ),
+                load_balance:
+                    llm_proxy::config::balance::BalanceConfig::openai_chat(),
                 ..Default::default()
             },
         ),
         (
-            lenient_router_id,
+            lenient_router_id.clone(),
             RouterConfig {
                 rate_limit: RouterRateLimitConfig::Custom {
                     limits: create_test_limits(5, 1000), /* 5 requests per
                                                          second - lenient */
                 },
-                balance: llm_proxy::config::balance::BalanceConfig::openai_chat(
-                ),
+                load_balance:
+                    llm_proxy::config::balance::BalanceConfig::openai_chat(),
                 ..Default::default()
             },
         ),
@@ -514,8 +518,8 @@ async fn test_router_independence_different_rate_limits() {
             RouterId::Default,
             RouterConfig {
                 rate_limit: RouterRateLimitConfig::None, // No rate limiting
-                balance: llm_proxy::config::balance::BalanceConfig::openai_chat(
-                ),
+                load_balance:
+                    llm_proxy::config::balance::BalanceConfig::openai_chat(),
                 ..Default::default()
             },
         ),
@@ -620,11 +624,12 @@ async fn make_chat_request_to_router(
 
     let request_body = axum_core::body::Body::from(body_bytes);
     let uri = match router_id {
-        RouterId::Uuid(uuid) => format!(
-            "http://router.helicone.com/router/{uuid}/v1/chat/completions"
+        RouterId::Named(name) => format!(
+            "http://router.helicone.com/router/{name}/v1/chat/completions"
         ),
         RouterId::Default => {
-            "http://router.helicone.com/router/v1/chat/completions".to_string()
+            "http://router.helicone.com/router/default/v1/chat/completions"
+                .to_string()
         }
     };
 
@@ -668,38 +673,38 @@ async fn test_multi_router_different_rate_limits_in_memory() {
         limits: create_test_limits(3, 1000),
         cleanup_interval: Duration::from_secs(60),
     };
-    let router_a_id = RouterId::Uuid(Uuid::new_v4());
-    let router_b_id = RouterId::Uuid(Uuid::new_v4());
+    let router_a_id = RouterId::Named(CompactString::from("router-a"));
+    let router_b_id = RouterId::Named(CompactString::from("router-b"));
     let router_c_id = RouterId::Default;
 
     // Create multiple routers with different rate limit configurations
     config.routers = RouterConfigs::new(HashMap::from([
         (
-            router_a_id,
+            router_a_id.clone(),
             RouterConfig {
                 rate_limit: RouterRateLimitConfig::Custom {
                     limits: create_test_limits(1, 1000),
                 },
-                balance: llm_proxy::config::balance::BalanceConfig::openai_chat(
-                ),
+                load_balance:
+                    llm_proxy::config::balance::BalanceConfig::openai_chat(),
                 ..Default::default()
             },
         ),
         (
-            router_b_id,
+            router_b_id.clone(),
             RouterConfig {
                 rate_limit: RouterRateLimitConfig::OptIn,
-                balance: llm_proxy::config::balance::BalanceConfig::openai_chat(
-                ),
+                load_balance:
+                    llm_proxy::config::balance::BalanceConfig::openai_chat(),
                 ..Default::default()
             },
         ),
         (
-            router_c_id,
+            router_c_id.clone(),
             RouterConfig {
                 rate_limit: RouterRateLimitConfig::None,
-                balance: llm_proxy::config::balance::BalanceConfig::openai_chat(
-                ),
+                load_balance:
+                    llm_proxy::config::balance::BalanceConfig::openai_chat(),
                 ..Default::default()
             },
         ),

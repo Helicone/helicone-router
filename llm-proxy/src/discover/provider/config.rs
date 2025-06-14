@@ -15,7 +15,7 @@ use tower::discover::Change;
 use weighted_balance::weight::Weight;
 
 use crate::{
-    app::AppState,
+    app_state::AppState,
     config::{balance::BalanceConfigInner, router::RouterConfig},
     discover::{provider::Key, weighted::WeightedKey},
     dispatcher::{Dispatcher, DispatcherService},
@@ -52,13 +52,15 @@ pin_project! {
 impl ConfigDiscovery<Key> {
     pub async fn new(
         app_state: &AppState,
-        router_id: RouterId,
+        router_id: &RouterId,
         router_config: &Arc<RouterConfig>,
         rx: Receiver<Change<Key, DispatcherService>>,
     ) -> Result<Self, InitError> {
         let events = ReceiverStream::new(rx);
         let mut service_map: HashMap<Key, DispatcherService> = HashMap::new();
-        for (endpoint_type, balance_config) in router_config.balance.as_ref() {
+        for (endpoint_type, balance_config) in
+            router_config.load_balance.as_ref()
+        {
             let providers = balance_config.providers();
             for provider in providers {
                 let key = Key::new(provider, *endpoint_type);
@@ -67,6 +69,7 @@ impl ConfigDiscovery<Key> {
                     router_id,
                     router_config,
                     key.provider,
+                    false,
                 )
                 .await?;
                 service_map.insert(key, dispatcher);
@@ -84,15 +87,17 @@ impl ConfigDiscovery<Key> {
 impl ConfigDiscovery<WeightedKey> {
     pub async fn new_weighted(
         app_state: &AppState,
-        router_id: RouterId,
+        router_id: &RouterId,
         router_config: &Arc<RouterConfig>,
         rx: Receiver<Change<WeightedKey, DispatcherService>>,
     ) -> Result<Self, InitError> {
         let mut service_map = HashMap::new();
-        for (endpoint_type, balance_config) in router_config.balance.as_ref() {
+        for (endpoint_type, balance_config) in
+            router_config.load_balance.as_ref()
+        {
             let weighted_balance_targets = match balance_config {
                 BalanceConfigInner::Weighted { targets } => targets,
-                BalanceConfigInner::P2C { .. } => {
+                BalanceConfigInner::Latency { .. } => {
                     return Err(InitError::InvalidWeightedBalancer(
                         "P2C balancer not supported for weighted discovery"
                             .to_string(),
@@ -113,6 +118,7 @@ impl ConfigDiscovery<WeightedKey> {
                     router_id,
                     router_config,
                     key.provider,
+                    false,
                 )
                 .await?;
                 service_map.insert(key, dispatcher);

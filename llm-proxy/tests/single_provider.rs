@@ -52,7 +52,7 @@ async fn openai() {
     let request = Request::builder()
         .method(Method::POST)
         // default router
-        .uri("http://router.helicone.com/router/v1/chat/completions")
+        .uri("http://router.helicone.com/router/default/v1/chat/completions")
         .body(request_body)
         .unwrap();
     let response = harness.call(request).await.unwrap();
@@ -72,7 +72,7 @@ async fn google_with_openai_request_style() {
         RouterId::Default,
         RouterConfig {
             request_style: InferenceProvider::OpenAI,
-            balance: BalanceConfig::google_gemini(),
+            load_balance: BalanceConfig::google_gemini(),
             ..Default::default()
         },
     )]));
@@ -104,7 +104,7 @@ async fn google_with_openai_request_style() {
     let request = Request::builder()
         .method(Method::POST)
         // default router
-        .uri("http://router.helicone.com/router/v1/chat/completions")
+        .uri("http://router.helicone.com/router/default/v1/chat/completions")
         .body(request_body)
         .unwrap();
     let response = harness.call(request).await.unwrap();
@@ -122,7 +122,7 @@ async fn google_with_openai_request_style() {
     let request = Request::builder()
         .method(Method::POST)
         // default router
-        .uri("http://router.helicone.com/router/v1/chat/completions")
+        .uri("http://router.helicone.com/router/default/v1/chat/completions")
         .body(request_body)
         .unwrap();
     let response = harness.call(request).await.unwrap();
@@ -142,7 +142,7 @@ async fn anthropic_with_openai_request_style() {
         RouterId::Default,
         RouterConfig {
             request_style: InferenceProvider::OpenAI,
-            balance: BalanceConfig::anthropic_chat(),
+            load_balance: BalanceConfig::anthropic_chat(),
             ..Default::default()
         },
     )]));
@@ -177,7 +177,7 @@ async fn anthropic_with_openai_request_style() {
     let request = Request::builder()
         .method(Method::POST)
         // default router
-        .uri("http://router.helicone.com/router/v1/chat/completions")
+        .uri("http://router.helicone.com/router/default/v1/chat/completions")
         .body(request_body)
         .unwrap();
     let response = harness.call(request).await.unwrap();
@@ -199,7 +199,7 @@ async fn anthropic_with_openai_request_style() {
     let request = Request::builder()
         .method(Method::POST)
         // default router
-        .uri("http://router.helicone.com/router/v1/chat/completions")
+        .uri("http://router.helicone.com/router/default/v1/chat/completions")
         .body(request_body)
         .unwrap();
     let response = harness.call(request).await.unwrap();
@@ -217,7 +217,7 @@ async fn anthropic_with_anthropic_request_style() {
         RouterId::Default,
         RouterConfig {
             request_style: InferenceProvider::OpenAI,
-            balance: BalanceConfig::anthropic_chat(),
+            load_balance: BalanceConfig::anthropic_chat(),
             ..Default::default()
         },
     )]));
@@ -252,7 +252,7 @@ async fn anthropic_with_anthropic_request_style() {
     let request = Request::builder()
         .method(Method::POST)
         // default router
-        .uri("http://router.helicone.com/router/v1/chat/completions")
+        .uri("http://router.helicone.com/router/default/v1/chat/completions")
         .body(request_body)
         .unwrap();
     let response = harness.call(request).await.unwrap();
@@ -274,7 +274,7 @@ async fn anthropic_with_anthropic_request_style() {
     let request = Request::builder()
         .method(Method::POST)
         // default router
-        .uri("http://router.helicone.com/router/v1/chat/completions")
+        .uri("http://router.helicone.com/router/default/v1/chat/completions")
         .body(request_body)
         .unwrap();
     let response = harness.call(request).await.unwrap();
@@ -294,7 +294,7 @@ async fn anthropic_request_style() {
         RouterId::Default,
         RouterConfig {
             request_style: InferenceProvider::Anthropic,
-            balance: BalanceConfig::openai_chat(),
+            load_balance: BalanceConfig::openai_chat(),
             ..Default::default()
         },
     )]));
@@ -330,7 +330,7 @@ async fn anthropic_request_style() {
     let request = Request::builder()
         .method(Method::POST)
         // default router
-        .uri("http://router.helicone.com/router/v1/messages")
+        .uri("http://router.helicone.com/router/default/v1/messages")
         .body(request_body)
         .unwrap();
     let response = harness.call(request).await.unwrap();
@@ -350,7 +350,7 @@ async fn ollama() {
         RouterId::Default,
         RouterConfig {
             request_style: InferenceProvider::OpenAI,
-            balance: BalanceConfig::ollama_chat(),
+            load_balance: BalanceConfig::ollama_chat(),
             ..Default::default()
         },
     )]));
@@ -385,7 +385,7 @@ async fn ollama() {
     let request = Request::builder()
         .method(Method::POST)
         // default router
-        .uri("http://router.helicone.com/router/v1/chat/completions")
+        .uri("http://router.helicone.com/router/default/v1/chat/completions")
         .body(request_body)
         .unwrap();
     let response = harness.call(request).await.unwrap();

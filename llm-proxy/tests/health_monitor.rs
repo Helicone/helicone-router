@@ -30,15 +30,15 @@ async fn errors_remove_provider_from_lb_pool() {
             targets: nes![
                 BalanceTarget {
                     provider: InferenceProvider::OpenAI,
-                    weight: Decimal::try_from(0.80).unwrap(),
+                    weight: Decimal::try_from(0.20).unwrap(),
                 },
                 BalanceTarget {
                     provider: InferenceProvider::Anthropic,
-                    weight: Decimal::try_from(0.10).unwrap(),
+                    weight: Decimal::try_from(0.40).unwrap(),
                 },
                 BalanceTarget {
                     provider: InferenceProvider::GoogleGemini,
-                    weight: Decimal::try_from(0.10).unwrap(),
+                    weight: Decimal::try_from(0.40).unwrap(),
                 },
             ],
         },
@@ -46,7 +46,7 @@ async fn errors_remove_provider_from_lb_pool() {
     config.routers = RouterConfigs::new(HashMap::from([(
         RouterId::Default,
         RouterConfig {
-            balance: balance_config,
+            load_balance: balance_config,
             ..Default::default()
         },
     )]));
@@ -87,7 +87,9 @@ async fn errors_remove_provider_from_lb_pool() {
             .method(Method::POST)
             .header("authorization", "Bearer sk-helicone-test-key")
             // default router
-            .uri("http://router.helicone.com/router/v1/chat/completions")
+            .uri(
+                "http://router.helicone.com/router/default/v1/chat/completions",
+            )
             .body(request_body)
             .unwrap();
         let response = harness.call(request).await.unwrap();

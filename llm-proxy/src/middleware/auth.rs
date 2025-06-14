@@ -8,7 +8,7 @@ use tower_http::auth::AsyncAuthorizeRequest;
 use tracing::warn;
 
 use crate::{
-    app::AppState, error::auth::AuthError, types::request::AuthContext,
+    app_state::AppState, error::auth::AuthError, types::request::AuthContext,
 };
 
 #[derive(Clone)]
