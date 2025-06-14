@@ -19,7 +19,7 @@ use crate::{
         api::ApiError, init::InitError, internal::InternalError,
         invalid_req::InvalidRequestError,
     },
-    router::direct::DirectProxies,
+    router::direct::{DirectProxies, DirectProxyService},
     types::{
         model_id::ModelId, provider::InferenceProvider, request::Request,
         response::Response,
@@ -75,9 +75,13 @@ pin_project! {
             collected_body: Option<Bytes>,
             parts: Option<http::request::Parts>,
         },
-        Proxy {
+        InitProxy {
             request: Option<Request>,
             provider: InferenceProvider,
+        },
+        Proxy {
+            #[pin]
+            response_future: <DirectProxyService as tower::Service<Request>>::Future,
         },
     }
 }
@@ -127,7 +131,7 @@ impl Future for ResponseFuture {
                             ));
                         }
                     };
-                    let parts =
+                    let mut parts =
                         parts.take().expect("future polled after completion");
                     let Some(extracted_path_and_query) =
                         parts.extensions.get::<PathAndQuery>()
@@ -165,6 +169,7 @@ impl Future for ResponseFuture {
                             ));
                         }
                     }
+                    parts.extensions.insert(api_endpoint);
                     this.state.set(State::DetermineProvider {
                         collected_body: Some(collected.to_bytes()),
                         parts: Some(parts),
@@ -211,19 +216,22 @@ impl Future for ResponseFuture {
                         parts,
                         axum_core::body::Body::from(body),
                     );
-                    this.state.set(State::Proxy {
+                    this.state.set(State::InitProxy {
                         request: Some(request),
                         provider,
                     });
                 }
-                StateProj::Proxy { request, provider } => {
+                StateProj::InitProxy { request, provider } => {
                     let request =
                         request.take().expect("future polled after completion");
                     let mut direct_proxy = this.direct_proxies.get(provider).ok_or_else(|| {
                         tracing::warn!(provider = %provider, "requested provider is not configured for direct proxy");
                         InvalidRequestError::UnsupportedProvider(*provider)
                     })?.clone();
-                    let response_future = pin!(direct_proxy.call(request));
+                    let response_future = direct_proxy.call(request);
+                    this.state.set(State::Proxy { response_future });
+                }
+                StateProj::Proxy { response_future } => {
                     let response =
                         ready!(response_future.poll(cx)).map_err(|_| {
                             tracing::error!(

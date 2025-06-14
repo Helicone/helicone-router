@@ -20,11 +20,18 @@ use crate::{
 #[derive(Debug, Clone)]
 pub struct Service<S> {
     inner: S,
+    endpoint_converter_registry: EndpointConverterRegistry,
 }
 
 impl<S> Service<S> {
-    pub fn new(inner: S) -> Self {
-        Self { inner }
+    pub fn new(
+        inner: S,
+        endpoint_converter_registry: EndpointConverterRegistry,
+    ) -> Self {
+        Self {
+            inner,
+            endpoint_converter_registry,
+        }
     }
 }
 
@@ -54,6 +61,7 @@ where
     #[tracing::instrument(name = "mapper", skip_all)]
     fn call(&mut self, mut req: Request) -> Self::Future {
         let mut inner = self.inner.clone();
+        let converter_registry = self.endpoint_converter_registry.clone();
         std::mem::swap(&mut self.inner, &mut inner);
         Box::pin(async move {
             let target_provider = *req
@@ -62,13 +70,6 @@ where
                 .ok_or(ApiError::Internal(InternalError::ExtensionNotFound(
                     "Provider",
                 )))?;
-            let converter_registry = req
-                .extensions()
-                .get::<EndpointConverterRegistry>()
-                .ok_or(ApiError::Internal(InternalError::ExtensionNotFound(
-                    "EndpointConverterRegistry",
-                )))?
-                .clone();
             let extracted_path_and_query = req
                 .extensions_mut()
                 .remove::<PathAndQuery>()
@@ -313,12 +314,23 @@ async fn map_response(
 }
 
 #[derive(Debug, Clone)]
-pub struct Layer;
+pub struct Layer {
+    endpoint_converter_registry: EndpointConverterRegistry,
+}
+
+impl Layer {
+    #[must_use]
+    pub fn new(endpoint_converter_registry: EndpointConverterRegistry) -> Self {
+        Self {
+            endpoint_converter_registry,
+        }
+    }
+}
 
 impl<S> tower::Layer<S> for Layer {
     type Service = Service<S>;
 
     fn layer(&self, inner: S) -> Self::Service {
-        Service::new(inner)
+        Service::new(inner, self.endpoint_converter_registry.clone())
     }
 }

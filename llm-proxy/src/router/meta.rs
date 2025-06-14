@@ -145,7 +145,7 @@ impl MetaRouter {
         &mut self,
         mut req: crate::types::request::Request,
     ) -> ResponseFuture {
-        let rest = req.uri().path().trim_start_matches("/ai/");
+        let rest = req.uri().path().trim_start_matches("/ai");
         tracing::trace!(api_path = rest, "received /ai request");
         let extracted_path_and_query =
             if let Some(query_params) = req.uri().query() {
@@ -265,9 +265,9 @@ impl tower::Service<crate::types::request::Request> for MetaRouter {
     }
 
     fn call(&mut self, req: crate::types::request::Request) -> Self::Future {
-        if req.uri().path().starts_with("/router/") {
+        if req.uri().path().starts_with("/router") {
             self.handle_router_request(req)
-        } else if req.uri().path().starts_with("/ai/") {
+        } else if req.uri().path().starts_with("/ai") {
             self.handle_unified_api_request(req)
         } else {
             self.handle_direct_proxy_request(req)

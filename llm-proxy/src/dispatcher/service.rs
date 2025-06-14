@@ -117,21 +117,21 @@ impl Dispatcher {
             provider,
             rate_limit_tx: Some(rate_limit_tx),
         };
-        let model_mapper =
-            ModelMapper::new(app_state.clone(), router_config.clone());
-        let converter_registry =
-            EndpointConverterRegistry::new(router_config, &model_mapper);
+        let model_mapper = ModelMapper::new_for_router(
+            app_state.clone(),
+            router_config.clone(),
+        );
+        let converter_registry = EndpointConverterRegistry::new(&model_mapper);
 
         let extensions_layer = AddExtensionsLayer::builder()
             .inference_provider(provider)
-            .endpoint_converter_registry(converter_registry)
             .router_id(Some(router_id.clone()))
             .build();
 
         Ok(ServiceBuilder::new()
             .layer(extensions_layer)
             .layer(ErrorHandlerLayer::new(app_state))
-            .layer(crate::middleware::mapper::Layer)
+            .layer(crate::middleware::mapper::Layer::new(converter_registry))
             // other middleware: rate limiting, logging, etc, etc
             // will be added here as well
             .service(dispatcher))
@@ -183,18 +183,18 @@ impl Dispatcher {
             provider,
             rate_limit_tx: None,
         };
-        let converter_registry = EndpointConverterRegistry::default();
+        let model_mapper = ModelMapper::new(app_state.clone());
+        let converter_registry = EndpointConverterRegistry::new(&model_mapper);
 
         let extensions_layer = AddExtensionsLayer::builder()
             .inference_provider(provider)
-            .endpoint_converter_registry(converter_registry)
             .router_id(None)
             .build();
 
         Ok(ServiceBuilder::new()
             .layer(extensions_layer)
             .layer(ErrorHandlerLayer::new(app_state))
-            .layer(crate::middleware::mapper::Layer)
+            .layer(crate::middleware::mapper::Layer::new(converter_registry))
             // other middleware: rate limiting, logging, etc, etc
             // will be added here as well
             .service(dispatcher))
@@ -246,11 +246,9 @@ impl Dispatcher {
             provider,
             rate_limit_tx: None,
         };
-        let converter_registry = EndpointConverterRegistry::default();
 
         let extensions_layer = AddExtensionsLayer::builder()
             .inference_provider(provider)
-            .endpoint_converter_registry(converter_registry)
             .router_id(None)
             .build();
 
@@ -333,7 +331,6 @@ impl Dispatcher {
         let target_url = base_url
             .join(extracted_path_and_query.as_str())
             .expect("PathAndQuery joined with valid url will always succeed");
-        tracing::debug!(method = %method, target_url = %target_url, "dispatching request");
         // TODO: could change request type of dispatcher to
         // http::Request<reqwest::Body>
         // to avoid collecting the body twice
@@ -347,7 +344,7 @@ impl Dispatcher {
         let request_builder = self
             .client
             .as_ref()
-            .request(method, target_url.clone())
+            .request(method.clone(), target_url.clone())
             .headers(headers.clone());
 
         let metrics_for_stream = self.app_state.0.endpoint_metrics.clone();
@@ -364,6 +361,7 @@ impl Dispatcher {
             http::Response<crate::types::body::Body>,
             Option<crate::types::body::BodyReader>,
         ) = if mapper_ctx.is_stream {
+            tracing::debug!(method = %method, target_url = %target_url, "dispatching stream request");
             Self::dispatch_stream(
                 auth_ctx,
                 request_builder,
@@ -372,6 +370,7 @@ impl Dispatcher {
                 metrics_for_stream,
             )?
         } else {
+            tracing::debug!(method = %method, target_url = %target_url, "dispatching sync request");
             self.dispatch_sync(
                 auth_ctx,
                 request_builder,
@@ -520,11 +519,13 @@ impl Dispatcher {
         ),
         ApiError,
     > {
+        tracing::debug!("trying to send request");
         let response = request_builder
             .body(req_body_bytes)
             .send()
             .await
             .map_err(InternalError::ReqwestError)?;
+        tracing::debug!("sent request");
 
         let status = response.status();
         let mut resp_builder = http::Response::builder().status(status);
