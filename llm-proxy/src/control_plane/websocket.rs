@@ -13,6 +13,8 @@ use tokio_tungstenite::{
         self, Message, client::IntoClientRequest, handshake::client::Request,
     },
 };
+use tracing::{error, info};
+use url::Url;
 
 use super::{
     control_plane_state::ControlPlaneState,
@@ -45,8 +47,6 @@ async fn handle_message(
 ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let bytes = message.into_data();
     let m: MessageTypeRX = serde_json::from_slice(&bytes)?;
-
-    tracing::info!(message = ?m, "received message from control plane");
     let mut state_guard = state.lock().await;
     state_guard.update(m);
 
@@ -57,13 +57,14 @@ impl IntoClientRequest for &HeliconeConfig {
     fn into_client_request(
         self,
     ) -> Result<Request, tokio_tungstenite::tungstenite::Error> {
-        let host = self.websocket_url.host_str().ok_or({
-            tokio_tungstenite::tungstenite::Error::Url(
-                tungstenite::error::UrlError::UnsupportedUrlScheme,
-            )
-        })?;
-        let port = self
-            .websocket_url
+        let parsed_url =
+            Url::parse(self.websocket_url.as_str()).map_err(|_| {
+                tokio_tungstenite::tungstenite::Error::Url(
+                    tungstenite::error::UrlError::UnsupportedUrlScheme,
+                )
+            })?;
+        let host = parsed_url.host_str().unwrap_or("localhost");
+        let port = parsed_url
             .port()
             .map(|p| format!(":{p}"))
             .unwrap_or_default();
@@ -151,57 +152,79 @@ impl ControlPlaneClient {
     }
 }
 
+impl ControlPlaneClient {
+    async fn run_control_plane_forever(mut self) -> Result<(), RuntimeError> {
+        let state_clone = Arc::clone(&self.state);
+        loop {
+            while let Some(message) = self.channel.msg_rx.next().await {
+                match message {
+                    Ok(message) => {
+                        let _ = handle_message(&state_clone, message)
+                            .await
+                            .map_err(|e| {
+                                tracing::error!(error = ?e, "websocket error");
+                            });
+                    }
+                    Err(tungstenite::Error::AlreadyClosed) => {
+                        tracing::error!(
+                            "websocket connection closed, reconnecting..."
+                        );
+                        self.reconnect_websocket()
+                            .await
+                            .map_err(RuntimeError::Init)?;
+                    }
+                    Err(e) => {
+                        tracing::error!(error = ?e, "websocket error");
+                    }
+                }
+            }
+
+            // if the connection is closed, we need to reconnect
+            self.reconnect_websocket()
+                .await
+                .map_err(RuntimeError::Init)?;
+            tokio::time::sleep(Duration::from_secs(1)).await;
+        }
+    }
+}
+
 impl meltdown::Service for ControlPlaneClient {
     type Future = BoxFuture<'static, Result<(), RuntimeError>>;
 
-    fn run(mut self, _token: Token) -> Self::Future {
-        let state_clone = Arc::clone(&self.state);
-
+    fn run(self, mut token: Token) -> Self::Future {
         Box::pin(async move {
-            loop {
-                while let Some(message) = self.channel.msg_rx.next().await {
-                    match message {
-                        Ok(message) => {
-                            let _ = handle_message(&state_clone, message)
-                                .await
-                                .map_err(|e| {
-                                    tracing::error!(error = ?e, "websocket error");
-                                });
-                        }
-                        Err(tungstenite::Error::AlreadyClosed) => {
-                            tracing::error!(
-                                "websocket connection closed, reconnecting..."
-                            );
-                            self.reconnect_websocket()
-                                .await
-                                .map_err(RuntimeError::Init)?;
-                        }
-                        Err(e) => {
-                            tracing::error!(error = ?e, "websocket error");
-                        }
+            tokio::select! {
+                result = self.run_control_plane_forever() => {
+                    if let Err(e) = result {
+                        error!(name = "provider-health-monitor-task", error = ?e, "Monitor encountered error, shutting down");
+                    } else {
+                        info!(name = "provider-health-monitor-task", "Monitor shut down successfully");
                     }
+                    token.trigger();
                 }
-
-                // if the connection is closed, we need to reconnect
-                self.reconnect_websocket()
-                    .await
-                    .map_err(RuntimeError::Init)?;
-                tokio::time::sleep(Duration::from_secs(1)).await;
+                () = &mut token => {
+                    info!(name = "control-plane-client-task", "task shut down successfully");
+                }
             }
+            Ok(())
         })
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use std::time::Duration;
+    use std::{sync::Arc, time::Duration};
 
-    use tokio::net::TcpListener;
+    use meltdown::{Service, Token};
+    use tokio::{net::TcpListener, sync::Mutex};
     use tokio_tungstenite::accept_async;
 
     use super::ControlPlaneClient;
     use crate::{
-        config::helicone::HeliconeConfig, control_plane::types::MessageTypeTX,
+        config::helicone::HeliconeConfig,
+        control_plane::{
+            control_plane_state::ControlPlaneState, types::MessageTypeTX,
+        },
     };
 
     #[tokio::test]
@@ -242,11 +265,61 @@ mod tests {
         if let Ok(mut client) = result {
             // If we can connect, try sending a heartbeat
             let send_result =
-                client.send_message(MessageTypeTX::Heartbeat).await;
+                client.send_message(MessageTypeTX::Heartbeat {}).await;
             assert!(send_result.is_ok(), "Should be able to send heartbeat");
         } else {
             // If we can't connect, that's fine for this test
             println!("No server running on localhost:8585 - this is expected");
+        }
+    }
+
+    #[tokio::test]
+    /// Sends a heartbeat to the control plane and verifies that it is received
+    /// and we get an ack back
+    async fn test_integration_localhost_8585_heartbeat() {
+        unsafe {
+            std::env::set_var(
+                "HELICONE_API_KEY",
+                "sk-helicone-n2zkt2i-x3mukmi-tgvgzyy-xom3q4y",
+            );
+        }
+        println!("setting api key");
+        let helicone_config = HeliconeConfig::default();
+
+        let control_plane_state: Arc<Mutex<ControlPlaneState>> = Arc::default();
+        // This will fail if no server is running on 8585, which is expected
+        let result = ControlPlaneClient::connect(
+            control_plane_state.clone(),
+            helicone_config,
+        )
+        .await;
+        println!("connected to control plane {result:?}");
+
+        assert!(
+            control_plane_state
+                .clone()
+                .lock()
+                .await
+                .last_heartbeat
+                .is_none(),
+            "Last heartbeat should be none"
+        );
+
+        if let Ok(mut client) = result {
+            println!("sending heartbeat");
+            let send_result =
+                client.send_message(MessageTypeTX::Heartbeat {}).await;
+            tokio::spawn(client.run(Token::new()));
+
+            assert!(send_result.is_ok(), "Should be able to send heartbeat");
+            // wait for the heartbeat to be received
+            println!("waiting for heartbeat to be received");
+            tokio::time::sleep(Duration::from_secs(10)).await;
+
+            assert!(
+                control_plane_state.lock().await.last_heartbeat.is_some(),
+                "Last heartbeat should be some"
+            );
         }
     }
 }
