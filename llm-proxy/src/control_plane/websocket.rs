@@ -192,8 +192,6 @@ impl meltdown::Service for ControlPlaneClient {
     type Future = BoxFuture<'static, Result<(), RuntimeError>>;
 
     fn run(self, mut token: Token) -> Self::Future {
-        println!("running control plane client");
-
         Box::pin(async move {
             tokio::select! {
                 result = self.run_control_plane_forever() => {
