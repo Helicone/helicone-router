@@ -248,8 +248,7 @@ mod tests {
 
         // Test connection
         let result =
-            ControlPlaneClient::connect(Default::default(), helicone_config)
-                .await;
+            ControlPlaneClient::connect(Arc::default(), helicone_config).await;
         assert!(result.is_ok(), "Should connect to mock server");
     }
 
@@ -259,8 +258,7 @@ mod tests {
 
         // This will fail if no server is running on 8585, which is expected
         let result =
-            ControlPlaneClient::connect(Default::default(), helicone_config)
-                .await;
+            ControlPlaneClient::connect(Arc::default(), helicone_config).await;
 
         if let Ok(mut client) = result {
             // If we can connect, try sending a heartbeat

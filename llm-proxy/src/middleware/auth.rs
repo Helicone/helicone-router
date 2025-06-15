@@ -8,7 +8,9 @@ use tower_http::auth::AsyncAuthorizeRequest;
 use tracing::warn;
 
 use crate::{
-    app_state::AppState, error::auth::AuthError, types::request::AuthContext,
+    app_state::AppState,
+    error::auth::AuthError,
+    types::{extensions::AuthContext, secret::Secret},
 };
 
 #[derive(Clone)]
@@ -46,9 +48,9 @@ impl AuthService {
 
         if let Some(key) = key {
             Ok(AuthContext {
-                api_key: api_key.replace("Bearer ", ""),
-                user_id: (&key.owner_id).as_str().try_into()?,
-                org_id: (&config.auth.organization_id).as_str().try_into()?,
+                api_key: Secret::from(api_key.replace("Bearer ", "")),
+                user_id: key.owner_id.as_str().try_into()?,
+                org_id: config.auth.organization_id.as_str().try_into()?,
             })
         } else {
             tracing::error!("key not found: {:?}", api_key);
