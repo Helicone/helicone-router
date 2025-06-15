@@ -196,9 +196,9 @@ impl meltdown::Service for ControlPlaneClient {
             tokio::select! {
                 result = self.run_control_plane_forever() => {
                     if let Err(e) = result {
-                        error!(name = "provider-health-monitor-task", error = ?e, "Monitor encountered error, shutting down");
+                        error!(name = "control-plane-client-task", error = ?e, "Monitor encountered error, shutting down");
                     } else {
-                        info!(name = "provider-health-monitor-task", "Monitor shut down successfully");
+                        info!(name = "control-plane-client-task", "Monitor shut down successfully");
                     }
                     token.trigger();
                 }
