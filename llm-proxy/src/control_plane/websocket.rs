@@ -13,8 +13,7 @@ use tokio_tungstenite::{
         self, Message, client::IntoClientRequest, handshake::client::Request,
     },
 };
-use tracing::{error, info};
-use url::Url;
+use tracing::{debug, error, info};
 
 use super::{
     control_plane_state::ControlPlaneState,
@@ -47,6 +46,7 @@ async fn handle_message(
 ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let bytes = message.into_data();
     let m: MessageTypeRX = serde_json::from_slice(&bytes)?;
+    debug!("received message: {:?}", m);
     let mut state_guard = state.lock().await;
     state_guard.update(m);
 
@@ -57,17 +57,17 @@ impl IntoClientRequest for &HeliconeConfig {
     fn into_client_request(
         self,
     ) -> Result<Request, tokio_tungstenite::tungstenite::Error> {
-        let parsed_url =
-            Url::parse(self.websocket_url.as_str()).map_err(|_| {
-                tokio_tungstenite::tungstenite::Error::Url(
-                    tungstenite::error::UrlError::UnsupportedUrlScheme,
-                )
-            })?;
-        let host = parsed_url.host_str().unwrap_or("localhost");
-        let port = parsed_url
+        let host = self.websocket_url.host_str().ok_or({
+            tokio_tungstenite::tungstenite::Error::Url(
+                tungstenite::error::UrlError::UnsupportedUrlScheme,
+            )
+        })?;
+        let port = self
+            .websocket_url
             .port()
             .map(|p| format!(":{p}"))
             .unwrap_or_default();
+
         let host_header = format!("{host}{port}");
 
         Request::builder()

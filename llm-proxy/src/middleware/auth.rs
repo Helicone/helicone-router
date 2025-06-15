@@ -47,8 +47,8 @@ impl AuthService {
         if let Some(key) = key {
             Ok(AuthContext {
                 api_key: api_key.replace("Bearer ", ""),
-                user_id: (&key.owner_id).try_into()?,
-                org_id: (&config.auth.organization_id).try_into()?,
+                user_id: (&key.owner_id).as_str().try_into()?,
+                org_id: (&config.auth.organization_id).as_str().try_into()?,
             })
         } else {
             tracing::error!("key not found: {:?}", api_key);

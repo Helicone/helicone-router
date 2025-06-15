@@ -22,11 +22,11 @@ impl std::fmt::Display for UserId {
     }
 }
 
-impl TryFrom<&String> for UserId {
+impl TryFrom<&str> for UserId {
     type Error = AuthError;
-    fn try_from(value: &String) -> Result<Self, Self::Error> {
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
         Ok(UserId::new(
-            Uuid::parse_str(value.as_str())
+            Uuid::parse_str(value)
                 .map_err(|_| AuthError::InvalidCredentials)?,
         ))
     }

@@ -17,7 +17,7 @@ pub enum MessageTypeTX {
 #[ts(rename_all = "camelCase")]
 #[serde(rename_all = "camelCase")]
 #[derive(Default)]
-pub struct AuthConfig {
+pub struct AuthData {
     pub user_id: String,
     pub organization_id: String,
 }
@@ -38,7 +38,7 @@ pub struct Key {
 #[serde(rename_all = "camelCase")]
 #[derive(Default)]
 pub struct Config {
-    pub auth: AuthConfig,
+    pub auth: AuthData,
     pub keys: Vec<Key>,
     pub router_id: String,
     pub router_config: String, // TODO: replace with router config
@@ -54,7 +54,7 @@ impl Config {
 #[derive(TS, Serialize, Deserialize, Debug, Clone)]
 #[ts(export)]
 pub enum Update {
-    AuthConfig { data: AuthConfig },
+    AuthData { data: AuthData },
     Config { data: Config },
     Keys { data: Vec<Key> },
 }

@@ -31,7 +31,7 @@ impl ControlPlaneState {
             MessageTypeRX::Update(Update::Keys { data }) => {
                 self.config.keys = data;
             }
-            MessageTypeRX::Update(Update::AuthConfig { data }) => {
+            MessageTypeRX::Update(Update::AuthData { data }) => {
                 self.config.auth = data;
             }
             MessageTypeRX::Update(Update::Config { data }) => {
