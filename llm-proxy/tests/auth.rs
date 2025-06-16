@@ -21,7 +21,7 @@ async fn require_auth_enabled_with_valid_token() {
 
     // Set up control plane config with a valid key
     let test_key = "sk-helicone-test-key";
-    let auth_header = format!("Bearer {}", test_key);
+    let auth_header = format!("Bearer {test_key}");
     let key_hash = hash_key(&auth_header);
 
     let user_id = Uuid::new_v4();
