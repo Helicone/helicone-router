@@ -9,7 +9,6 @@ use super::{
     model_mapping::ModelMappingConfig,
     rate_limit::LimitsConfig,
     retry::RetryConfig,
-    spend_control::SpendControlConfig,
 };
 use crate::{
     error::init::InitError,
@@ -53,8 +52,6 @@ pub struct RouterConfig {
         skip_serializing_if = "RouterRateLimitConfig::is_disabled"
     )]
     pub rate_limit: RouterRateLimitConfig,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub spend_control: Option<SpendControlConfig>,
 }
 
 impl Default for RouterConfig {
@@ -66,7 +63,6 @@ impl Default for RouterConfig {
             load_balance: BalanceConfig::default(),
             retries: None,
             rate_limit: RouterRateLimitConfig::default(),
-            spend_control: None,
         }
     }
 }
@@ -154,7 +150,6 @@ impl crate::tests::TestDefault for RouterConfigs {
                 )])),
                 retries: None,
                 rate_limit: RouterRateLimitConfig::default(),
-                spend_control: None,
             },
         )]))
     }
@@ -192,7 +187,6 @@ mod tests {
             load_balance: balance,
             retries: Some(retries),
             rate_limit: RouterRateLimitConfig::default(),
-            spend_control: None,
         }
     }
 

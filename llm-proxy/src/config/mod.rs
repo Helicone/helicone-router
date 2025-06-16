@@ -12,7 +12,6 @@ pub mod response_headers;
 pub mod retry;
 pub mod router;
 pub mod server;
-pub mod spend_control;
 pub mod validation;
 use std::path::PathBuf;
 
