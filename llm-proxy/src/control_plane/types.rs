@@ -1,5 +1,25 @@
 use serde::{Deserialize, Serialize};
+use sha2::{Digest, Sha256};
+use std::fmt::Write;
 use ts_rs::TS;
+
+/// Computes the hash of an API key for storage and lookup in the control plane.
+/// This function adds a "Bearer " prefix to the key before hashing to match
+/// the format expected by the authentication middleware.
+pub fn hash_key(key: &str) -> String {
+    let key = format!("Bearer {key}");
+    let mut hasher = Sha256::new();
+    hasher.update(key.as_bytes());
+    let result = hasher.finalize();
+
+    result.iter().fold(
+        String::with_capacity(result.len() * 2),
+        |mut acc, &b| {
+            let _ = write!(acc, "{b:02x}");
+            acc
+        },
+    )
+}
 
 #[derive(TS, Serialize, Deserialize, Debug, Clone)]
 #[ts(export)]
@@ -158,5 +178,33 @@ mod tests {
             .arg(format!("{binding_dir}/**/*.ts"))
             .output()
             .unwrap();
+    }
+
+    #[test]
+    fn test_hash_key() {
+        // Test that the hash function produces consistent results
+        let key = "sk-helicone-test-key";
+        let hash1 = hash_key(key);
+        let hash2 = hash_key(key);
+
+        assert_eq!(hash1, hash2, "Hash should be deterministic");
+        assert_eq!(hash1.len(), 64, "SHA-256 hash should be 64 hex characters");
+
+        // Test that different keys produce different hashes
+        let different_key = "sk-helicone-different-key";
+        let different_hash = hash_key(different_key);
+        assert_ne!(
+            hash1, different_hash,
+            "Different keys should produce different hashes"
+        );
+
+        // Test the expected hash for a known input
+        let expected_hash =
+            "dea6a3eaf901874aed6d21b1828e4d8c903d740cc125ef2b2f305a2da46f8825";
+        assert_eq!(
+            hash_key("Bearer sk-helicone-test-key"),
+            expected_hash,
+            "Hash should match expected value"
+        );
     }
 }

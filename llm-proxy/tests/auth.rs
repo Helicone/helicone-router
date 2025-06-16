@@ -4,10 +4,14 @@ use http::{Method, Request, StatusCode};
 use http_body_util::BodyExt;
 use llm_proxy::{
     config::Config,
+    control_plane::types::{
+        AuthData, Config as ControlPlaneConfig, Key, hash_key,
+    },
     tests::{TestDefault, harness::Harness, mock::MockArgs},
 };
 use serde_json::json;
 use tower::Service;
+use uuid::Uuid;
 
 #[tokio::test]
 #[serial_test::serial]
@@ -15,10 +19,30 @@ async fn require_auth_enabled_with_valid_token() {
     let mut config = Config::test_default();
     config.auth.require_auth = true;
 
+    // Set up control plane config with a valid key
+    let test_key = "sk-helicone-test-key";
+    let auth_header = format!("Bearer {}", test_key);
+    let key_hash = hash_key(&auth_header);
+
+    let user_id = Uuid::new_v4();
+    let organization_id = Uuid::new_v4();
+
+    let control_plane_config = ControlPlaneConfig {
+        auth: AuthData {
+            user_id: user_id.to_string(),
+            organization_id: organization_id.to_string(),
+        },
+        keys: vec![Key {
+            key_hash: key_hash.clone(),
+            owner_id: user_id.to_string(),
+        }],
+        router_id: "default".to_string(),
+        router_config: "{}".to_string(),
+    };
+
     let mock_args = MockArgs::builder()
         .stubs(HashMap::from([
             ("success:openai:chat_completion", 1.into()),
-            ("success:jawn:whoami", 1.into()),
             ("success:minio:upload_request", 1.into()),
             ("success:jawn:log_request", 1.into()),
         ]))
@@ -28,6 +52,16 @@ async fn require_auth_enabled_with_valid_token() {
         .with_mock_args(mock_args)
         .build()
         .await;
+
+    // Set the control plane config
+    harness
+        .app_factory
+        .state
+        .0
+        .control_plane_state
+        .lock()
+        .await
+        .config = control_plane_config;
 
     let body_bytes = serde_json::to_vec(&json!({
         "model": "openai/gpt-4o-mini",
@@ -43,7 +77,7 @@ async fn require_auth_enabled_with_valid_token() {
     let request_body = axum_core::body::Body::from(body_bytes);
     let request = Request::builder()
         .method(Method::POST)
-        .header("authorization", "Bearer sk-helicone-test-key")
+        .header("authorization", &auth_header)
         .uri("http://router.helicone.com/router/default/v1/chat/completions")
         .body(request_body)
         .unwrap();

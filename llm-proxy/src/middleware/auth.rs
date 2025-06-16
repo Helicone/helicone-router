@@ -1,14 +1,12 @@
-use std::fmt::Write;
-
 use axum_core::response::IntoResponse;
 use futures::future::BoxFuture;
 use http::Request;
-use sha2::{Digest, Sha256};
 use tower_http::auth::AsyncAuthorizeRequest;
 use tracing::warn;
 
 use crate::{
     app_state::AppState,
+    control_plane::types::hash_key,
     error::auth::AuthError,
     types::{extensions::AuthContext, secret::Secret},
 };
@@ -16,21 +14,6 @@ use crate::{
 #[derive(Clone)]
 pub struct AuthService {
     app_state: AppState,
-}
-
-fn hash_key(key: &str) -> String {
-    let key = format!("Bearer {key}");
-    let mut hasher = Sha256::new();
-    hasher.update(key.as_bytes());
-    let result = hasher.finalize();
-
-    result.iter().fold(
-        String::with_capacity(result.len() * 2),
-        |mut acc, &b| {
-            let _ = write!(acc, "{b:02x}");
-            acc
-        },
-    )
 }
 
 impl AuthService {
@@ -44,7 +27,8 @@ impl AuthService {
         api_key: &str,
     ) -> Result<AuthContext, AuthError> {
         let config = &app_state.0.control_plane_state.lock().await.config;
-        let key = config.get_key_from_hash(&hash_key(api_key));
+        let computed_hash = hash_key(api_key);
+        let key = config.get_key_from_hash(&computed_hash);
 
         if let Some(key) = key {
             Ok(AuthContext {
@@ -54,6 +38,11 @@ impl AuthService {
             })
         } else {
             tracing::error!("key not found: {:?}", api_key);
+            tracing::error!("computed hash: {}", computed_hash);
+            tracing::error!(
+                "available hashes: {:?}",
+                config.keys.iter().map(|k| &k.key_hash).collect::<Vec<_>>()
+            );
             Err(AuthError::InvalidCredentials)
         }
     }
