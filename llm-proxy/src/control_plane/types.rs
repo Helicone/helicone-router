@@ -73,6 +73,29 @@ impl Config {
     }
 }
 
+#[cfg(feature = "testing")]
+impl crate::tests::TestDefault for Config {
+    fn test_default() -> Self {
+        let test_key = "sk-helicone-test-key";
+        let auth_header = format!("Bearer {test_key}");
+        let key_hash = hash_key(&auth_header);
+        let user_id = Uuid::new_v4();
+        let organization_id = Uuid::new_v4();
+        Self {
+            auth: AuthData {
+                user_id: user_id.to_string(),
+                organization_id: organization_id.to_string(),
+            },
+            keys: vec![Key {
+                key_hash: key_hash.clone(),
+                owner_id: user_id.to_string(),
+            }],
+            router_id: "default".to_string(),
+            router_config: "{}".to_string(),
+        }
+    }
+}
+
 #[derive(TS, Serialize, Deserialize, Debug, Clone)]
 #[ts(export)]
 pub enum Update {

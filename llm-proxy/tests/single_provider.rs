@@ -25,9 +25,6 @@ async fn openai() {
     let mock_args = MockArgs::builder()
         .stubs(HashMap::from([
             ("success:openai:chat_completion", 1.into()),
-            // Auth is disabled, so auth and logging services should not be
-            // called
-            ("success:jawn:whoami", 0.into()),
             ("success:minio:upload_request", 0.into()),
             ("success:jawn:log_request", 0.into()),
         ]))
@@ -80,9 +77,6 @@ async fn google_with_openai_request_style() {
     let mock_args = MockArgs::builder()
         .stubs(HashMap::from([
             ("success:google:generate_content", 2.into()),
-            // Auth is disabled, so auth and logging services should not be
-            // called
-            ("success:jawn:whoami", 0.into()),
             ("success:minio:upload_request", 0.into()),
             ("success:jawn:log_request", 0.into()),
         ]))
@@ -150,9 +144,6 @@ async fn anthropic_with_openai_request_style() {
     let mock_args = MockArgs::builder()
         .stubs(HashMap::from([
             ("success:anthropic:messages", 2.into()),
-            // Auth is disabled, so auth and logging services should not be
-            // called
-            ("success:jawn:whoami", 0.into()),
             ("success:minio:upload_request", 0.into()),
             ("success:jawn:log_request", 0.into()),
         ]))
@@ -160,6 +151,7 @@ async fn anthropic_with_openai_request_style() {
     let mut harness = Harness::builder()
         .with_config(config)
         .with_mock_args(mock_args)
+        .with_mock_auth()
         .build()
         .await;
     let request_body = axum_core::body::Body::from(
@@ -227,9 +219,6 @@ async fn ollama() {
     let mock_args = MockArgs::builder()
         .stubs(HashMap::from([
             ("success:ollama:chat_completions", 1.into()),
-            // Auth is disabled, so auth and logging services should not be
-            // called
-            ("success:jawn:whoami", 0.into()),
             ("success:minio:upload_request", 0.into()),
             ("success:jawn:log_request", 0.into()),
         ]))
@@ -237,6 +226,7 @@ async fn ollama() {
     let mut harness = Harness::builder()
         .with_config(config)
         .with_mock_args(mock_args)
+        .with_mock_auth()
         .build()
         .await;
     let request_body = axum_core::body::Body::from(
