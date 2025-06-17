@@ -38,6 +38,9 @@ pub struct ControlPlaneClient {
     /// Config about Control plane, such as the websocket url,
     /// reconnect interval/backoff policy, heartbeat interval, etc.
     config: HeliconeConfig,
+
+    #[cfg(feature = "testing")]
+    pub enable_loop: bool,
 }
 
 async fn handle_message(
@@ -127,6 +130,8 @@ impl ControlPlaneClient {
             channel: connect_async_and_split(&config).await?,
             config,
             state: control_plane_state,
+            #[cfg(feature = "testing")]
+            enable_loop: false,
         })
     }
 
@@ -192,6 +197,11 @@ impl meltdown::Service for ControlPlaneClient {
     type Future = BoxFuture<'static, Result<(), RuntimeError>>;
 
     fn run(self, mut token: Token) -> Self::Future {
+        #[cfg(feature = "testing")]
+        if !self.enable_loop {
+            return Box::pin(async move { Ok(()) });
+        }
+
         Box::pin(async move {
             tokio::select! {
                 result = self.run_control_plane_forever() => {
