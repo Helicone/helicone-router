@@ -332,7 +332,7 @@ async fn test_router_independence_different_rate_limits() {
     };
 
     let strict_router_id = RouterId::Named(CompactString::from("strict"));
-    let lenient_router_idgit = RouterId::Named(CompactString::from("lenient"));
+    let lenient_router_id = RouterId::Named(CompactString::from("lenient"));
 
     // Create two routers with different rate limits
     config.routers = RouterConfigs::new(HashMap::from([

@@ -3,6 +3,7 @@ use std::fmt::Write;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use ts_rs::TS;
+use uuid::Uuid;
 
 /// Computes the hash of an API key for storage and lookup in the control plane.
 /// This function adds a "Bearer " prefix to the key before hashing to match
