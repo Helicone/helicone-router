@@ -20,7 +20,6 @@ impl Endpoint for Converse {
 }
 
 impl AiRequest for ConverseInput {
-    // TODO: implement this since bedrock stream is a separate endpoint
     fn is_stream(&self) -> bool {
         false
     }

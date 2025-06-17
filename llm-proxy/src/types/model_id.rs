@@ -877,7 +877,7 @@ mod tests {
             InferenceProvider::Bedrock,
             "meta.llama3-8b-instruct-v1:0",
         );
-        assert!(result.is_ok())
+        assert!(result.is_ok());
     }
 
     #[test]

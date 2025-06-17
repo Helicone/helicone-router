@@ -17,7 +17,7 @@ bedrock-type = { path = "../crates/bedrock-type" }
 aws-smithy-types = { workspace = true }
 aws-sigv4 = { workspace = true }
 aws-smithy-runtime-api = { workspace = true }
-aws-credential-types = "1.2.3"
+aws-credential-types = { workspace = true }
 bytes = { workspace = true, features = ['serde'] }
 cfg-if = { workspace = true }
 chrono = { workspace = true, features = ['default', 'serde'] }

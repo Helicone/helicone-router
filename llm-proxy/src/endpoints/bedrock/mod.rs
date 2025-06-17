@@ -2,6 +2,7 @@ pub(crate) mod converse;
 
 use super::{Endpoint, EndpointType};
 pub(crate) use crate::endpoints::bedrock::converse::Converse;
+use crate::types::model_id::ModelId;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, strum::EnumIter)]
 pub enum Bedrock {
@@ -10,9 +11,15 @@ pub enum Bedrock {
 
 impl Bedrock {
     #[must_use]
-    pub fn path(&self) -> &str {
+    pub fn path(self, model_id: &ModelId, is_stream: bool) -> String {
         match self {
-            Self::Converse(_) => Converse::PATH,
+            Self::Converse(_) => {
+                if is_stream {
+                    format!("/model/{model_id}/converse-stream")
+                } else {
+                    format!("/model/{model_id}/converse")
+                }
+            }
         }
     }
 

@@ -268,7 +268,6 @@ async fn bedrock_with_openai_request_style() {
     let router_config = RouterConfigs::new(HashMap::from([(
         RouterId::Default,
         RouterConfig {
-            request_style: InferenceProvider::OpenAI,
             load_balance: BalanceConfig::bedrock(),
             ..Default::default()
         },

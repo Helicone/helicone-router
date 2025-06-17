@@ -12,7 +12,6 @@ use crate::{
         google::Google, ollama::Ollama, openai::OpenAI,
     },
     middleware::mapper::{bedrock::BedrockConverter, ollama::OllamaConverter},
-    types::provider::InferenceProvider,
 };
 
 #[derive(Debug, Default, Clone)]
@@ -155,6 +154,7 @@ impl EndpointConverterRegistryInner {
             >::new(BedrockConverter::new(model_mapper.clone()));
 
         registry.register_converter(key, converter);
+
         registry
     }
 

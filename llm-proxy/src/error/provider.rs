@@ -11,6 +11,4 @@ pub enum ProviderError {
     ApiKeyNotFound(InferenceProvider),
     /// Provider keys not found for router: {0}
     ProviderKeysNotFound(RouterId),
-    /// AWS Credentials not found for provider: {0}
-    AwsCredentialsNotFound(InferenceProvider),
 }

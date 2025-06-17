@@ -1,10 +1,3 @@
-use std::time::SystemTime;
-
-use aws_credential_types::Credentials;
-use aws_sigv4::{
-    http_request::{SignableBody, SignableRequest, SigningSettings},
-    sign::v4,
-};
 use bytes::Bytes;
 use futures::StreamExt;
 use reqwest::RequestBuilder;
@@ -12,6 +5,7 @@ use reqwest_eventsource::{Event, EventSource, RequestBuilderExt};
 use tracing::{Instrument, info_span};
 
 use crate::{
+    app_state::AppState,
     dispatcher::{
         SSEStream, anthropic_client::Client as AnthropicClient,
         bedrock_client::Client as BedrockClient,
@@ -19,136 +13,32 @@ use crate::{
         ollama_client::Client as OllamaClient,
         openai_client::Client as OpenAIClient,
     },
-    error::{
-        init::InitError, internal::InternalError, provider::ProviderError,
+    error::{api::ApiError, init::InitError, internal::InternalError},
+    types::{
+        provider::{InferenceProvider, ProviderKey},
+        router::RouterId,
     },
-    types::provider::InferenceProvider,
 };
 
-const AWS_CREDENTIALS_ENV_VAR: &str = "AWS_ACCESS_KEY";
-const AWS_CREDENTIALS_SECRET_KEY_ENV_VAR: &str = "AWS_SECRET_KEY";
-
 pub trait ProviderClient {
-    #[allow(clippy::needless_return, unused_mut, unused_variables)]
     fn extract_and_sign_aws_headers(
         &self,
-        mut request_builder: reqwest::RequestBuilder,
-        req_body_bytes: bytes::Bytes,
-    ) -> reqwest::RequestBuilder {
-        // Default: do nothing, just return the builder
-        request_builder
-    }
-
-    fn get_aws_credentials(&self) -> Result<(String, String), InitError> {
-        let key = std::env::var(AWS_CREDENTIALS_ENV_VAR).map_err(|_| {
-            InitError::ProviderError(ProviderError::AwsCredentialsNotFound(
-                InferenceProvider::Bedrock,
-            ))
-        })?;
-
-        let secret = std::env::var(AWS_CREDENTIALS_SECRET_KEY_ENV_VAR)
-            .map_err(|_| {
-                InitError::ProviderError(ProviderError::AwsCredentialsNotFound(
-                    InferenceProvider::Bedrock,
-                ))
-            })?;
-
-        Ok((key, secret))
-    }
+        request_builder: reqwest::RequestBuilder,
+        req_body_bytes: &bytes::Bytes,
+    ) -> Result<reqwest::RequestBuilder, ApiError>;
 }
 
 impl ProviderClient for Client {
     fn extract_and_sign_aws_headers(
         &self,
         request_builder: reqwest::RequestBuilder,
-        req_body_bytes: bytes::Bytes,
-    ) -> reqwest::RequestBuilder {
+        req_body_bytes: &bytes::Bytes,
+    ) -> Result<reqwest::RequestBuilder, ApiError> {
         match self {
             Client::Bedrock(inner) => inner
                 .extract_and_sign_aws_headers(request_builder, req_body_bytes),
-            // ... delegate to other variants as needed ...
-            _ => request_builder,
+            _ => Ok(request_builder),
         }
-    }
-}
-
-impl ProviderClient for BedrockClient {
-    fn extract_and_sign_aws_headers(
-        &self,
-        mut request_builder: reqwest::RequestBuilder,
-        req_body_bytes: bytes::Bytes,
-    ) -> reqwest::RequestBuilder {
-        let (access_key_id, secret) = self
-            .get_aws_credentials()
-            .expect("cannot get aws credentials");
-        let identity =
-            Credentials::new(access_key_id, secret, None, None, "Environment")
-                .into();
-
-        let request = request_builder.try_clone().unwrap().build().unwrap();
-        let host = request.url().host().unwrap().to_string();
-        let host_region: Vec<&str> = host.split('.').collect();
-        let host_region = host_region.get(1).unwrap();
-
-        let signing_settings = SigningSettings::default();
-        let signing_params = v4::SigningParams::builder()
-            .identity(&identity)
-            .region(host_region)
-            .name("bedrock")
-            .time(SystemTime::now())
-            .settings(signing_settings)
-            .build()
-            .unwrap()
-            .into();
-
-        let mut temp_request = http::Request::builder()
-            .uri(request.url().as_str())
-            .method(request.method().clone())
-            .body(req_body_bytes.clone())
-            .expect("cannot build temp request");
-        temp_request.headers_mut().extend(request.headers().clone());
-
-        let method_str = temp_request.method().to_string();
-        let url_str = temp_request.uri().to_string();
-
-        let signable_request = SignableRequest::new(
-            method_str.as_str(),
-            url_str.as_str(),
-            temp_request
-                .headers()
-                .iter()
-                .map(|(k, v)| (k.as_str(), v.to_str().unwrap())),
-            SignableBody::Bytes(req_body_bytes.as_ref()),
-        )
-        .expect("signable request");
-
-        let (signing_output, _signature) =
-            aws_sigv4::http_request::sign(signable_request, &signing_params)
-                .expect("cannot sign request")
-                .into_parts();
-        signing_output.apply_to_request_http1x(&mut temp_request);
-
-        // Copy all the aws signed credentials from temp_request since the
-        // apply_to_request_http1x is only for http::Request types
-        for (key, value) in temp_request.headers() {
-            if !request_builder
-                .try_clone()
-                .unwrap()
-                .build()
-                .unwrap()
-                .headers()
-                .contains_key(key)
-            {
-                tracing::info!(
-                    "set aws signature headers key: {:?}, value: {:?}",
-                    key,
-                    value
-                );
-                request_builder = request_builder.header(key, value);
-            }
-        }
-
-        request_builder
     }
 }
 
@@ -175,6 +65,72 @@ impl Client {
             .map_err(|e| InternalError::RequestBodyError(Box::new(e)))?;
         Ok(sse_stream(event_source))
     }
+
+    fn new_inner(
+        app_state: &AppState,
+        inference_provider: InferenceProvider,
+        api_key: &ProviderKey,
+    ) -> Result<Self, InitError> {
+        // connection timeout, timeout, etc.
+        let base_client = reqwest::Client::builder()
+            .connect_timeout(app_state.0.config.dispatcher.connection_timeout)
+            .timeout(app_state.0.config.dispatcher.timeout)
+            .tcp_nodelay(true);
+
+        match inference_provider {
+            InferenceProvider::OpenAI => Ok(Self::OpenAI(OpenAIClient::new(
+                app_state,
+                base_client,
+                api_key,
+            )?)),
+            InferenceProvider::Anthropic => Ok(Self::Anthropic(
+                AnthropicClient::new(app_state, base_client, api_key)?,
+            )),
+            InferenceProvider::GoogleGemini => Ok(Self::GoogleGemini(
+                GoogleGeminiClient::new(app_state, base_client, api_key)?,
+            )),
+            InferenceProvider::Bedrock => Ok(Self::Bedrock(
+                BedrockClient::new(app_state, base_client, api_key)?,
+            )),
+            InferenceProvider::Ollama => {
+                Ok(Self::Ollama(OllamaClient::new(app_state, base_client)?))
+            }
+        }
+    }
+
+    pub(crate) async fn new_for_router(
+        app_state: &AppState,
+        inference_provider: InferenceProvider,
+        router_id: &RouterId,
+    ) -> Result<Self, InitError> {
+        let api_key = &app_state
+            .get_provider_api_key_for_router(router_id, inference_provider)
+            .await?;
+
+        Self::new_inner(app_state, inference_provider, api_key)
+    }
+
+    pub(crate) fn new_for_direct_proxy(
+        app_state: &AppState,
+        inference_provider: InferenceProvider,
+    ) -> Result<Self, InitError> {
+        let api_key = &app_state
+            .get_provider_api_key_for_direct_proxy(inference_provider)?;
+
+        Self::new_inner(app_state, inference_provider, api_key)
+    }
+
+    pub(crate) fn new_for_unified_api(
+        app_state: &AppState,
+        inference_provider: InferenceProvider,
+    ) -> Result<Self, InitError> {
+        // we're cheating here but this will be changed soon for cloud hosted
+        // version
+        let api_key = &app_state
+            .get_provider_api_key_for_direct_proxy(inference_provider)?;
+
+        Self::new_inner(app_state, inference_provider, api_key)
+    }
 }
 
 impl AsRef<reqwest::Client> for Client {
@@ -184,7 +140,7 @@ impl AsRef<reqwest::Client> for Client {
             Client::Anthropic(client) => &client.0,
             Client::GoogleGemini(client) => &client.0,
             Client::Ollama(client) => &client.0,
-            Client::Bedrock(client) => &client.0,
+            Client::Bedrock(client) => &client.inner,
         }
     }
 }

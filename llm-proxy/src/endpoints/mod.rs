@@ -12,7 +12,10 @@ use crate::{
         anthropic::Anthropic, bedrock::Bedrock, google::Google, ollama::Ollama,
         openai::OpenAI,
     },
-    error::{invalid_req::InvalidRequestError, mapper::MapperError},
+    error::{
+        internal::InternalError, invalid_req::InvalidRequestError,
+        mapper::MapperError,
+    },
     types::{model_id::ModelId, provider::InferenceProvider},
 };
 
@@ -69,25 +72,19 @@ impl ApiEndpoint {
             (Self::OpenAI(source), InferenceProvider::Anthropic) => {
                 Ok(Self::Anthropic(Anthropic::from(source)))
             }
-            (Self::Anthropic(source), InferenceProvider::OpenAI) => {
-                Ok(Self::OpenAI(OpenAI::from(source)))
-            }
-            (Self::Google(source), InferenceProvider::OpenAI) => {
-                Ok(Self::OpenAI(OpenAI::from(source)))
-            }
             (Self::OpenAI(source), InferenceProvider::GoogleGemini) => {
                 Ok(Self::Google(Google::from(source)))
             }
             (Self::OpenAI(source), InferenceProvider::Ollama) => {
                 Ok(Self::Ollama(Ollama::from(source)))
             }
-            (Self::Ollama(source), InferenceProvider::OpenAI) => {
-                Ok(Self::OpenAI(OpenAI::from(source)))
-            }
             (Self::OpenAI(source), InferenceProvider::Bedrock) => {
                 Ok(Self::Bedrock(Bedrock::from(source)))
             }
-            _ => Err(InvalidRequestError::UnsupportedProvider(target_provider)),
+            _ => {
+                // only openai SDK is supported for now
+                Err(InvalidRequestError::UnsupportedProvider(target_provider))
+            }
         }
     }
 
@@ -102,14 +99,24 @@ impl ApiEndpoint {
         }
     }
 
-    #[must_use]
-    pub fn path(&self) -> &str {
+    pub fn path(
+        &self,
+        model_id: Option<&ModelId>,
+        is_stream: bool,
+    ) -> Result<String, InternalError> {
         match self {
-            Self::OpenAI(openai) => openai.path(),
-            Self::Anthropic(anthropic) => anthropic.path(),
-            Self::Google(google) => google.path(),
-            Self::Ollama(ollama) => ollama.path(),
-            Self::Bedrock(bedrock) => bedrock.path(),
+            Self::OpenAI(openai) => Ok(openai.path().to_string()),
+            Self::Anthropic(anthropic) => Ok(anthropic.path().to_string()),
+            Self::Google(google) => Ok(google.path().to_string()),
+            Self::Ollama(ollama) => Ok(ollama.path().to_string()),
+            Self::Bedrock(bedrock) => {
+                if let Some(model_id) = model_id {
+                    Ok(bedrock.path(model_id, is_stream))
+                } else {
+                    tracing::error!("Bedrock path requires model id");
+                    Err(InternalError::Internal)
+                }
+            }
         }
     }
 

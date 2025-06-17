@@ -20,12 +20,11 @@ use crate::{
     logger::service::JawnClient,
     metrics::Metrics,
     types::{
-        provider::{InferenceProvider, ProviderKeys},
+        provider::{InferenceProvider, ProviderKey, ProviderKeys},
         rate_limit::{
             RateLimitEvent, RateLimitEventReceivers, RateLimitEventSenders,
         },
         router::RouterId,
-        secret::Secret,
     },
 };
 
@@ -117,7 +116,7 @@ impl AppState {
         &self,
         router_id: &RouterId,
         provider: InferenceProvider,
-    ) -> Result<Secret<String>, ProviderError> {
+    ) -> Result<ProviderKey, ProviderError> {
         let provider_keys = self.0.provider_keys.read().await;
         let provider_keys = provider_keys.get(router_id).ok_or_else(|| {
             ProviderError::ProviderKeysNotFound(router_id.clone())
@@ -132,7 +131,7 @@ impl AppState {
     pub fn get_provider_api_key_for_direct_proxy(
         &self,
         provider: InferenceProvider,
-    ) -> Result<Secret<String>, ProviderError> {
+    ) -> Result<ProviderKey, ProviderError> {
         let key = self
             .0
             .direct_proxy_api_keys

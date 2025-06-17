@@ -128,7 +128,6 @@ impl
         };
 
         let mut mapped_messages = Vec::with_capacity(value.messages.len());
-        let mut found_mapping_error = false;
         for message in value.messages {
             match message {
                 async_openai::types::ChatCompletionRequestMessage::Developer(_)
@@ -145,8 +144,6 @@ impl
                                         Some(bedrock_type::types::ContentBlock::Text(text.text))
                                     }
                                     async_openai::types::ChatCompletionRequestUserMessageContentPart::ImageUrl(image) => {
-                                        found_mapping_error = image.image_url.url.starts_with("http");
-
                                         let mapped_image = bedrock_type::types::ImageBlock::builder().format(
                                             bedrock_type::types::ImageFormat::Png,
                                         ).source(
@@ -276,12 +273,6 @@ impl
                     mapped_messages.push(mapped_message);
                 }
             }
-        }
-
-        if found_mapping_error {
-            return Err(MapperError::ImageUrlNotSupported(String::from(
-                "Not support Image url",
-            )));
         }
 
         let mut builder =

@@ -20,13 +20,8 @@ use crate::{
     config::router::RouterConfig,
     discover::monitor::metrics::EndpointMetricsRegistry,
     dispatcher::{
-        anthropic_client::Client as AnthropicClient,
-        bedrock_client::Client as BedrockClient,
         client::{Client, ProviderClient},
         extensions::ExtensionsCopier,
-        google_gemini_client::Client as GoogleGeminiClient,
-        ollama_client::Client as OllamaClient,
-        openai_client::Client as OpenAIClient,
     },
     endpoints::ApiEndpoint,
     error::{api::ApiError, init::InitError, internal::InternalError},
@@ -73,46 +68,8 @@ impl Dispatcher {
         router_config: &Arc<RouterConfig>,
         provider: InferenceProvider,
     ) -> Result<DispatcherService, InitError> {
-        // connection timeout, timeout, etc.
-        let base_client = reqwest::Client::builder()
-            .connect_timeout(app_state.0.config.dispatcher.connection_timeout)
-            .timeout(app_state.0.config.dispatcher.timeout)
-            .tcp_nodelay(true);
-
-        // TODO: for now provider will always be OpenAI
-        let client = match provider {
-            InferenceProvider::OpenAI => Client::OpenAI(OpenAIClient::new(
-                &app_state,
-                base_client,
-                &app_state
-                    .get_provider_api_key_for_router(router_id, provider)
-                    .await?,
-            )?),
-            InferenceProvider::Anthropic => {
-                Client::Anthropic(AnthropicClient::new(
-                    &app_state,
-                    base_client,
-                    &app_state
-                        .get_provider_api_key_for_router(router_id, provider)
-                        .await?,
-                )?)
-            }
-            InferenceProvider::GoogleGemini => {
-                Client::GoogleGemini(GoogleGeminiClient::new(
-                    &app_state,
-                    base_client,
-                    &app_state
-                        .get_provider_api_key_for_router(router_id, provider)
-                        .await?,
-                )?)
-            }
-            InferenceProvider::Ollama => {
-                Client::Ollama(OllamaClient::new(&app_state, base_client)?)
-            }
-            InferenceProvider::Bedrock => {
-                Client::Bedrock(BedrockClient::new(&app_state, base_client)?)
-            }
-        };
+        let client =
+            Client::new_for_router(&app_state, provider, router_id).await?;
         let rate_limit_tx = app_state.get_rate_limit_tx(router_id).await?;
 
         let dispatcher = Self {
@@ -145,41 +102,7 @@ impl Dispatcher {
         app_state: AppState,
         provider: InferenceProvider,
     ) -> Result<DispatcherService, InitError> {
-        // connection timeout, timeout, etc.
-        let base_client = reqwest::Client::builder()
-            .connect_timeout(app_state.0.config.dispatcher.connection_timeout)
-            .timeout(app_state.0.config.dispatcher.timeout)
-            .tcp_nodelay(true);
-
-        let client = match provider {
-            InferenceProvider::OpenAI => Client::OpenAI(OpenAIClient::new(
-                &app_state,
-                base_client,
-                &app_state.get_provider_api_key_for_direct_proxy(provider)?,
-            )?),
-            InferenceProvider::Anthropic => {
-                Client::Anthropic(AnthropicClient::new(
-                    &app_state,
-                    base_client,
-                    &app_state
-                        .get_provider_api_key_for_direct_proxy(provider)?,
-                )?)
-            }
-            InferenceProvider::GoogleGemini => {
-                Client::GoogleGemini(GoogleGeminiClient::new(
-                    &app_state,
-                    base_client,
-                    &app_state
-                        .get_provider_api_key_for_direct_proxy(provider)?,
-                )?)
-            }
-            InferenceProvider::Ollama => {
-                Client::Ollama(OllamaClient::new(&app_state, base_client)?)
-            }
-            InferenceProvider::Bedrock => {
-                Client::Bedrock(BedrockClient::new(&app_state, base_client)?)
-            }
-        };
+        let client = Client::new_for_direct_proxy(&app_state, provider)?;
 
         let dispatcher = Self {
             client,
@@ -208,41 +131,7 @@ impl Dispatcher {
         app_state: AppState,
         provider: InferenceProvider,
     ) -> Result<DispatcherServiceWithoutMapper, InitError> {
-        // connection timeout, timeout, etc.
-        let base_client = reqwest::Client::builder()
-            .connect_timeout(app_state.0.config.dispatcher.connection_timeout)
-            .timeout(app_state.0.config.dispatcher.timeout)
-            .tcp_nodelay(true);
-
-        let client = match provider {
-            InferenceProvider::OpenAI => Client::OpenAI(OpenAIClient::new(
-                &app_state,
-                base_client,
-                &app_state.get_provider_api_key_for_direct_proxy(provider)?,
-            )?),
-            InferenceProvider::Anthropic => {
-                Client::Anthropic(AnthropicClient::new(
-                    &app_state,
-                    base_client,
-                    &app_state
-                        .get_provider_api_key_for_direct_proxy(provider)?,
-                )?)
-            }
-            InferenceProvider::GoogleGemini => {
-                Client::GoogleGemini(GoogleGeminiClient::new(
-                    &app_state,
-                    base_client,
-                    &app_state
-                        .get_provider_api_key_for_direct_proxy(provider)?,
-                )?)
-            }
-            InferenceProvider::Ollama => {
-                Client::Ollama(OllamaClient::new(&app_state, base_client)?)
-            }
-            InferenceProvider::Bedrock => {
-                Client::Bedrock(BedrockClient::new(&app_state, base_client)?)
-            }
-        };
+        let client = Client::new_for_unified_api(&app_state, provider)?;
 
         let dispatcher = Self {
             client,
@@ -351,10 +240,9 @@ impl Dispatcher {
             .request(method.clone(), target_url.clone())
             .headers(headers.clone());
 
-        let request_builder = self.client.extract_and_sign_aws_headers(
-            request_builder,
-            req_body_bytes.clone(),
-        );
+        let request_builder = self
+            .client
+            .extract_and_sign_aws_headers(request_builder, &req_body_bytes)?;
 
         let metrics_for_stream = self.app_state.0.endpoint_metrics.clone();
         if let Some(api_endpoint) = api_endpoint {

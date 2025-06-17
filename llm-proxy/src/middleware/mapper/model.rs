@@ -95,9 +95,10 @@ impl ModelMapper {
             .default_model_mapping()
             .as_ref()
             .get(&source_model_name)
-            .iter()
-            .flat_map(|m| m.iter())
-            .find(|m| models_offered_by_target_provider.contains(*m))
+            .and_then(|m| {
+                m.iter()
+                    .find(|m| models_offered_by_target_provider.contains(*m))
+            })
             .ok_or(MapperError::NoModelMapping(
                 *target_provider,
                 source_model_name.as_ref().to_string(),
