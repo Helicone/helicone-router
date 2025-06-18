@@ -137,7 +137,7 @@ Deploy in seconds to your own infrastructure by using our **Docker** or **binary
 
 ---
 
-## ⚙️ Configuration
+## ⚙️ Custom configuration
 
 ### Environment variables
 Include your `PROVIDER_API_KEY`s in your `.env` file.
@@ -298,18 +298,6 @@ claude_response = client.chat.completions.create(model="claude-3-5-sonnet", ...)
 ## 📄 License
 
 The Helicone AI Gateway is licensed under the [Apache License](LICENSE) - see the file for details.
-
-### What this means:
-- ✅ **Commercial use** - Use the software for any purpose, including commercial applications
-- ✅ **Modification** - Modify the software to suit your needs
-- ✅ **Distribution** - Distribute original or modified versions
-- ✅ **Patent use** - Patent rights are granted for any patents owned by contributors
-- ✅ **Private use** - Use the software privately
-- ⚠️ **License and copyright notice** - Must include a copy of the license and copyright notice
-- ⚠️ **State changes** - Must state significant changes made to the software
-- ⚠️ **Attribution** - Must include attribution notices from the original software
-- ❌ **Liability** - No liability for damages
-- ❌ **Warranty** - No warranty provided
 
 ---
 
