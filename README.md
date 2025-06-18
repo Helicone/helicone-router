@@ -155,7 +155,6 @@ REDIS_URL=redis://localhost:6379
 *See our [full provider list here.](https://docs.helicone.ai/gateway/providers)*
 
 ```yaml
-# config.yaml
 providers: # Include their PROVIDER_API_KEY in .env file
   openai:
     models:
