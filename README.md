@@ -16,18 +16,11 @@
 
 ---
 
-**Open-source, lightweight, and built on Rust - Helicone AI Gateway is the NGINX of LLMs.**
- d
-No one wants the complexity of managing multiple LLM providers.
+### The NGINX of LLMs
 
-Helicone AI Gateway handles it for you.
-- Unified interface
-- Smart provider selection
-- Spending controls
-- Reduced latency
-- Guaranteed uptime
-- Simplified tracing
-- Fully open-sourced
+Open-source, lightweight, and built on Rust.
+
+A proxy server managing the complexity of having multiple LLM providers.
 
 ---
 
@@ -115,7 +108,7 @@ Deploy in seconds to your own infrastructure by using our **Docker** or **binary
 
 ---
 
-## 🏗️ Architecture
+## 🏗️ How it works
 
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
