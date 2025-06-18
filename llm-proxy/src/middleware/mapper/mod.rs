@@ -44,6 +44,8 @@ use crate::{
     types::extensions::MapperContext,
 };
 
+pub(crate) const DEFAULT_MAX_TOKENS: u32 = 2000;
+
 /// `TryFrom` but allows us to implement it for foreign types, so we can
 /// maintain boundaries between our business logic and the provider types.
 pub trait TryConvert<Source, Target>: Sized {

@@ -13,7 +13,10 @@ use crate::{
         ollama_client::Client as OllamaClient,
         openai_client::Client as OpenAIClient,
     },
-    error::{api::ApiError, init::InitError, internal::InternalError},
+    error::{
+        api::ApiError, init::InitError, internal::InternalError,
+        provider::ProviderError,
+    },
     types::{
         provider::{InferenceProvider, ProviderKey},
         router::RouterId,
@@ -69,7 +72,7 @@ impl Client {
     fn new_inner(
         app_state: &AppState,
         inference_provider: InferenceProvider,
-        api_key: &ProviderKey,
+        api_key: Option<&ProviderKey>,
     ) -> Result<Self, InitError> {
         // connection timeout, timeout, etc.
         let base_client = reqwest::Client::builder()
@@ -77,24 +80,33 @@ impl Client {
             .timeout(app_state.0.config.dispatcher.timeout)
             .tcp_nodelay(true);
 
-        match inference_provider {
-            InferenceProvider::OpenAI => Ok(Self::OpenAI(OpenAIClient::new(
-                app_state,
-                base_client,
-                api_key,
-            )?)),
-            InferenceProvider::Anthropic => Ok(Self::Anthropic(
-                AnthropicClient::new(app_state, base_client, api_key)?,
+        match (api_key, inference_provider) {
+            (Some(api_key), InferenceProvider::OpenAI) => Ok(Self::OpenAI(
+                OpenAIClient::new(app_state, base_client, api_key)?,
             )),
-            InferenceProvider::GoogleGemini => Ok(Self::GoogleGemini(
-                GoogleGeminiClient::new(app_state, base_client, api_key)?,
-            )),
-            InferenceProvider::Bedrock => Ok(Self::Bedrock(
+            (Some(api_key), InferenceProvider::Anthropic) => {
+                Ok(Self::Anthropic(AnthropicClient::new(
+                    app_state,
+                    base_client,
+                    api_key,
+                )?))
+            }
+            (Some(api_key), InferenceProvider::GoogleGemini) => {
+                Ok(Self::GoogleGemini(GoogleGeminiClient::new(
+                    app_state,
+                    base_client,
+                    api_key,
+                )?))
+            }
+            (Some(api_key), InferenceProvider::Bedrock) => Ok(Self::Bedrock(
                 BedrockClient::new(app_state, base_client, api_key)?,
             )),
-            InferenceProvider::Ollama => {
+            (None | Some(_), InferenceProvider::Ollama) => {
                 Ok(Self::Ollama(OllamaClient::new(app_state, base_client)?))
             }
+            (None, _) => Err(InitError::ProviderError(
+                ProviderError::ApiKeyNotFound(inference_provider),
+            )),
         }
     }
 
@@ -103,33 +115,42 @@ impl Client {
         inference_provider: InferenceProvider,
         router_id: &RouterId,
     ) -> Result<Self, InitError> {
+        if inference_provider == InferenceProvider::Ollama {
+            return Self::new_inner(app_state, inference_provider, None);
+        }
         let api_key = &app_state
             .get_provider_api_key_for_router(router_id, inference_provider)
             .await?;
 
-        Self::new_inner(app_state, inference_provider, api_key)
+        Self::new_inner(app_state, inference_provider, Some(api_key))
     }
 
     pub(crate) fn new_for_direct_proxy(
         app_state: &AppState,
         inference_provider: InferenceProvider,
     ) -> Result<Self, InitError> {
+        if inference_provider == InferenceProvider::Ollama {
+            return Self::new_inner(app_state, inference_provider, None);
+        }
         let api_key = &app_state
             .get_provider_api_key_for_direct_proxy(inference_provider)?;
 
-        Self::new_inner(app_state, inference_provider, api_key)
+        Self::new_inner(app_state, inference_provider, Some(api_key))
     }
 
     pub(crate) fn new_for_unified_api(
         app_state: &AppState,
         inference_provider: InferenceProvider,
     ) -> Result<Self, InitError> {
+        if inference_provider == InferenceProvider::Ollama {
+            return Self::new_inner(app_state, inference_provider, None);
+        }
         // we're cheating here but this will be changed soon for cloud hosted
         // version
         let api_key = &app_state
             .get_provider_api_key_for_direct_proxy(inference_provider)?;
 
-        Self::new_inner(app_state, inference_provider, api_key)
+        Self::new_inner(app_state, inference_provider, Some(api_key))
     }
 }
 

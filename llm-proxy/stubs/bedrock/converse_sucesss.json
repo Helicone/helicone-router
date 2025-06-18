@@ -2,7 +2,7 @@
   "id": "success:bedrock:converse",
   "request": {
     "method": "POST",
-    "url": "/model/us.deepseek.r1-v1:0/converse"
+    "urlPathPattern": "/model/[^/]+/converse"
   },
   "response": {
     "status": 200,

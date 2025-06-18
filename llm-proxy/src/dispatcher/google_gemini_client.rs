@@ -32,7 +32,9 @@ impl Client {
             ProviderKey::Secret(key) => key,
             ProviderKey::AwsCredentials { .. } => {
                 return Err(InitError::ProviderError(
-                    ProviderError::ApiKeyNotFound(InferenceProvider::OpenAI),
+                    ProviderError::ApiKeyNotFound(
+                        InferenceProvider::GoogleGemini,
+                    ),
                 ));
             }
         };

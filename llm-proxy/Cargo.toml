@@ -13,7 +13,7 @@ anthropic-ai-sdk = { workspace = true }
 async-openai = { workspace = true }
 axum-core = { workspace = true }
 axum-server = { workspace = true, features = ["tls-rustls"] }
-bedrock-type = { path = "../crates/bedrock-type" }
+aws-sdk-bedrockruntime = { workspace = true }
 aws-smithy-types = { workspace = true }
 aws-sigv4 = { workspace = true }
 aws-smithy-runtime-api = { workspace = true }

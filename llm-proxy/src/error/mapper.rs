@@ -1,6 +1,7 @@
 use displaydoc::Display;
 use strum::AsRefStr;
 use thiserror::Error;
+use tower::BoxError;
 
 use crate::types::provider::InferenceProvider;
 
@@ -29,6 +30,10 @@ pub enum MapperError {
     ProviderNotSupported(String),
     /// Tool spec not found: {0}
     ToolMappingInvalid(String),
+    /// Image mapping invalid: {0}
+    ImageMappingInvalid(String),
+    /// Failed to map Bedrock message: {0}
+    FailedToMapBedrockMessage(BoxError),
 }
 
 /// Error types that can occur when mapping requests between providers.
@@ -56,6 +61,10 @@ pub enum MapperErrorMetric {
     ProviderNotSupported,
     /// Tool spec not found
     ToolMappingInvalid,
+    /// Image mapping invalid
+    ImageMappingInvalid,
+    /// Failed to map Bedrock message
+    FailedToMapBedrockMessage,
 }
 
 impl From<&MapperError> for MapperErrorMetric {
@@ -72,6 +81,10 @@ impl From<&MapperError> for MapperErrorMetric {
             MapperError::EmptyResponseBody => Self::EmptyResponseBody,
             MapperError::ProviderNotSupported(_) => Self::ProviderNotSupported,
             MapperError::ToolMappingInvalid(_) => Self::ToolMappingInvalid,
+            MapperError::ImageMappingInvalid(_) => Self::ImageMappingInvalid,
+            MapperError::FailedToMapBedrockMessage(_) => {
+                Self::FailedToMapBedrockMessage
+            }
         }
     }
 }

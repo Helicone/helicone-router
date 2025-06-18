@@ -200,8 +200,17 @@ impl ProviderKeys {
         for provider in providers {
             if provider == InferenceProvider::Ollama {
                 // ollama doesn't require an API key
+                tracing::debug!(
+                    provider = %provider,
+                    "from_env_inner ollama"
+                );
                 continue;
             }
+
+            tracing::debug!(
+                provider = %provider,
+                "from_env_inner"
+            );
             let key = ProviderKey::from_env(provider)?;
             keys.insert(provider, key);
         }
@@ -227,6 +236,10 @@ impl ProviderKeys {
             // ollama doesn't support API keys and bedrock
             if config.enabled && !matches!(provider, InferenceProvider::Ollama)
             {
+                tracing::debug!(
+                    provider = %provider,
+                    "from_env_direct_proxy"
+                );
                 let key = ProviderKey::from_env(*provider)?;
                 keys.insert(*provider, key);
             }

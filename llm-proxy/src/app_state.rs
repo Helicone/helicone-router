@@ -49,10 +49,10 @@ pub struct InnerAppState {
     pub minio: Minio,
     pub jawn_http_client: JawnClient,
     pub control_plane_state: Arc<Mutex<ControlPlaneState>>,
-    pub provider_keys: RwLock<HashMap<RouterId, ProviderKeys>>,
     pub global_rate_limit: Option<Arc<RateLimiterConfig>>,
     pub unified_api_rate_limit: Option<Arc<RateLimiterConfig>>,
     pub router_rate_limits: RwLock<HashMap<RouterId, Arc<RateLimiterConfig>>>,
+    pub provider_keys: RwLock<HashMap<RouterId, ProviderKeys>>,
     pub direct_proxy_api_keys: ProviderKeys,
     /// Top level metrics which are exported to OpenTelemetry.
     pub metrics: Metrics,
@@ -105,8 +105,17 @@ impl AppState {
         // This should be the only place we call .provider_keys(), everywhere
         // else we should use the `router_id` to get the provider keys
         // from the app state
-        let provider_keys =
-            self.0.config.discover.provider_keys(router_config)?;
+        let provider_keys = self
+            .0
+            .config
+            .discover
+            .provider_keys(router_config)
+            .inspect_err(|e| {
+                tracing::error!(
+                    error = %e,
+                    "Error getting provider keys for router"
+                );
+            })?;
         let mut provider_keys_map = self.0.provider_keys.write().await;
         provider_keys_map.insert(router_id, provider_keys.clone());
         Ok(provider_keys)
@@ -123,7 +132,13 @@ impl AppState {
         })?;
         let key = provider_keys
             .get(&provider)
-            .ok_or_else(|| ProviderError::ApiKeyNotFound(provider))?
+            .ok_or_else(|| ProviderError::ApiKeyNotFound(provider))
+            .inspect_err(|e| {
+                tracing::error!(
+                    error = %e,
+                    "Error getting provider key for router"
+                );
+            })?
             .clone();
         Ok(key)
     }
@@ -136,7 +151,13 @@ impl AppState {
             .0
             .direct_proxy_api_keys
             .get(&provider)
-            .ok_or_else(|| ProviderError::ApiKeyNotFound(provider))?
+            .ok_or_else(|| ProviderError::ApiKeyNotFound(provider))
+            .inspect_err(|e| {
+                tracing::error!(
+                    error = %e,
+                    "Error getting provider key for direct proxy"
+                );
+            })?
             .clone();
         Ok(key)
     }

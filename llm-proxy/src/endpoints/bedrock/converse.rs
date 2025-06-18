@@ -1,4 +1,4 @@
-use bedrock_type::{
+use aws_sdk_bedrockruntime::{
     operation::converse::{ConverseInput, ConverseOutput},
     types::ConverseStreamOutput,
 };
