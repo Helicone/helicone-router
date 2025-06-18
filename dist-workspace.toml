@@ -25,3 +25,10 @@ install-updater = false
 npm-package = "ai-gateway"
 # Customize the Homebrew formula name
 formula = "ai-gateway"
+
+# System dependencies
+[dist.dependencies.homebrew]
+protobuf = "*"
+
+[dist.dependencies.apt]
+protobuf-compiler = "*"
