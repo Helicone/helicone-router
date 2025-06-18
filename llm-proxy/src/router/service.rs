@@ -92,6 +92,9 @@ impl Router {
 
             inner.insert(*endpoint_type, service_stack);
         }
+        let x = 1;
+        let y = 2;
+        let z = x + y;
         let direct_proxy_dispatcher =
             Dispatcher::new(app_state.clone(), &id, &router_config, SDK)
                 .await?;
