@@ -76,7 +76,7 @@ pub enum InferenceProvider {
     Anthropic,
     Bedrock,
     Ollama,
-    #[strum(serialize = "gemini")]
+    #[strum(serialize = "google")]
     GoogleGemini,
 }
 
@@ -163,8 +163,13 @@ impl ProviderKey {
                 secret_key,
             })
         } else {
-            let provider_str = provider.to_string().to_uppercase();
-            let env_var = format!("{provider_str}_API_KEY");
+            let env_var = match provider {
+                InferenceProvider::GoogleGemini => "GEMINI_API_KEY".to_string(),
+                _ => {
+                    let provider_str = provider.to_string().to_uppercase();
+                    format!("{provider_str}_API_KEY")
+                }
+            };
             if let Ok(key) = std::env::var(&env_var) {
                 tracing::trace!(
                     provider = %provider,
