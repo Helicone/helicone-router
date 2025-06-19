@@ -1,12 +1,12 @@
 use std::collections::HashMap;
 
-use http::{Method, Request, StatusCode};
-use http_body_util::BodyExt;
 use ai_gateway::{
     config::{Config, rate_limit::GlobalRateLimitConfig},
     control_plane::types::{Key, hash_key},
     tests::{TestDefault, harness::Harness, mock::MockArgs},
 };
+use http::{Method, Request, StatusCode};
+use http_body_util::BodyExt;
 use serde_json::json;
 use tower::Service;
 use uuid::Uuid;

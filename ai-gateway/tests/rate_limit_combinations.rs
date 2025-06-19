@@ -1,8 +1,5 @@
 use std::{collections::HashMap, time::Duration};
 
-use compact_str::CompactString;
-use http::{Method, Request, StatusCode};
-use http_body_util::BodyExt;
 use ai_gateway::{
     config::{
         Config,
@@ -14,6 +11,9 @@ use ai_gateway::{
     tests::{TestDefault, harness::Harness, mock::MockArgs},
     types::router::RouterId,
 };
+use compact_str::CompactString;
+use http::{Method, Request, StatusCode};
+use http_body_util::BodyExt;
 use serde_json::json;
 use tower::Service;
 

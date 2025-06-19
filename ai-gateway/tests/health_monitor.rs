@@ -1,7 +1,5 @@
 use std::collections::HashMap;
 
-use http::{Method, Request};
-use http_body_util::BodyExt;
 use ai_gateway::{
     config::{
         Config,
@@ -13,6 +11,8 @@ use ai_gateway::{
     tests::{TestDefault, harness::Harness, mock::MockArgs},
     types::{provider::InferenceProvider, router::RouterId},
 };
+use http::{Method, Request};
+use http_body_util::BodyExt;
 use nonempty_collections::nes;
 use rust_decimal::Decimal;
 use serde_json::json;

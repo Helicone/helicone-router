@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 
-use http::{Method, Request, StatusCode};
 use ai_gateway::{
     config::{
         Config,
@@ -11,6 +10,7 @@ use ai_gateway::{
     tests::{TestDefault, harness::Harness, mock::MockArgs},
     types::{provider::InferenceProvider, router::RouterId},
 };
+use http::{Method, Request, StatusCode};
 use nonempty_collections::nes;
 use serde_json::json;
 use tower::Service;
