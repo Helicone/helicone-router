@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use http::{Method, Request};
 use http_body_util::BodyExt;
-use llm_proxy::{
+use ai_gateway::{
     config::{
         Config,
         balance::{BalanceConfig, BalanceConfigInner, BalanceTarget},

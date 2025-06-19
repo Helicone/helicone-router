@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use http::{Method, Request, StatusCode};
-use llm_proxy::{
+use ai_gateway::{
     config::{
         Config,
         balance::BalanceConfig,
