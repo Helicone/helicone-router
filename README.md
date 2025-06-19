@@ -6,7 +6,6 @@
 [![Downloads](https://img.shields.io/github/downloads/Helicone/aia-gateway/total?style=for-the-badge)](https://github.com/helicone/aia-gateway/releases)
 [![Docker pulls](https://img.shields.io/docker/pulls/helicone/ai-gateway?style=for-the-badge)](https://hub.docker.com/r/helicone/ai-gateway)
 [![License](https://img.shields.io/badge/license-APACHE-green?style=for-the-badge)](LICENSE)
-<<<<<<< HEAD
 
 **The fastest, lightest, and most powerful AI Gateway on the market.**
 
@@ -29,38 +28,8 @@ The NGINX of LLMs.
 ## 👩🏻‍💻 Set up in seconds
 
 1. Set up your `.env` file with your `PROVIDER_API_KEY`s
-=======
-[![Discord](https://img.shields.io/discord/1020597994703310878?style=for-the-badge&logo=discord)](https://discord.gg/7aSCGCGUeu)
 
-**One line. 100+ models. The fastest, lightest, and most powerful AI Gateway on the market.**
-
-*Built by the team at [Helicone](https://helicone.ai), open-sourced for the community.*
-
-[🚀 Quick Start](#-deploy-with-docker-in-seconds) • [📖 Docs](https://docs.helicone.ai/ai-gateway) • [💬 Discord](https://discord.gg/helicone) • [🌐 Website](https://helicone.ai)
-
----
-
-**Open-source, lightweight, and built on Rust - Helicone AI Gateway is the NGINX of LLMs.**
- d
-No one wants the complexity of managing multiple LLM providers.
-
-Helicone AI Gateway handles it for you.
-- Unified interface
-- Smart provider selection
-- Spending controls
-- Reduced latency
-- Guaranteed uptime
-- Simplified tracing
-- Fully open-sourced
->>>>>>> 2de4f00 (docs(readme): shorten README and update with correct commands)
-
----
-
-## 👩🏻‍💻 Set up in seconds
-
-1. Run your Helicone AI Gateway
 ```bash
-<<<<<<< HEAD
 OPENAI_API_KEY=your_openai_key
 ANTHROPIC_API_KEY=your_anthropic_key
 ```
@@ -71,19 +40,6 @@ npx @helicone/ai-gateway start
 ```
 
 3. Make your requests using any OpenAI SDK:
-=======
-npx @helicone/ai-gateway
-```
-
-2. Set up your .env file
-
-```bash
-OPENAI_API_KEY=your_openai_key
-ANTHROPIC_API_KEY=your_anthropic_key
-```
-
-3. In your application, use any OpenAI SDK:
->>>>>>> 2de4f00 (docs(readme): shorten README and update with correct commands)
 
 ```python
 from openai import OpenAI
@@ -101,11 +57,7 @@ response = client.chat.completions.create(
 
 **That's it.** No new SDKs to learn, no integrations to maintain. Fully-featured and open-sourced.
 
-<<<<<<< HEAD
 *-- For advanced config, check out our [configuration guide](https://docs.helicone.ai/ai-gateway/config) and the [providers we support](https://docs.helicone.ai/ai-gateway/providers).*
-=======
-*-- For advanced config, check out our [configuration guide](https://docs.helicone.ai/ai-gateway/config).*
->>>>>>> 2de4f00 (docs(readme): shorten README and update with correct commands)
 
 ---
 
@@ -113,13 +65,8 @@ response = client.chat.completions.create(
 
 <!-- TODO: include launch video here -->
 
-<<<<<<< HEAD
 #### 🌐 **Unified interface**
 Request **any LLM provider** using familiar OpenAI syntax. Stop rewriting integrations—use one API for OpenAI, Anthropic, Google, AWS Bedrock, and [20+ more providers](https://docs.helicone.ai/ai-gateway/providers).
-=======
-#### 🌐 **One line. 100+ models**
-A **unified interface** for every LLM provider using familiar OpenAI syntax. Stop rewriting integrations—use one API for OpenAI, Anthropic, Google, AWS Bedrock, and [20+ more providers](https://docs.helicone.ai/ai-gateway/providers).
->>>>>>> 2de4f00 (docs(readme): shorten README and update with correct commands)
 
 #### ⚡ **Smart provider selection**
 **Load balance** to always hit the fastest, cheapest, or most reliable option. Built-in strategies include latency-based P2C + PeakEWMA, weighted distribution, and cost optimization. Always aware of provider uptime and rate limits.
@@ -133,11 +80,7 @@ A **unified interface** for every LLM provider using familiar OpenAI syntax. Sto
 #### 📊 **Simplified tracing**
 Monitor performance and debug issues with built-in Helicone integration, plus OpenTelemetry support for **logs, metrics, and traces**.
 
-<<<<<<< HEAD
 #### ☁️ **One-click deployment**
-=======
-#### ☁️ **Quick and easy cloud deployment**
->>>>>>> 2de4f00 (docs(readme): shorten README and update with correct commands)
 Deploy in seconds to your own infrastructure by using our **Docker** or **binary** download following our [deployment guides](https://docs.helicone.ai/gateway/deployment).
 
 ---
@@ -194,22 +137,12 @@ Deploy in seconds to your own infrastructure by using our **Docker** or **binary
 
 ---
 
-<<<<<<< HEAD
 ## ⚙️ Custom configuration
 
 ### Environment variables
 Include your `PROVIDER_API_KEY`s in your `.env` file.
 
 ```bash
-=======
-## ⚙️ Configuration
-
-### Environment variables
-Include the `PROVIDER_API_KEY` from all providers you're using in your `.env` file.
-
-```bash
-# .env
->>>>>>> 2de4f00 (docs(readme): shorten README and update with correct commands)
 OPENAI_API_KEY=sk-...
 ANTHROPIC_API_KEY=sk-ant-...
 HELICONE_API_KEY=sk-...
@@ -222,10 +155,6 @@ REDIS_URL=redis://localhost:6379
 *See our [full provider list here.](https://docs.helicone.ai/gateway/providers)*
 
 ```yaml
-<<<<<<< HEAD
-=======
-# config.yaml
->>>>>>> 2de4f00 (docs(readme): shorten README and update with correct commands)
 providers: # Include their PROVIDER_API_KEY in .env file
   openai:
     models:
@@ -239,7 +168,6 @@ providers: # Include their PROVIDER_API_KEY in .env file
       - claude-3-opus
       - claude-3-sonnet
 
-<<<<<<< HEAD
 global: # Global settings for all routers
   cache:
     enabled: true
@@ -249,24 +177,12 @@ global: # Global settings for all routers
 
 routers:
   production: # Per router configuration
-=======
-routers:
-  production:
->>>>>>> 2de4f00 (docs(readme): shorten README and update with correct commands)
     load-balance:
       chat:
         strategy: latency
         targets:
           - openai
           - anthropic
-<<<<<<< HEAD
-=======
-    cache:
-      enabled: true
-        directive: "max-age=3600, max-stale=1800"
-        buckets: 10
-        seed: "unique-cache-seed"
->>>>>>> 2de4f00 (docs(readme): shorten README and update with correct commands)
     retries:
       enabled: true
         max-retries: 3
@@ -274,7 +190,6 @@ routers:
         base: 1s
         max: 30s
     rate-limit:
-<<<<<<< HEAD
       global:
         store: in-memory
         per-api-key:
@@ -291,20 +206,6 @@ routers:
 ```bash
 npx @helicone/ai-gateway start --config config.yaml
 ```
-=======
-  global:
-    store: in-memory
-    per-api-key:
-      capacity: 500
-      refill-frequency: 1s
-    cleanup-interval: 5m
-  helicone: # Include your HELICONE_API_KEY in your .env file
-    enable: true
-  telemetry:
-    level: "info,llm_proxy=trace"
-```
-
->>>>>>> 2de4f00 (docs(readme): shorten README and update with correct commands)
 ---
 
 ## 📚 Migration guide
@@ -379,17 +280,10 @@ claude_response = client.chat.completions.create(model="claude-3-5-sonnet", ...)
 ### Documentation
 - 📖 **[Full Documentation](https://docs.helicone.ai/ai-gateway)** - Complete guides and API reference
 - 🚀 **[Quickstart Guide](https://docs.helicone.ai/ai-gateway/quickstart)** - Get up and running in 1 minute
-<<<<<<< HEAD
 - 🔬 **[Advanced Configurations](https://docs.helicone.ai/ai-gateway/config)** - Configuration reference & examples
 
 ### Community
 - 💬 **[Discord Server](https://discord.gg/7aSCGCGUeu)** - Our community of passionate AI engineers
-=======
-- 🔬 **[Advanced Configurations](https://docs.helicone.ai/ai-gateway/cookbooks)** - Reference & examples
-
-### Community
-- 💬 **[Discord Server](https://discord.gg/QEVVRyQn)** - Our community of passionate AI engineers
->>>>>>> 2de4f00 (docs(readme): shorten README and update with correct commands)
 - 🐙 **[GitHub Discussions](https://github.com/helicone/ai-gateway/discussions)** - Q&A and feature requests
 - 🐦 **[Twitter](https://twitter.com/helicone_ai)** - Latest updates and announcements
 - 📧 **[Newsletter](https://helicone.ai/email-signup)** - Tips and tricks to deploying AI applications
@@ -403,28 +297,9 @@ claude_response = client.chat.completions.create(model="claude-3-5-sonnet", ...)
 ## 📄 License
 
 The Helicone AI Gateway is licensed under the [Apache License](LICENSE) - see the file for details.
-<<<<<<< HEAD
-=======
-
-### What this means:
-- ✅ **Commercial use** - Use the software for any purpose, including commercial applications
-- ✅ **Modification** - Modify the software to suit your needs
-- ✅ **Distribution** - Distribute original or modified versions
-- ✅ **Patent use** - Patent rights are granted for any patents owned by contributors
-- ✅ **Private use** - Use the software privately
-- ⚠️ **License and copyright notice** - Must include a copy of the license and copyright notice
-- ⚠️ **State changes** - Must state significant changes made to the software
-- ⚠️ **Attribution** - Must include attribution notices from the original software
-- ❌ **Liability** - No liability for damages
-- ❌ **Warranty** - No warranty provided
->>>>>>> 2de4f00 (docs(readme): shorten README and update with correct commands)
 
 ---
 
 **Made with ❤️ by [Helicone](https://helicone.ai).**
 
-<<<<<<< HEAD
 [Website](https://helicone.ai) • [Docs](https://docs.helicone.ai) • [Discord](https://discord.gg/7aSCGCGUeu) • [Twitter](https://twitter.com/helicone_ai)
-=======
-[Website](https://helicone.ai) • [Docs](https://docs.helicone.ai) • [Discord](https://discord.gg/QEVVRyQn) • [Twitter](https://twitter.com/helicone_ai)
->>>>>>> 2de4f00 (docs(readme): shorten README and update with correct commands)
