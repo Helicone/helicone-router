@@ -96,7 +96,7 @@ impl Config {
             builder = builder.add_source(config::File::from(path));
         }
         builder = builder.add_source(
-            config::Environment::with_prefix("PROXY")
+            config::Environment::with_prefix("AI_GATEWAY")
                 .try_parsing(true)
                 .separator("__")
                 .convert_case(config::Case::Kebab),
