@@ -1,15 +1,15 @@
 # ECS Cluster
-resource "aws_ecs_cluster" "helix_service_cluster" {
-  name = "helix-cluster-${var.environment}"
+resource "aws_ecs_cluster" "aigateway_service_cluster" {
+  name = "aigateway-cluster-${var.environment}"
 }
 
 # CloudWatch Log Group for ECS
 resource "aws_cloudwatch_log_group" "ecs_log_group" {
-  name              = "/ecs/helix-${var.environment}"
+  name              = "/ecs/aigateway-${var.environment}"
   retention_in_days = 30
 
   tags = {
-    Name        = "helix-${var.environment}"
+    Name        = "aigateway-${var.environment}"
     Environment = var.environment
   }
 }
@@ -17,8 +17,8 @@ resource "aws_cloudwatch_log_group" "ecs_log_group" {
 # ECS Task Definition
 # NOTE: ECR repository is in us-east-2, but ECS is in us-east-1
 # Cross-region ECR access is allowed but may have performance implications
-resource "aws_ecs_task_definition" "helix_task" {
-  family                   = "helix-${var.environment}"
+resource "aws_ecs_task_definition" "aigateway_task" {
+  family                   = "aigateway-${var.environment}"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
   execution_role_arn       = aws_iam_role.ecs_execution_role.arn
@@ -27,8 +27,8 @@ resource "aws_ecs_task_definition" "helix_task" {
 
   container_definitions = jsonencode([
     {
-      name  = "helix-${var.environment}"
-      image = "849596434884.dkr.ecr.us-east-2.amazonaws.com/helicone/helix:latest"
+      name  = "aigateway-${var.environment}"
+      image = "849596434884.dkr.ecr.us-east-2.amazonaws.com/helicone/aigateway:latest"
       portMappings = [
         {
           containerPort = 5678
@@ -53,7 +53,7 @@ resource "aws_ecs_task_definition" "helix_task" {
       logConfiguration = {
         logDriver = "awslogs"
         options = {
-          "awslogs-group"         = "/ecs/helix-${var.environment}"
+          "awslogs-group"         = "/ecs/aigateway-${var.environment}"
           "awslogs-region"        = var.region
           "awslogs-stream-prefix" = "ecs"
         }
@@ -63,10 +63,10 @@ resource "aws_ecs_task_definition" "helix_task" {
 }
 
 # ECS Service
-resource "aws_ecs_service" "helix_service" {
-  name                 = "helix-service-${var.environment}"
-  cluster              = aws_ecs_cluster.helix_service_cluster.id
-  task_definition      = aws_ecs_task_definition.helix_task.arn
+resource "aws_ecs_service" "aigateway_service" {
+  name                 = "aigateway-service-${var.environment}"
+  cluster              = aws_ecs_cluster.aigateway_service_cluster.id
+  task_definition      = aws_ecs_task_definition.aigateway_task.arn
   launch_type          = "FARGATE"
   desired_count        = 3
   force_new_deployment = true
@@ -92,11 +92,11 @@ resource "aws_ecs_service" "helix_service" {
 
 resource "null_resource" "scale_down_ecs_service" {
   triggers = {
-    service_name = aws_ecs_service.helix_service.name
+    service_name = aws_ecs_service.aigateway_service.name
   }
 
   provisioner "local-exec" {
-    command = "aws ecs update-service --region ${var.region} --cluster ${aws_ecs_cluster.helix_service_cluster.id} --service ${self.triggers.service_name} --desired-count 0"
+    command = "aws ecs update-service --region ${var.region} --cluster ${aws_ecs_cluster.aigateway_service_cluster.id} --service ${self.triggers.service_name} --desired-count 0"
   }
 }
 
