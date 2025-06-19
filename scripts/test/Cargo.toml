@@ -5,7 +5,7 @@ edition.workspace = true
 authors.workspace = true
 license.workspace = true
 description = "Test scripts for the LLM proxy router"
-homepage = "https://helix.helicone.ai"
+homepage = "https://docs.helicone.ai/ai-gateway"
 publish = false
 
 [dependencies]
@@ -16,7 +16,7 @@ dotenvy = { workspace = true }
 futures = { workspace = true }
 http = { workspace = true }
 http-body-util = { workspace = true }
-llm-proxy = { workspace = true }
+ai-gateway = { workspace = true }
 rand = "0.8"
 reqwest = { workspace = true, features = ["json", "rustls-tls"] }
 serde_json = { workspace = true }
