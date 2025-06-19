@@ -25,3 +25,5 @@ install-updater = false
 npm-package = "ai-gateway"
 # Customize the Homebrew formula name
 formula = "ai-gateway"
+# Enable pre-release
+publish-preleases = true
