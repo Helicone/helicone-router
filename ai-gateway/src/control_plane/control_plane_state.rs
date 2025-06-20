@@ -42,8 +42,8 @@ impl ControlPlaneState {
                 message,
             }) => {
                 tracing::error!(
-                    "Received unauthorized error from control plane: {}",
-                    message,
+                    message = %message,
+                    "Received unauthorized error from control plane",
                 );
             }
         }

@@ -333,7 +333,7 @@ impl Dispatcher {
                     let collect_future = body_reader.collect();
                     let (_response_body, tfft_duration) = tokio::join!(collect_future, tfft_future);
                     if let Ok(tfft_duration) = tfft_duration {
-                        tracing::info!(tfft_duration = ?tfft_duration, "TFFT duration");
+                        tracing::trace!(tfft_duration = ?tfft_duration, "TFFT duration");
                         let attributes = [
                             KeyValue::new("provider", inference_provider.to_string()),
                             KeyValue::new("model", model),

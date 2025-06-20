@@ -54,14 +54,6 @@ async fn require_auth_enabled_with_valid_token() {
     // we need to collect the body here in order to poll the underlying body
     // so that the async logging task can complete
     let _response_body = response.into_body().collect().await.unwrap();
-    let received_req = harness
-        .mock
-        .jawn_mock
-        .http_server
-        .received_requests()
-        .await
-        .unwrap();
-    tracing::info!("received request: {:?}", received_req);
 
     // sleep so that the background task for logging can complete
     tokio::time::sleep(std::time::Duration::from_millis(20)).await;
