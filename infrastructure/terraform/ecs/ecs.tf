@@ -31,10 +31,25 @@ resource "aws_ecs_task_definition" "aigateway_task" {
       image = "849596434884.dkr.ecr.us-east-2.amazonaws.com/helicone/aigateway:latest"
       portMappings = [
         {
-          containerPort = 80
-          hostPort      = 80
+          containerPort = 5678
+          hostPort      = 5678
         }
       ]
+      environment = [
+        {
+          name  = "SERVER__PORT"
+          value = "5678"
+        },
+        {
+          name  = "SERVER__ADDRESS"
+          value = "0.0.0.0"
+        },
+        {
+          name  = "RUST_LOG"
+          value = "info"
+        }
+      ]
+
       logConfiguration = {
         logDriver = "awslogs"
         options = {
@@ -65,7 +80,7 @@ resource "aws_ecs_service" "aigateway_service" {
   load_balancer {
     target_group_arn = aws_lb_target_group.fargate_tg.arn
     container_name   = "aigateway-${var.environment}"
-    container_port   = 80
+    container_port   = 5678
   }
 
   depends_on = [aws_lb_listener.http_listener]
@@ -101,26 +116,13 @@ resource "aws_lb_listener" "http_listener" {
     type             = "forward"
     target_group_arn = aws_lb_target_group.fargate_tg.arn
   }
-}
 
-# HTTPS Listener - COMMENTED OUT until certificate is available in us-east-1
-# To enable HTTPS, you need to either:
-# 1. Create the ACM certificate in us-east-1 for helicone.ai domain
-# 2. Import an existing certificate to ACM in us-east-1
-# 3. Update your route53-acm module to create certificates in us-east-1
-#
-# resource "aws_lb_listener" "https_listener" {
-#   load_balancer_arn = aws_lb.fargate_lb.arn
-#   port              = 443
-#   protocol          = "HTTPS"
-#   ssl_policy        = "ELBSecurityPolicy-2016-08"
-#   certificate_arn   = "YOUR_CERTIFICATE_ARN_HERE"
-#
-#   default_action {
-#     type             = "forward"
-#     target_group_arn = aws_lb_target_group.fargate_tg.arn
-#   }
-# }
+  depends_on = [aws_lb_target_group.fargate_tg]
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
 
 resource "aws_security_group_rule" "egress_https" {
   type              = "egress"

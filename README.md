@@ -28,15 +28,27 @@ Keeping up means rewriting integrations for every new model - managing a maze of
 
 ---
 
-## 👩🏻‍💻 Deploy with Docker in seconds
+## 🚀 One-Click Deploy to AWS ECS
 
-<!-- TODO: include correct command for docker run -->
+Deploy Helicone Helix to AWS ECS with a single click:
+
+[![Deploy to AWS ECS](https://img.shields.io/badge/Deploy%20to-AWS%20ECS-FF9900?style=for-the-badge&logo=amazon-aws)](https://github.com/Helicone/helicone-router/actions/workflows/deploy-to-ecs.yml)
+
+**Prerequisites:**
+- AWS Account with appropriate permissions
+- AWS IAM role configured for GitHub Actions (see [setup guide](#aws-setup))
+
+Click the button above → **Run workflow** → Select your environment → **Deploy!**
+
+---
+
+## 👩🏻‍💻 Deploy with Docker in seconds
 
 ```bash
 docker run -d --name helix \
   -p 8080:8080 \
   -e OPENAI_API_KEY=your_openai_key \
-  -e ANTHROPIC_API_KEY=your_anthropic_key
+  -e ANTHROPIC_API_KEY=your_anthropic_key \
   helicone/helix:latest
 ```
 
@@ -169,6 +181,84 @@ curl -L https://github.com/Helicone/helicone-router/releases/latest/download/hel
 cargo install helix-llm-proxy
 helix
 ```
+
+### Option 4: Local Deploy Script
+```bash
+# Clone and deploy to AWS ECS
+git clone https://github.com/Helicone/helicone-router.git
+cd helicone-router
+./infrastructure/deploy.sh
+```
+
+---
+
+## 🔧 AWS Setup for One-Click Deploy
+
+To use the one-click deploy button, configure AWS IAM for GitHub Actions:
+
+### 1. Create OIDC Provider (if not exists)
+```bash
+aws iam create-open-id-connect-provider \
+  --url https://token.actions.githubusercontent.com \
+  --thumbprint-list 6938fd4d98bab03faadb97b34396831e3780aea1 \
+  --client-id-list sts.amazonaws.com
+```
+
+### 2. Create IAM Role
+```bash
+# Replace YOUR_ACCOUNT_ID and YOUR_GITHUB_USERNAME
+cat > github-actions-trust-policy.json << EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Federated": "arn:aws:iam::YOUR_ACCOUNT_ID:oidc-provider/token.actions.githubusercontent.com"
+      },
+      "Action": "sts:AssumeRoleWithWebIdentity",
+      "Condition": {
+        "StringEquals": {
+          "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
+          "token.actions.githubusercontent.com:sub": "repo:YOUR_GITHUB_USERNAME/helicone-router:ref:refs/heads/main"
+        }
+      }
+    }
+  ]
+}
+EOF
+
+aws iam create-role \
+  --role-name GitHubActions-ECS-Deploy \
+  --assume-role-policy-document file://github-actions-trust-policy.json
+```
+
+### 3. Attach Policies
+```bash
+aws iam attach-role-policy \
+  --role-name GitHubActions-ECS-Deploy \
+  --policy-arn arn:aws:iam::aws:policy/AmazonECS_FullAccess
+
+aws iam attach-role-policy \
+  --role-name GitHubActions-ECS-Deploy \
+  --policy-arn arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryFullAccess
+
+aws iam attach-role-policy \
+  --role-name GitHubActions-ECS-Deploy \
+  --policy-arn arn:aws:iam::aws:policy/IAMFullAccess
+
+aws iam attach-role-policy \
+  --role-name GitHubActions-ECS-Deploy \
+  --policy-arn arn:aws:iam::aws:policy/AmazonVPCFullAccess
+```
+
+### 4. Configure GitHub Secrets
+In your GitHub repo: **Settings** → **Secrets and variables** → **Actions**
+
+Add these secrets:
+- `AWS_ROLE_ARN`: `arn:aws:iam::YOUR_ACCOUNT_ID:role/GitHubActions-ECS-Deploy`
+- `AWS_ACCOUNT_ID`: Your AWS account ID
+- `TERRAFORM_CLOUD_TOKEN`: Your Terraform Cloud token (if using Terraform Cloud)
 
 ---
 

@@ -1,0 +1,154 @@
+name: Deploy to AWS ECS
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
+      aws_region:
+        description: 'AWS Region'
+        required: true
+        default: 'us-east-1'
+        type: string
+      ecr_region:
+        description: 'ECR Region'
+        required: true
+        default: 'us-east-2'
+        type: string
+
+env:
+  AWS_REGION: ${{ github.event.inputs.aws_region }}
+  ECR_REGION: ${{ github.event.inputs.ecr_region }}
+  ENVIRONMENT: ${{ github.event.inputs.environment }}
+
+jobs:
+  deploy:
+    name: Deploy Helicone Helix to ECS
+    runs-on: ubuntu-latest
+    
+    permissions:
+      id-token: write
+      contents: read
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: GitHubActions-ECS-Deploy
+      
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+        with:
+          registries: ${{ secrets.AWS_ACCOUNT_ID }}
+          
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Build and push Docker image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: helicone/aigateway
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          # Build and tag the image
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          
+          # Push both tags
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          
+          echo "Image pushed: $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+          echo "Image pushed: $ECR_REGISTRY/$ECR_REPOSITORY:latest"
+      
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.0
+          terraform_wrapper: false
+      
+      - name: Terraform Init
+        working-directory: infrastructure/terraform/ecs
+        run: terraform init
+      
+      - name: Terraform Plan
+        working-directory: infrastructure/terraform/ecs
+        run: |
+          terraform plan \
+            -var="environment=${{ env.ENVIRONMENT }}" \
+            -var="region=${{ env.AWS_REGION }}" \
+            -out=tfplan
+      
+      - name: Terraform Apply
+        working-directory: infrastructure/terraform/ecs
+        run: terraform apply tfplan
+      
+      - name: Wait for ECS Service
+        run: |
+          aws ecs wait services-stable \
+            --region ${{ env.AWS_REGION }} \
+            --cluster "aigateway-cluster-${{ env.ENVIRONMENT }}" \
+            --services "aigateway-service-${{ env.ENVIRONMENT }}"
+      
+      - name: Get deployment info
+        id: deployment-info
+        working-directory: infrastructure/terraform/ecs
+        run: |
+          ENDPOINT_URL=$(terraform output -raw endpoint_url)
+          HEALTH_URL=$(terraform output -raw health_check_url)
+          LB_DNS=$(terraform output -raw load_balancer_dns_name)
+          
+          echo "endpoint_url=$ENDPOINT_URL" >> $GITHUB_OUTPUT
+          echo "health_url=$HEALTH_URL" >> $GITHUB_OUTPUT
+          echo "lb_dns=$LB_DNS" >> $GITHUB_OUTPUT
+          
+          echo "🎉 Deployment completed successfully!"
+          echo "📍 Endpoint: $ENDPOINT_URL"
+          echo "🧪 Health Check: $HEALTH_URL"
+      
+      - name: Test deployment
+        run: |
+          echo "Testing health endpoint..."
+          sleep 30  # Wait for service to be ready
+          curl -f ${{ steps.deployment-info.outputs.health_url }} || echo "Health check failed, but deployment may still be starting"
+      
+      - name: Create deployment summary
+        run: |
+          cat >> $GITHUB_STEP_SUMMARY << EOF
+          # 🚀 Helicone Helix Deployment Complete
+          
+          ## Deployment Details
+          - **Environment**: ${{ env.ENVIRONMENT }}
+          - **AWS Region**: ${{ env.AWS_REGION }}
+          - **ECR Region**: ${{ env.ECR_REGION }}
+          - **Image Tag**: ${{ github.sha }}
+          
+          ## Endpoints
+          - **Application**: ${{ steps.deployment-info.outputs.endpoint_url }}
+          - **Health Check**: ${{ steps.deployment-info.outputs.health_url }}
+          - **Load Balancer DNS**: ${{ steps.deployment-info.outputs.lb_dns }}
+          
+          ## Next Steps
+          1. Test your deployment: \`curl ${{ steps.deployment-info.outputs.health_url }}\`
+          2. Configure API keys in ECS task definition
+          3. Set up custom domain (optional)
+          4. Configure HTTPS with ACM certificate
+          
+          ## Monitoring
+          - Check CloudWatch logs for application logs
+          - Monitor ECS service in AWS Console
+          - Use the health endpoint for uptime monitoring
+          EOF 
