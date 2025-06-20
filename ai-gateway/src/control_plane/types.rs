@@ -125,10 +125,17 @@ pub enum Ack {
 
 #[derive(TS, Serialize, Deserialize, Debug, Clone)]
 #[ts(export)]
+pub enum ControlPlaneError {
+    Unauthorized { message: String },
+}
+
+#[derive(TS, Serialize, Deserialize, Debug, Clone)]
+#[ts(export)]
 #[serde(tag = "_type")]
 pub enum MessageTypeRX {
     Ack(Ack),
     Update(Update),
+    Error(ControlPlaneError),
 }
 
 /// To generate the bindings, run:

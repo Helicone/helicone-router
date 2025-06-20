@@ -1,6 +1,6 @@
 use chrono::{DateTime, Utc};
 
-use super::types::{Config, MessageTypeRX, Update};
+use super::types::{Config, ControlPlaneError, MessageTypeRX, Update};
 const MAX_HISTORY_SIZE: usize = 100;
 
 #[derive(Debug, Default)]
@@ -38,6 +38,14 @@ impl ControlPlaneState {
                 self.config = data;
             }
             MessageTypeRX::Ack(_) => todo!(),
+            MessageTypeRX::Error(ControlPlaneError::Unauthorized {
+                message,
+            }) => {
+                tracing::error!(
+                    "Received unauthorized error from control plane: {}",
+                    message,
+                );
+            }
         }
     }
 }
