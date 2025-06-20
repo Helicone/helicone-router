@@ -68,19 +68,23 @@ resource "aws_lb" "fargate_lb" {
 
 resource "aws_lb_target_group" "fargate_tg" {
   name     = "fargate-tg-${var.environment}"
-  port     = 80
+  port     = 5678
   protocol = "HTTP"
   vpc_id   = local.vpc_id
 
   health_check {
     healthy_threshold   = 2
     unhealthy_threshold = 2
-    timeout             = 3
-    path                = "/"
+    timeout             = 5
+    path                = "/health"
     protocol            = "HTTP"
     interval            = 30
     matcher             = "200"
   }
 
   target_type = "ip"
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
