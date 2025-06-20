@@ -30,19 +30,19 @@ struct SignedUrlResponse {
 }
 
 pub enum S3Client<'a> {
-    SelfHosted(&'a Minio),
-    Sidecar(&'a JawnClient),
+    SelfSigned(&'a Minio),
+    SignedByJawn(&'a JawnClient),
 }
 
 impl<'a> S3Client<'a> {
     #[must_use]
-    pub fn self_hosted(minio: &'a Minio) -> Self {
-        Self::SelfHosted(minio)
+    pub fn cloud(minio: &'a Minio) -> Self {
+        Self::SelfSigned(minio)
     }
 
     #[must_use]
     pub fn sidecar(jawn_client: &'a JawnClient) -> Self {
-        Self::Sidecar(jawn_client)
+        Self::SignedByJawn(jawn_client)
     }
 
     #[tracing::instrument(skip_all)]
@@ -55,7 +55,7 @@ impl<'a> S3Client<'a> {
         response_body: Bytes,
     ) -> Result<(), LoggerError> {
         let (signed_url, s3_log) = match self {
-            Self::SelfHosted(minio) => {
+            Self::SelfSigned(minio) => {
                 let object_path = format!(
                     "organizations/{}/requests/{}/raw_request_response_body",
                     auth_ctx.org_id.as_ref(),
@@ -70,7 +70,7 @@ impl<'a> S3Client<'a> {
                 let s3_log = S3Log::new(request_body, response_body);
                 (signed_url, s3_log)
             }
-            Self::Sidecar(client) => {
+            Self::SignedByJawn(client) => {
                 let signed_request_url = app_state
                     .config()
                     .helicone_observability

@@ -3,7 +3,7 @@ use telemetry::TelemetryError;
 use thiserror::Error;
 
 use crate::{
-    config::{DeploymentTarget, validation::ModelMappingValidationError},
+    config::validation::ModelMappingValidationError,
     types::{provider::InferenceProvider, router::RouterId},
 };
 
@@ -12,8 +12,6 @@ use crate::{
 pub enum InitError {
     /// Default router not found
     DefaultRouterNotFound,
-    /// Deployment target not supported: {0:?}
-    DeploymentTargetNotSupported(DeploymentTarget),
     /// Failed to read TLS certificate: {0}
     Tls(std::io::Error),
     /// Failed to bind to address: {0}

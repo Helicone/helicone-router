@@ -64,13 +64,11 @@ pub struct MetaRouter {
 impl MetaRouter {
     pub async fn new(app_state: AppState) -> Result<Self, InitError> {
         let meta_router = match app_state.0.config.deployment_target {
-            DeploymentTarget::SelfHosted | DeploymentTarget::Sidecar => {
+            DeploymentTarget::Cloud | DeploymentTarget::Sidecar => {
+                // Note: Cloud will eventually get router configs from the
+                // database, but for not we are just allowing
+                // the cloud to be deployed to start dogfooding
                 Self::from_config(app_state).await
-            }
-            DeploymentTarget::Cloud => {
-                return Err(InitError::DeploymentTargetNotSupported(
-                    app_state.0.config.deployment_target.clone(),
-                ));
             }
         }?;
         tracing::info!(

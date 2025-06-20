@@ -47,7 +47,6 @@ pub enum Error {
 #[serde(deny_unknown_fields, rename_all = "kebab-case")]
 pub enum DeploymentTarget {
     Cloud,
-    SelfHosted,
     #[default]
     Sidecar,
 }
@@ -126,7 +125,7 @@ impl Config {
             }
         }
         self.validate_model_mappings()?;
-        if matches!(self.deployment_target, DeploymentTarget::SelfHosted)
+        if matches!(self.deployment_target, DeploymentTarget::Cloud)
             && self.minio.is_none()
         {
             return Err(InitError::MinioNotConfigured);

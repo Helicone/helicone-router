@@ -56,7 +56,7 @@ This is an LLM proxy/router service that forwards API requests to providers like
 5. **Configuration**:
    - Config is loaded from file and/or environment variables
    - Database, MinIO, server, provider, router config sections
-   - Supports different deployment targets (Cloud, Sidecar, SelfHosted)
+   - Supports different deployment targets (Cloud, Sidecar)
 
 6. **Telemetry**:
    - Tracing with OpenTelemetry support

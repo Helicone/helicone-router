@@ -45,12 +45,10 @@ impl Router {
         app_state: AppState,
     ) -> Result<Self, InitError> {
         let router_config = match &app_state.0.config.deployment_target {
-            DeploymentTarget::Cloud => {
-                return Err(InitError::DeploymentTargetNotSupported(
-                    app_state.0.config.deployment_target.clone(),
-                ));
-            }
-            DeploymentTarget::SelfHosted | DeploymentTarget::Sidecar => {
+            DeploymentTarget::Cloud | DeploymentTarget::Sidecar => {
+                // Note: Cloud will eventually get router configs from the
+                // database, but for not we are just allowing
+                // the cloud to be deployed to start dogfooding
                 let router_config = app_state
                     .0
                     .config
