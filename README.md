@@ -15,23 +15,28 @@
 
 ---
 
-### 🚆 One line. 100+ models.
+## 🚀 One-Click Deploy to AWS ECS
 
-**Open-source, lightweight, and built on Rust.**
+Deploy Helicone Helicone AI Gateway to AWS ECS with a single click:
 
-Handle hundreds of models and millions of LLM requests with minimal latency and maximum reliability.
+[![Deploy to AWS ECS](https://img.shields.io/badge/Deploy%20to-AWS%20ECS-FF9900?style=for-the-badge&logo=amazon-aws)](https://github.com/Helicone/helicone-router/actions/workflows/deploy-to-ecs.yml)
 
-The NGINX of LLMs.
+**Prerequisites:**
+- AWS Account with appropriate permissions
+- AWS IAM role configured for GitHub Actions (see [setup guide](#aws-setup))
+
+Click the button above → **Run workflow** → Select your environment → **Deploy!**
 
 ---
 
-## 👩🏻‍💻 Set up in seconds
-
-1. Set up your `.env` file with your `PROVIDER_API_KEY`s
+## 👩🏻‍💻 Deploy with Docker in seconds
 
 ```bash
-OPENAI_API_KEY=your_openai_key
-ANTHROPIC_API_KEY=your_anthropic_key
+docker run -d --name helix \
+  -p 8080:8080 \
+  -e OPENAI_API_KEY=your_openai_key \
+  -e ANTHROPIC_API_KEY=your_anthropic_key \
+  helicone/helix:latest
 ```
 
 2. Run locally in your terminal
@@ -151,8 +156,275 @@ REDIS_URL=redis://localhost:6379
 
 ### Sample config file
 
-*Note: This is a sample `config.yaml` file. Please refer to our [configuration guide](https://docs.helicone.ai/gateway/configuration) for the full list of options, examples, and defaults.*
-*See our [full provider list here.](https://docs.helicone.ai/gateway/providers)*
+# Run directly
+./helix
+```
+
+### Option 3: Cargo (From Source)
+```bash
+cargo install --git https://github.com/Helicone/helicone-router.git ai-gateway
+ai-gateway
+```
+
+### Option 4: Local Deploy Script
+```bash
+# Clone and deploy to AWS ECS
+git clone https://github.com/Helicone/helicone-router.git
+cd helicone-router
+./infrastructure/deploy.sh
+```
+
+---
+
+## 🔧 AWS Setup for One-Click Deploy
+
+To use the one-click deploy button, configure AWS IAM for GitHub Actions:
+
+### 1. Create OIDC Provider (if not exists)
+```bash
+aws iam create-open-id-connect-provider \
+  --url https://token.actions.githubusercontent.com \
+  --thumbprint-list 6938fd4d98bab03faadb97b34396831e3780aea1 \
+  --client-id-list sts.amazonaws.com
+```
+
+### 2. Create IAM Role
+```bash
+# Replace YOUR_ACCOUNT_ID and YOUR_GITHUB_USERNAME
+cat > github-actions-trust-policy.json << EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Federated": "arn:aws:iam::YOUR_ACCOUNT_ID:oidc-provider/token.actions.githubusercontent.com"
+      },
+      "Action": "sts:AssumeRoleWithWebIdentity",
+      "Condition": {
+        "StringEquals": {
+          "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
+          "token.actions.githubusercontent.com:sub": "repo:YOUR_GITHUB_USERNAME/helicone-router:ref:refs/heads/main"
+        }
+      }
+    }
+  ]
+}
+EOF
+
+aws iam create-role \
+  --role-name GitHubActions-ECS-Deploy \
+  --assume-role-policy-document file://github-actions-trust-policy.json
+```
+
+### 3. Attach Policies
+```bash
+aws iam attach-role-policy \
+  --role-name GitHubActions-ECS-Deploy \
+  --policy-arn arn:aws:iam::aws:policy/AmazonECS_FullAccess
+
+aws iam attach-role-policy \
+  --role-name GitHubActions-ECS-Deploy \
+  --policy-arn arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryFullAccess
+
+aws iam attach-role-policy \
+  --role-name GitHubActions-ECS-Deploy \
+  --policy-arn arn:aws:iam::aws:policy/IAMFullAccess
+
+aws iam attach-role-policy \
+  --role-name GitHubActions-ECS-Deploy \
+  --policy-arn arn:aws:iam::aws:policy/AmazonVPCFullAccess
+```
+
+### 4. Configure GitHub Secrets
+In your GitHub repo: **Settings** → **Secrets and variables** → **Actions**
+
+Add these secrets:
+- `AWS_ROLE_ARN`: `arn:aws:iam::YOUR_ACCOUNT_ID:role/GitHubActions-ECS-Deploy`
+- `AWS_ACCOUNT_ID`: Your AWS account ID
+- `TERRAFORM_CLOUD_TOKEN`: Your Terraform Cloud token (if using Terraform Cloud)
+
+---
+
+## ⚙️ Configuration
+
+### Environment variables (Simplest)
+```bash
+export OPENAI_API_KEY=sk-...
+export ANTHROPIC_API_KEY=sk-ant-...
+export REDIS_URL=redis://localhost:6379
+```
+
+### Configuration file
+```yaml
+# config.yaml
+providers:
+  - name: openai
+    type: openai
+    api_key: ${OPENAI_API_KEY}
+    models: [gpt-4o, gpt-4o-mini, gpt-3.5-turbo]
+
+  - name: anthropic
+    type: anthropic
+    api_key: ${ANTHROPIC_API_KEY}
+    models: [claude-3-5-sonnet, claude-3-5-haiku]
+
+  - name: bedrock
+    type: bedrock
+    region: us-east-1
+    models: [anthropic.claude-3-5-sonnet-20241022-v2:0]
+
+load_balancing:
+  strategy: latency_based  # or weighted, cost_based
+
+rate_limits:
+  global:
+    requests_per_minute: 1000
+  per_user:
+    requests_per_minute: 60
+
+caching:
+  backend: redis
+  ttl: 3600  # 1 hour
+```
+
+Run with config:
+```bash
+helix --config helix.yaml
+```
+
+---
+
+## 🌍 Supported Providers & Models
+
+<!-- TODO: revise the correct models & providers supported -->
+
+### Cloud Providers
+| Provider | Models | Auth Method |
+|----------|--------|-------------|
+| **OpenAI** | GPT-4o, GPT-4o-mini, o1, o3-mini, embeddings | API Key |
+| **Anthropic** | Claude 3.5 Sonnet/Haiku, Claude 3 Opus | API Key |
+| **AWS Bedrock** | Claude, Nova, Titan, Llama | AWS Credentials |
+| **Google Vertex** | Gemini Pro/Flash, PaLM, Claude | Service Account |
+| **Azure OpenAI** | GPT models via Azure | API Key |
+| **Mistral** | Mistral Large/Medium/Small | API Key |
+| **Cohere** | Command R+, Embed | API Key |
+| **Perplexity** | Sonar models | API Key |
+| **Together** | Llama, Mixtral, Qwen | API Key |
+| **Groq** | Llama, Mixtral, Gemma | API Key |
+
+### Self-Hosted
+| Provider | Models | Notes |
+|----------|--------|-------|
+| **Ollama** | Llama, Mistral, CodeLlama, etc. | Local deployment |
+| **vLLM** | Any HuggingFace model | OpenAI-compatible |
+| **OpenAI-compatible** | Custom endpoints | Generic support |
+
+<!-- TODO: update to the correct provider list link -->
+
+*See our [full provider list](https://docs.helicone.ai/helix/providers) for the complete matrix*
+
+---
+
+## 🎯 Production examples
+
+### Docker Compose
+```yaml
+version: '3.8'
+services:
+  helix:
+    image: helicone/helix:latest
+    ports:
+      - "8080:8080"
+    environment:
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      REDIS_URL: redis://redis:6379
+    volumes:
+      - ./helix.yaml:/app/helix.yaml
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+volumes:
+  redis_data:
+```
+
+### Kubernetes Deployment
+```yaml
+apiVersion: apps/
+kind: Deployment
+metadata:
+  name: helix
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: helix
+  template:
+    metadata:
+      labels:
+        app: helix
+    spec:
+      containers:
+      - name: helix
+        image: helicone/helix:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: OPENAI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: llm-secrets
+              key: openai
+        - name: REDIS_URL
+          value: redis://redis-service:6379
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "200m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: helicone-ai-gateway-service
+spec:
+  selector:
+    app: ai-gateway
+  ports:
+  - port: 80
+    targetPort: 8080
+  type: LoadBalancer
+```
+
+### Sidecar Pattern
+```dockerfile
+# Add to your existing application
+FROM your-app:latest
+
+# Install Helicone AI Gateway
+COPY --from=helicone/helix:latest /usr/local/bin/helix /usr/local/bin/helix
+
+# Start both services
+CMD ["sh", "-c", "helix & your-app"]
+```
+
+---
+
+## 🔧 Advanced Features
+
+### Load Balancing Strategies
 
 ```yaml
 providers: # Include their PROVIDER_API_KEY in .env file

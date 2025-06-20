@@ -1,0 +1,53 @@
+# AWS Configuration
+aws_region = "us-east-1"
+
+# Project Configuration
+project_name = "helicone"
+environment  = "production"
+
+# Logging Configuration
+log_retention_days = 30
+
+# Common Tags
+common_tags = {
+  Project     = "helicone"
+  Environment = "production"
+  ManagedBy   = "terraform"
+  Team        = "platform"
+}
+
+# Knowledge Base Configuration
+create_knowledge_base       = true
+knowledge_base_name         = "helicone-knowledge-base"
+knowledge_base_description  = "Helicone Knowledge Base for document retrieval and RAG"
+
+# S3 Configuration
+create_s3_bucket = true
+
+# Bedrock Models Available in Your AWS Account
+# Note: These models are already available in your us-east-1 region
+# You can customize this list based on your specific needs
+bedrock_models = [
+  # Latest and most capable models for production use
+  "anthropic.claude-3-7-sonnet-20250219-v1:0",      # Best overall performance
+  "anthropic.claude-sonnet-4-20250514-v1:0",        # Claude 4 Sonnet
+  "amazon.nova-premier-v1:0",                       # Amazon's flagship model
+  "amazon.nova-pro-v1:0",                           # Balanced performance/cost
+  
+  # Fast and efficient models for high-volume use
+  "anthropic.claude-3-5-haiku-20241022-v1:0",       # Fast Claude model
+  "amazon.nova-lite-v1:0",                          # Fast Nova model
+  "amazon.nova-micro-v1:0",                         # Ultra-fast model
+  
+  # Embedding models for RAG/search
+  "amazon.titan-embed-text-v2:0",                   # Latest embedding model
+  "cohere.embed-english-v3",                        # Alternative embedding model
+  
+  # Multimodal models (text + image)
+  "meta.llama4-scout-17b-instruct-v1:0",           # Llama 4 with vision
+  "mistral.pixtral-large-2502-v1:0",               # Mistral multimodal
+  
+  # Specialized models
+  "deepseek.r1-v1:0",                               # Advanced reasoning
+  "amazon.titan-image-generator-v2:0"               # Image generation
+] 

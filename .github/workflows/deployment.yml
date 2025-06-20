@@ -1,0 +1,222 @@
+name: AI Gateway Deployment
+run-name: Deploy to ${{ github.event.inputs.environment }} by @${{ github.actor }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to deploy (for rollbacks)"
+        required: false
+        default: ""
+      environment:
+        description: "Environment to deploy to"
+        type: choice
+        options:
+          - all
+          - us
+          - eu
+        default: "all"
+
+env:
+  ECR_REPOSITORY: helicone/helix  # TODO Change name to AI Gateway
+  US_REGION: us-east-1
+  US_ECR_REGION: us-east-2 
+  EU_REGION: eu-west-1
+  AWS_ACCOUNT_ID: 849596434884
+  ENVIRONMENT: production
+
+jobs:
+  build_and_push:
+    name: Build and Push Docker Images
+    runs-on: ubuntu-latest
+    outputs:
+      image_tag: ${{ steps.set-tag.outputs.tag }}
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+        with:
+          ref: "main"
+
+      - name: Set Image Tag
+        id: set-tag
+        run: |
+          # Get current date in YYYYMMDD format
+          CURRENT_DATE=$(date +'%Y%m%d-%H%M%S')
+
+          # Combine them to create the tag
+          TAG="${CURRENT_DATE}"
+
+          # If version was provided, use that instead
+          if [ -n "${{ github.event.inputs.version }}" ]; then
+            TAG="${{ github.event.inputs.version }}"
+          fi
+
+          # Set the output variable
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
+
+          # Print for logging
+          echo "Generated tag: ${TAG}"
+
+      - name: Create GitHub Tag
+        run: |
+          # Configure Git
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+
+          # Create and push the tag
+          TAG_NAME="deploy-${{ steps.set-tag.outputs.tag }}"
+          TAG_MESSAGE="Deployment to ${{ github.event.inputs.environment }} by @${{ github.actor }}"
+
+          git tag -a ${TAG_NAME} -m "${TAG_MESSAGE}"
+          git push origin ${TAG_NAME}
+
+      - name: Configure AWS credentials (US ECR)
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_GITHUB_ACTIONS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_GITHUB_ACTIONS_SECRET_KEY }}
+          aws-region: ${{ env.US_ECR_REGION }}
+
+      - name: Login to Amazon ECR (US)
+        id: login-ecr-us
+        uses: aws-actions/amazon-ecr-login@v1
+        with:
+          registry-type: private
+
+      - name: Configure AWS credentials (EU)
+        if: ${{ github.event.inputs.environment == 'all' || github.event.inputs.environment == 'eu' }}
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_GITHUB_ACTIONS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_GITHUB_ACTIONS_SECRET_KEY }}
+          aws-region: ${{ env.EU_REGION }}
+
+      - name: Login to Amazon ECR (EU)
+        if: ${{ github.event.inputs.environment == 'all' || github.event.inputs.environment == 'eu' }}
+        id: login-ecr-eu
+        uses: aws-actions/amazon-ecr-login@v1
+        with:
+          registry-type: private
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push US image
+        if: ${{ github.event.inputs.environment == 'all' || github.event.inputs.environment == 'us' }}
+        uses: docker/build-push-action@v6
+        with:
+          push: true
+          tags: |
+            ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.US_ECR_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:us-${{ steps.set-tag.outputs.tag }}
+            ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.US_ECR_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64
+
+      - name: Build and push EU image
+        if: ${{ github.event.inputs.environment == 'all' || github.event.inputs.environment == 'eu' }}
+        uses: docker/build-push-action@v6
+        with:
+          push: true
+          tags: |
+            ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.eu-west-1.amazonaws.com/${{ env.ECR_REPOSITORY }}:eu-${{ steps.set-tag.outputs.tag }}
+            ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.eu-west-1.amazonaws.com/${{ env.ECR_REPOSITORY }}:eu-latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64
+
+  deploy_us:
+    name: Deploy to US
+    needs: build_and_push
+    if: ${{ github.event.inputs.environment == 'all' || github.event.inputs.environment == 'us' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_GITHUB_ACTIONS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_GITHUB_ACTIONS_SECRET_KEY }}
+          aws-region: ${{ env.US_REGION }}
+
+      - name: Update ECS service
+        run: |
+          # Get the current task definition
+          TASK_DEFINITION=$(aws ecs describe-task-definition \
+            --task-definition ai-gateway-${{ env.ENVIRONMENT }} \
+            --query 'taskDefinition' \
+            --output json)
+
+          # Update the image in the task definition
+          NEW_TASK_DEFINITION=$(echo $TASK_DEFINITION | jq --arg IMAGE "${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.US_ECR_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:us-${{ needs.build_and_push.outputs.image_tag }}" '
+            .containerDefinitions[0].image = $IMAGE |
+            del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .placementConstraints, .compatibilities, .registeredAt, .registeredBy)
+          ')
+
+          # Register the new task definition
+          NEW_TASK_DEF_ARN=$(echo $NEW_TASK_DEFINITION | aws ecs register-task-definition \
+            --cli-input-json file:///dev/stdin \
+            --query 'taskDefinition.taskDefinitionArn' \
+            --output text)
+
+          # Update the ECS service
+          aws ecs update-service \
+            --cluster ai-gateway-cluster-${{ env.ENVIRONMENT }} \
+            --service ai-gateway-service-${{ env.ENVIRONMENT }} \
+            --task-definition $NEW_TASK_DEF_ARN \
+            --force-new-deployment
+
+          # Wait for deployment to complete
+          aws ecs wait services-stable \
+            --cluster ai-gateway-cluster-${{ env.ENVIRONMENT }} \
+            --services ai-gateway-service-${{ env.ENVIRONMENT }}
+
+  deploy_eu:
+    name: Deploy to EU
+    needs: build_and_push
+    if: ${{ github.event.inputs.environment == 'all' || github.event.inputs.environment == 'eu' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_GITHUB_ACTIONS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_GITHUB_ACTIONS_SECRET_KEY }}
+          aws-region: ${{ env.EU_REGION }}
+
+      - name: Update ECS service
+        run: |
+          # Get the current task definition
+          TASK_DEFINITION=$(aws ecs describe-task-definition \
+            --task-definition ai-gateway-${{ env.ENVIRONMENT }} \
+            --query 'taskDefinition' \
+            --output json)
+
+          # Update the image in the task definition
+          NEW_TASK_DEFINITION=$(echo $TASK_DEFINITION | jq --arg IMAGE "${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.EU_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:eu-${{ needs.build_and_push.outputs.image_tag }}" '
+            .containerDefinitions[0].image = $IMAGE |
+            del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .placementConstraints, .compatibilities, .registeredAt, .registeredBy)
+          ')
+
+          # Register the new task definition
+          NEW_TASK_DEF_ARN=$(echo $NEW_TASK_DEFINITION | aws ecs register-task-definition \
+            --cli-input-json file:///dev/stdin \
+            --query 'taskDefinition.taskDefinitionArn' \
+            --output text)
+
+          # Update the ECS service
+          aws ecs update-service \
+            --cluster ai-gateway-cluster-${{ env.ENVIRONMENT }} \
+            --service ai-gateway-service-${{ env.ENVIRONMENT }} \
+            --task-definition $NEW_TASK_DEF_ARN \
+            --force-new-deployment
+
+          # Wait for deployment to complete
+          aws ecs wait services-stable \
+            --cluster ai-gateway-cluster-${{ env.ENVIRONMENT }} \
+            --services ai-gateway-service-${{ env.ENVIRONMENT }}
