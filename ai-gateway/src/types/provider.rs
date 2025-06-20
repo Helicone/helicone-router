@@ -139,29 +139,42 @@ pub enum ProviderKey {
         access_key: Secret<String>,
         secret_key: Secret<String>,
     },
+    NotRequired,
 }
 
 impl ProviderKey {
-    pub fn from_env(
-        provider: InferenceProvider,
-    ) -> Result<Self, ProviderError> {
-        if provider == InferenceProvider::Bedrock {
-            let access_key = Secret::from(
-                std::env::var("AWS_ACCESS_KEY")
-                    .map_err(|_| ProviderError::ApiKeyNotFound(provider))?,
-            );
-            let secret_key = Secret::from(
-                std::env::var("AWS_SECRET_KEY")
-                    .map_err(|_| ProviderError::ApiKeyNotFound(provider))?,
-            );
-            tracing::trace!(
-                provider = %provider,
-                "Got provider key"
-            );
-            Ok(ProviderKey::AwsCredentials {
+    pub fn as_secret(&self) -> Option<&Secret<String>> {
+        match self {
+            ProviderKey::Secret(key) => Some(key),
+            _ => None,
+        }
+    }
+
+    pub fn as_aws_credentials(
+        &self,
+    ) -> (Option<&Secret<String>>, Option<&Secret<String>>) {
+        match self {
+            ProviderKey::AwsCredentials {
                 access_key,
                 secret_key,
-            })
+            } => (Some(access_key), Some(secret_key)),
+            _ => (None, None),
+        }
+    }
+
+    pub fn from_env(provider: InferenceProvider) -> Option<Self> {
+        if provider == InferenceProvider::Bedrock {
+            if let (Ok(access_key), Ok(secret_key)) = (
+                std::env::var("AWS_ACCESS_KEY"),
+                std::env::var("AWS_SECRET_KEY"),
+            ) {
+                Some(ProviderKey::AwsCredentials {
+                    access_key: Secret::from(access_key),
+                    secret_key: Secret::from(secret_key),
+                })
+            } else {
+                None
+            }
         } else {
             let provider_str = provider.to_string().to_uppercase();
             let env_var = format!("{provider_str}_API_KEY");
@@ -170,9 +183,9 @@ impl ProviderKey {
                     provider = %provider,
                     "Got provider key"
                 );
-                Ok(ProviderKey::Secret(Secret::from(key)))
+                Some(ProviderKey::Secret(Secret::from(key)))
             } else {
-                Err(ProviderError::ApiKeyNotFound(provider))
+                None
             }
         }
     }
@@ -211,8 +224,9 @@ impl ProviderKeys {
                 provider = %provider,
                 "from_env_inner"
             );
-            let key = ProviderKey::from_env(provider)?;
-            keys.insert(provider, key);
+            if let Some(key) = ProviderKey::from_env(provider) {
+                keys.insert(provider, key);
+            }
         }
 
         Ok(keys)
@@ -223,27 +237,23 @@ impl ProviderKeys {
     ) -> Result<Self, ProviderError> {
         let mut keys = Self::from_env_inner(&router_config.load_balance)?;
         let default_provider = SDK;
-        let key = ProviderKey::from_env(default_provider)?;
-        keys.insert(default_provider, key);
+        if let Some(key) = ProviderKey::from_env(default_provider) {
+            keys.insert(default_provider, key);
+        }
         Ok(Self(Arc::new(keys)))
     }
 
     pub fn from_env_direct_proxy(
         providers_config: &ProvidersConfig,
     ) -> Result<Self, ProviderError> {
-        let mut keys = HashMap::default();
-        for (provider, config) in providers_config.iter() {
-            // ollama doesn't support API keys and bedrock
-            if config.enabled && !matches!(provider, InferenceProvider::Ollama)
-            {
-                tracing::debug!(
-                    provider = %provider,
-                    "from_env_direct_proxy"
-                );
-                let key = ProviderKey::from_env(*provider)?;
-                keys.insert(*provider, key);
-            }
-        }
+        let keys = providers_config
+            .iter()
+            .filter_map(|(&provider, _)| {
+                tracing::debug!(provider = %provider, "from_env_direct_proxy");
+                ProviderKey::from_env(provider).map(|key| (provider, key))
+            })
+            .collect();
+
         Ok(Self(Arc::new(keys)))
     }
 }

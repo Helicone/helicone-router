@@ -15,7 +15,7 @@ impl Client {
     pub fn new(
         app_state: &AppState,
         client_builder: ClientBuilder,
-        provider_key: &ProviderKey,
+        provider_key: Option<&ProviderKey>,
     ) -> Result<Self, InitError> {
         let base_url = app_state
             .0
@@ -28,21 +28,14 @@ impl Client {
             .base_url
             .clone();
 
-        let api_key = match provider_key {
-            ProviderKey::Secret(key) => key,
-            ProviderKey::AwsCredentials { .. } => {
-                return Err(InitError::ProviderError(
-                    ProviderError::ApiKeyNotFound(InferenceProvider::OpenAI),
-                ));
-            }
-        };
-
         let mut default_headers = HeaderMap::new();
-        default_headers.insert(
-            http::header::AUTHORIZATION,
-            HeaderValue::from_str(&format!("Bearer {}", api_key.expose()))
-                .unwrap(),
-        );
+        if let Some(ProviderKey::Secret(key)) = provider_key {
+            default_headers.insert(
+                http::header::AUTHORIZATION,
+                HeaderValue::from_str(&format!("Bearer {}", key.expose()))
+                    .unwrap(),
+            );
+        }
         default_headers.insert(http::header::HOST, host_header(&base_url));
         default_headers.insert(
             http::header::CONTENT_TYPE,

@@ -30,11 +30,7 @@ impl DirectProxies {
     pub fn new(app_state: &AppState) -> Result<Self, InitError> {
         let mut direct_proxies = HashMap::default();
         let provider_keys = app_state.0.direct_proxy_api_keys.clone();
-        for (provider, _provider_config) in app_state
-            .config()
-            .providers
-            .iter()
-            .filter(|(_, config)| config.enabled)
+        for (provider, _provider_config) in app_state.config().providers.iter()
         {
             let direct_proxy_dispatcher =
                 Dispatcher::new_direct_proxy(app_state.clone(), *provider)?;
@@ -76,11 +72,7 @@ impl DirectProxiesWithoutMapper {
     pub fn new(app_state: &AppState) -> Result<Self, InitError> {
         let mut direct_proxies = HashMap::default();
         let provider_keys = app_state.0.direct_proxy_api_keys.clone();
-        for (provider, _provider_config) in app_state
-            .config()
-            .providers
-            .iter()
-            .filter(|(_, config)| config.enabled)
+        for (provider, _provider_config) in app_state.config().providers.iter()
         {
             let direct_proxy_dispatcher =
                 Dispatcher::new_without_mapper(app_state.clone(), *provider)?;

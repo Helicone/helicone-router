@@ -11,8 +11,9 @@ use reqwest::ClientBuilder;
 use crate::{
     app_state::AppState,
     error::{
-        api::ApiError, init::InitError, internal::InternalError,
-        invalid_req::InvalidRequestError, provider::ProviderError,
+        api::ApiError, auth::AuthError, init::InitError,
+        internal::InternalError, invalid_req::InvalidRequestError,
+        provider::ProviderError,
     },
     types::{
         provider::{InferenceProvider, ProviderKey},
@@ -24,15 +25,15 @@ use crate::{
 #[derive(Debug, Clone, Default)]
 pub struct Client {
     pub(super) inner: reqwest::Client,
-    pub(super) access_key: Secret<String>,
-    pub(super) secret_key: Secret<String>,
+    pub(super) access_key: Option<Secret<String>>,
+    pub(super) secret_key: Option<Secret<String>>,
 }
 
 impl Client {
     pub fn new(
         app_state: &AppState,
         client_builder: ClientBuilder,
-        provider_key: &ProviderKey,
+        provider_key: Option<&ProviderKey>,
     ) -> Result<Self, InitError> {
         let provider_config = app_state
             .0
@@ -43,23 +44,16 @@ impl Client {
                 InferenceProvider::Bedrock,
             ))?;
 
-        let (access_key, secret_key) = match provider_key {
-            ProviderKey::AwsCredentials {
-                access_key,
-                secret_key,
-            } => (access_key, secret_key),
-            ProviderKey::Secret(_key) => {
-                return Err(InitError::ProviderError(
-                    ProviderError::ApiKeyNotFound(InferenceProvider::Bedrock),
-                ));
-            }
-        };
-
         let base_url = provider_config.base_url.clone();
 
         let mut default_headers = HeaderMap::new();
 
         default_headers.insert(http::header::HOST, host_header(&base_url));
+
+        let (access_key, secret_key) = provider_key
+            .map(|k| k.as_aws_credentials())
+            .unwrap_or_default();
+
         default_headers.insert(
             http::header::CONTENT_TYPE,
             HeaderValue::from_str(mime::APPLICATION_JSON.essence_str())
@@ -71,8 +65,8 @@ impl Client {
             .map_err(InitError::CreateReqwestClient)?;
         Ok(Self {
             inner,
-            access_key: access_key.clone(),
-            secret_key: secret_key.clone(),
+            access_key: access_key.map(|k| k.clone()),
+            secret_key: secret_key.map(|k| k.clone()),
         })
     }
 
@@ -81,8 +75,16 @@ impl Client {
         mut request_builder: reqwest::RequestBuilder,
         req_body_bytes: &bytes::Bytes,
     ) -> Result<reqwest::RequestBuilder, ApiError> {
-        let access_key_id = self.access_key.expose();
-        let secret_key = self.secret_key.expose();
+        let access_key_id = self
+            .access_key
+            .as_ref()
+            .ok_or(ApiError::Authentication(AuthError::InvalidCredentials))?
+            .expose();
+        let secret_key = self
+            .secret_key
+            .as_ref()
+            .ok_or(ApiError::Authentication(AuthError::InvalidCredentials))?
+            .expose();
         let identity = Credentials::new(
             access_key_id,
             secret_key,

@@ -126,40 +126,18 @@ impl AppState {
         &self,
         router_id: &RouterId,
         provider: InferenceProvider,
-    ) -> Result<ProviderKey, ProviderError> {
+    ) -> Result<Option<ProviderKey>, ProviderError> {
         let provider_keys = self.0.provider_keys.read().await;
         let provider_keys = provider_keys.get(router_id).ok_or_else(|| {
             ProviderError::ProviderKeysNotFound(router_id.clone())
         })?;
-        let key = provider_keys
-            .get(&provider)
-            .ok_or_else(|| ProviderError::ApiKeyNotFound(provider))
-            .inspect_err(|e| {
-                tracing::error!(
-                    error = %e,
-                    "Error getting provider key for router"
-                );
-            })?
-            .clone();
-        Ok(key)
+        Ok(provider_keys.get(&provider).cloned())
     }
 
     pub fn get_provider_api_key_for_direct_proxy(
         &self,
         provider: InferenceProvider,
-    ) -> Result<ProviderKey, ProviderError> {
-        let key = self
-            .0
-            .direct_proxy_api_keys
-            .get(&provider)
-            .ok_or_else(|| ProviderError::ApiKeyNotFound(provider))
-            .inspect_err(|e| {
-                tracing::error!(
-                    error = %e,
-                    "Error getting provider key for direct proxy"
-                );
-            })?
-            .clone();
-        Ok(key)
+    ) -> Result<Option<ProviderKey>, ProviderError> {
+        Ok(self.0.direct_proxy_api_keys.get(&provider).cloned())
     }
 }

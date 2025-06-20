@@ -16,7 +16,7 @@ impl Client {
     pub fn new(
         app_state: &AppState,
         client_builder: ClientBuilder,
-        provider_key: &ProviderKey,
+        provider_key: Option<&ProviderKey>,
     ) -> Result<Self, InitError> {
         let provider_config = app_state
             .0
@@ -27,15 +27,6 @@ impl Client {
                 InferenceProvider::Anthropic,
             ))?;
 
-        let api_key = match provider_key {
-            ProviderKey::Secret(key) => key,
-            ProviderKey::AwsCredentials { .. } => {
-                return Err(InitError::ProviderError(
-                    ProviderError::ApiKeyNotFound(InferenceProvider::Anthropic),
-                ));
-            }
-        };
-
         let base_url = provider_config.base_url.clone();
         let version = provider_config
             .version
@@ -43,10 +34,12 @@ impl Client {
             .unwrap_or(DEFAULT_ANTHROPIC_VERSION);
 
         let mut default_headers = HeaderMap::new();
-        default_headers.insert(
-            HeaderName::from_static("x-api-key"),
-            HeaderValue::from_str(api_key.expose()).unwrap(),
-        );
+        if let Some(ProviderKey::Secret(key)) = provider_key {
+            default_headers.insert(
+                HeaderName::from_static("x-api-key"),
+                HeaderValue::from_str(key.expose()).unwrap(),
+            );
+        }
         default_headers.insert(
             HeaderName::from_static("anthropic-version"),
             HeaderValue::from_str(version).unwrap(),

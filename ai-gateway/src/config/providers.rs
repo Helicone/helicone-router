@@ -21,8 +21,6 @@ pub struct GlobalProviderConfig {
     pub base_url: Url,
     #[serde(default)]
     pub version: Option<String>,
-    #[serde(default)]
-    pub enabled: bool,
 }
 
 /// Map of *ALL* supported providers.
