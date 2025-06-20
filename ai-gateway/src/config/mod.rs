@@ -71,7 +71,6 @@ pub struct Config {
     pub discover: self::discover::DiscoverConfig,
     pub response_headers: self::response_headers::ResponseHeadersConfig,
     pub deployment_target: DeploymentTarget,
-    pub is_production: bool,
 
     /// If a request is made with a model that is not in the `RouterConfig`
     /// model mapping, then we fallback to this.
@@ -156,7 +155,6 @@ impl crate::tests::TestDefault for Config {
             default_model_mapping:
                 self::model_mapping::ModelMappingConfig::default(),
             global: middleware,
-            is_production: false,
             providers: self::providers::ProvidersConfig::default(),
             helicone_observability:
                 self::helicone::HeliconeConfig::test_default(),

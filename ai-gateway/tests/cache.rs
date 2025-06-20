@@ -78,7 +78,7 @@ async fn cache_enabled_globally() {
     assert_eq!(response.status(), StatusCode::OK);
     assert_eq!(
         response.headers().get("helicone-cache").unwrap(),
-        "miss",
+        "MISS",
         "First request should be a cache miss"
     );
 
@@ -92,7 +92,7 @@ async fn cache_enabled_globally() {
     assert_eq!(response.status(), StatusCode::OK);
     assert_eq!(
         response.headers().get("helicone-cache").unwrap(),
-        "hit",
+        "HIT",
         "Second request should be a cache hit"
     );
 
@@ -108,7 +108,7 @@ async fn cache_enabled_globally() {
     assert_eq!(response.status(), StatusCode::OK);
     assert_eq!(
         response.headers().get("helicone-cache").unwrap(),
-        "miss",
+        "MISS",
         "First request to /openai endpoint should be a cache miss"
     );
 
@@ -121,7 +121,7 @@ async fn cache_enabled_globally() {
     assert_eq!(response.status(), StatusCode::OK);
     assert_eq!(
         response.headers().get("helicone-cache").unwrap(),
-        "hit",
+        "HIT",
         "Second request to /openai endpoint should be a cache hit"
     );
 
@@ -136,7 +136,7 @@ async fn cache_enabled_globally() {
     assert_eq!(response.status(), StatusCode::OK);
     assert_eq!(
         response.headers().get("helicone-cache").unwrap(),
-        "miss",
+        "MISS",
         "First request to /ai endpoint should be a cache miss"
     );
 
@@ -149,7 +149,7 @@ async fn cache_enabled_globally() {
     assert_eq!(response.status(), StatusCode::OK);
     assert_eq!(
         response.headers().get("helicone-cache").unwrap(),
-        "hit",
+        "HIT",
         "Second request to /ai endpoint should be a cache hit"
     );
 }
@@ -368,7 +368,7 @@ async fn cache_enabled_per_router() {
     assert_eq!(response.status(), StatusCode::OK);
     assert_eq!(
         response.headers().get("helicone-cache").unwrap(),
-        "miss",
+        "MISS",
         "First request should be a cache miss"
     );
 
@@ -382,7 +382,7 @@ async fn cache_enabled_per_router() {
     assert_eq!(response.status(), StatusCode::OK);
     assert_eq!(
         response.headers().get("helicone-cache").unwrap(),
-        "hit",
+        "HIT",
         "Second request should be a cache hit"
     );
 

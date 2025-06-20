@@ -32,8 +32,8 @@ use crate::{
 const CACHE_HIT_HEADER: HeaderName = HeaderName::from_static("helicone-cache");
 const CACHE_BUCKET_IDX: HeaderName =
     HeaderName::from_static("helicone-cache-bucket-idx");
-const CACHE_HIT_HEADER_VALUE: HeaderValue = HeaderValue::from_static("hit");
-const CACHE_MISS_HEADER_VALUE: HeaderValue = HeaderValue::from_static("miss");
+const CACHE_HIT_HEADER_VALUE: HeaderValue = HeaderValue::from_static("HIT");
+const CACHE_MISS_HEADER_VALUE: HeaderValue = HeaderValue::from_static("MISS");
 
 #[derive(Debug)]
 struct CacheContext {
