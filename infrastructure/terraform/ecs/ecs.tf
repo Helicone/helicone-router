@@ -79,7 +79,7 @@ resource "aws_ecs_service" "aigateway_service" {
 
   load_balancer {
     target_group_arn = aws_lb_target_group.fargate_tg.arn
-    container_name   = "helix-${var.environment}"
+    container_name   = "ai-gateway-${var.environment}"
     container_port   = 8080
   }
 

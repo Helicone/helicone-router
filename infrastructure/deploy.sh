@@ -16,7 +16,7 @@ AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID:-849596434884}
 ECR_REPOSITORY="helicone/aigateway"
 IMAGE_TAG=${IMAGE_TAG:-latest}
 
-echo -e "${GREEN}🚀 Starting Helicone Helix deployment to AWS ECS${NC}"
+echo -e "${GREEN}🚀 Starting Helicone AI Gateway deployment to AWS ECS${NC}"
 
 # Function to check if required tools are installed
 check_dependencies() {
@@ -178,7 +178,7 @@ get_endpoint() {
     cd - > /dev/null
     
     if [[ -n "$LB_DNS" ]]; then
-        echo -e "${GREEN}🎉 Your Helicone Helix deployment is ready!${NC}"
+        echo -e "${GREEN}🎉 Your Helicone AI Gateway deployment is ready!${NC}"
         echo -e "${GREEN}📍 Endpoint: http://${LB_DNS}${NC}"
         echo -e "${GREEN}🧪 Test it: curl http://${LB_DNS}/health${NC}"
     else
@@ -189,7 +189,7 @@ get_endpoint() {
 # Main deployment flow
 main() {
     echo -e "${GREEN}╔══════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${GREEN}║                   Helicone Helix Deployer                    ║${NC}"
+    echo -e "${GREEN}║                   Helicone AI Gateway Deployer                    ║${NC}"
     echo -e "${GREEN}╚══════════════════════════════════════════════════════════════╝${NC}"
     echo ""
     
@@ -203,7 +203,7 @@ main() {
     
     echo ""
     echo -e "${GREEN}🎉 Deployment completed successfully!${NC}"
-    echo -e "${GREEN}💡 Your Helicone Helix router is now running on AWS ECS${NC}"
+    echo -e "${GREEN}💡 Your Helicone AI Gateway is now running on AWS ECS${NC}"
     echo ""
     echo -e "${YELLOW}📚 Next steps:${NC}"
     echo "   • Configure your API keys in the ECS task definition"

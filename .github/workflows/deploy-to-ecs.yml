@@ -30,7 +30,7 @@ env:
 
 jobs:
   deploy:
-    name: Deploy Helicone Helix to ECS
+    name: Deploy Helicone AI Gateway to ECS
     runs-on: ubuntu-latest
     
     permissions:
@@ -128,7 +128,7 @@ jobs:
       - name: Create deployment summary
         run: |
           cat >> $GITHUB_STEP_SUMMARY << EOF
-          # 🚀 Helicone Helix Deployment Complete
+          # 🚀 Helicone AI Gateway Deployment Complete
           
           ## Deployment Details
           - **Environment**: ${{ env.ENVIRONMENT }}

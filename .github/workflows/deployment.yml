@@ -1,4 +1,4 @@
-name: Helix Deployment
+name: AI Gateway Deployment
 run-name: Deploy to ${{ github.event.inputs.environment }} by @${{ github.actor }}
 
 on:
@@ -147,7 +147,7 @@ jobs:
         run: |
           # Get the current task definition
           TASK_DEFINITION=$(aws ecs describe-task-definition \
-            --task-definition helix-${{ env.ENVIRONMENT }} \
+            --task-definition ai-gateway-${{ env.ENVIRONMENT }} \
             --query 'taskDefinition' \
             --output json)
 
@@ -165,15 +165,15 @@ jobs:
 
           # Update the ECS service
           aws ecs update-service \
-            --cluster helix-cluster-${{ env.ENVIRONMENT }} \
-            --service helix-service-${{ env.ENVIRONMENT }} \
+            --cluster ai-gateway-cluster-${{ env.ENVIRONMENT }} \
+            --service ai-gateway-service-${{ env.ENVIRONMENT }} \
             --task-definition $NEW_TASK_DEF_ARN \
             --force-new-deployment
 
           # Wait for deployment to complete
           aws ecs wait services-stable \
-            --cluster helix-cluster-${{ env.ENVIRONMENT }} \
-            --services helix-service-${{ env.ENVIRONMENT }}
+            --cluster ai-gateway-cluster-${{ env.ENVIRONMENT }} \
+            --services ai-gateway-service-${{ env.ENVIRONMENT }}
 
   deploy_eu:
     name: Deploy to EU
@@ -193,7 +193,7 @@ jobs:
         run: |
           # Get the current task definition
           TASK_DEFINITION=$(aws ecs describe-task-definition \
-            --task-definition helix-${{ env.ENVIRONMENT }} \
+            --task-definition ai-gateway-${{ env.ENVIRONMENT }} \
             --query 'taskDefinition' \
             --output json)
 
@@ -211,12 +211,12 @@ jobs:
 
           # Update the ECS service
           aws ecs update-service \
-            --cluster helix-cluster-${{ env.ENVIRONMENT }} \
-            --service helix-service-${{ env.ENVIRONMENT }} \
+            --cluster ai-gateway-cluster-${{ env.ENVIRONMENT }} \
+            --service ai-gateway-service-${{ env.ENVIRONMENT }} \
             --task-definition $NEW_TASK_DEF_ARN \
             --force-new-deployment
 
           # Wait for deployment to complete
           aws ecs wait services-stable \
-            --cluster helix-cluster-${{ env.ENVIRONMENT }} \
-            --services helix-service-${{ env.ENVIRONMENT }}
+            --cluster ai-gateway-cluster-${{ env.ENVIRONMENT }} \
+            --services ai-gateway-service-${{ env.ENVIRONMENT }}

@@ -17,7 +17,7 @@
 
 ## 🚀 One-Click Deploy to AWS ECS
 
-Deploy Helicone Helix to AWS ECS with a single click:
+Deploy Helicone Helicone AI Gateway to AWS ECS with a single click:
 
 [![Deploy to AWS ECS](https://img.shields.io/badge/Deploy%20to-AWS%20ECS-FF9900?style=for-the-badge&logo=amazon-aws)](https://github.com/Helicone/helicone-router/actions/workflows/deploy-to-ecs.yml)
 
@@ -156,18 +156,14 @@ REDIS_URL=redis://localhost:6379
 
 ### Sample config file
 
-<<<<<<< HEAD
-*Note: This is a sample `config.yaml` file. Please refer to our [configuration guide](https://docs.helicone.ai/gateway/configuration) for the full list of options, examples, and defaults.*
-*See our [full provider list here.](https://docs.helicone.ai/gateway/providers)*
-=======
 # Run directly
 ./helix
 ```
 
 ### Option 3: Cargo (From Source)
 ```bash
-cargo install helix-llm-proxy
-helix
+cargo install --git https://github.com/Helicone/helicone-router.git ai-gateway
+ai-gateway
 ```
 
 ### Option 4: Local Deploy Script
@@ -261,7 +257,7 @@ export REDIS_URL=redis://localhost:6379
 
 ### Configuration file
 ```yaml
-# helix.yaml
+# config.yaml
 providers:
   - name: openai
     type: openai
@@ -402,10 +398,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: helix-service
+  name: helicone-ai-gateway-service
 spec:
   selector:
-    app: helix
+    app: ai-gateway
   ports:
   - port: 80
     targetPort: 8080
@@ -417,7 +413,7 @@ spec:
 # Add to your existing application
 FROM your-app:latest
 
-# Install Helix
+# Install Helicone AI Gateway
 COPY --from=helicone/helix:latest /usr/local/bin/helix /usr/local/bin/helix
 
 # Start both services
@@ -429,7 +425,6 @@ CMD ["sh", "-c", "helix & your-app"]
 ## 🔧 Advanced Features
 
 ### Load Balancing Strategies
->>>>>>> e4654bd (feat: One click deploy via ECS)
 
 ```yaml
 providers: # Include their PROVIDER_API_KEY in .env file
