@@ -1,5 +1,5 @@
 telemetry:
-  level: "info,llm_proxy=trace"
+  level: "info,ai_gateway=trace"
   exporter: both
 
 helicone-observability:
@@ -12,5 +12,5 @@ routers:
     load-balance:
       chat:
         strategy: latency
-        targets:
+        providers:
           - openai

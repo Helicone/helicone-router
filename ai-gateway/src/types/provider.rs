@@ -164,6 +164,7 @@ impl ProviderKey {
         }
     }
 
+    #[must_use]
     pub fn from_env(provider: InferenceProvider) -> Option<Self> {
         if provider == InferenceProvider::Bedrock {
             if let (Ok(access_key), Ok(secret_key)) = (
@@ -181,10 +182,6 @@ impl ProviderKey {
             let provider_str = provider.to_string().to_uppercase();
             let env_var = format!("{provider_str}_API_KEY");
             if let Ok(key) = std::env::var(&env_var) {
-                tracing::trace!(
-                    provider = %provider,
-                    "Got provider key"
-                );
                 Some(ProviderKey::Secret(Secret::from(key)))
             } else {
                 None
@@ -215,17 +212,8 @@ impl ProviderKeys {
         for provider in providers {
             if provider == InferenceProvider::Ollama {
                 // ollama doesn't require an API key
-                tracing::debug!(
-                    provider = %provider,
-                    "from_env_inner ollama"
-                );
                 continue;
             }
-
-            tracing::debug!(
-                provider = %provider,
-                "from_env_inner"
-            );
             if let Some(key) = ProviderKey::from_env(provider) {
                 keys.insert(provider, key);
             }
@@ -251,7 +239,6 @@ impl ProviderKeys {
         let keys = providers_config
             .iter()
             .filter_map(|(&provider, _)| {
-                tracing::debug!(provider = %provider, "from_env_direct_proxy");
                 ProviderKey::from_env(provider).map(|key| (provider, key))
             })
             .collect();

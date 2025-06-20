@@ -268,7 +268,6 @@ async fn handle_response_for_cache_miss<C: CacheManager>(
         .put(key, http_resp, policy)
         .await
         .map_err(InternalError::CacheError)?;
-    tracing::debug!("cached response");
 
     build_response(
         cached,

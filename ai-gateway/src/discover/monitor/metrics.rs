@@ -74,9 +74,9 @@ impl EndpointMetrics {
         stream_error: &reqwest_eventsource::Error,
     ) {
         match stream_error {
-            reqwest_eventsource::Error::StreamEnded
-            | reqwest_eventsource::Error::Transport(..) => {
-                self.incr_remote_internal_error_count();
+            reqwest_eventsource::Error::StreamEnded => {
+                // happens in valid stream end cases, so we dont
+                // increment metrics heres
             }
             reqwest_eventsource::Error::InvalidStatusCode(status_code, ..) => {
                 if status_code.is_server_error() {
@@ -86,7 +86,21 @@ impl EndpointMetrics {
                     tracing::debug!(status_code = %status_code, "got upstream client error in stream");
                 }
             }
-            _ => {}
+            reqwest_eventsource::Error::Utf8(..)
+            | reqwest_eventsource::Error::Parser(..)
+            | reqwest_eventsource::Error::Transport(..)
+            | reqwest_eventsource::Error::InvalidContentType(..)
+            | reqwest_eventsource::Error::InvalidLastEventId(..) => {
+                tracing::error!(
+                    error = %stream_error,
+                    "encountered invalid stream error"
+                );
+                // we want to count these as errors in our health metrics
+                // so that if someone returns garbled utf88 for example,
+                // we still consider that a health issue and can remove
+                // them from the lb pool
+                self.incr_remote_internal_error_count();
+            }
         }
     }
 }

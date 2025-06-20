@@ -84,6 +84,7 @@ impl LoggerService {
             tracing::error!("Failed to get TFFT signal");
             Duration::from_secs(0)
         });
+        tracing::trace!(tfft_duration = ?tfft_duration, "tfft_duration");
         let req_body_len = self.request_body.len();
         let resp_body_len = response_body.len();
         let request_id = Uuid::new_v4();

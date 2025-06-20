@@ -167,6 +167,7 @@ pub(super) fn sse_stream(mut event_source: EventSource) -> SSEStream {
                         if let Err(_e) = tx
                             .send(Err(InternalError::StreamError(Box::new(e))))
                         {
+                            tracing::trace!("rx dropped before stream ended");
                             // rx dropped
                             break;
                         }
@@ -180,6 +181,9 @@ pub(super) fn sse_stream(mut event_source: EventSource) -> SSEStream {
                             let data = Bytes::from(message.data);
 
                             if let Err(_e) = tx.send(Ok(data)) {
+                                tracing::trace!(
+                                    "rx dropped before stream ended"
+                                );
                                 // rx dropped
                                 break;
                             }
