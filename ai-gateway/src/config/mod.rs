@@ -68,8 +68,7 @@ pub struct MiddlewareConfig {
 pub struct Config {
     pub telemetry: telemetry::Config,
     pub server: self::server::ServerConfig,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub minio: Option<self::minio::Config>,
+    pub minio: self::minio::Config,
     pub dispatcher: self::dispatcher::DispatcherConfig,
     pub discover: self::discover::DiscoverConfig,
     pub response_headers: self::response_headers::ResponseHeadersConfig,
@@ -158,11 +157,6 @@ impl Config {
             }
         }
         self.validate_model_mappings()?;
-        if matches!(self.deployment_target, DeploymentTarget::Cloud)
-            && self.minio.is_none()
-        {
-            return Err(InitError::MinioNotConfigured);
-        }
         Ok(())
     }
 }
@@ -184,7 +178,7 @@ impl crate::tests::TestDefault for Config {
         Config {
             telemetry,
             server: self::server::ServerConfig::test_default(),
-            minio: Some(self::minio::Config::test_default()),
+            minio: self::minio::Config::test_default(),
             dispatcher: self::dispatcher::DispatcherConfig::test_default(),
             default_model_mapping:
                 self::model_mapping::ModelMappingConfig::default(),

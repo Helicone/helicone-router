@@ -175,11 +175,7 @@ impl tower::Service<crate::types::request::Request> for App {
 impl App {
     pub async fn new(config: Config) -> Result<Self, InitError> {
         tracing::info!("creating app");
-        let minio = config
-            .minio
-            .as_ref()
-            .map(|c| Minio::new(c.clone()))
-            .transpose()?;
+        let minio = Minio::new(config.minio.clone())?;
 
         let jawn_http_client = JawnClient::new()?;
 

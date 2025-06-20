@@ -147,8 +147,7 @@ impl Mock {
             args.minio_port,
         )
         .await;
-        config.minio.as_mut().unwrap().host =
-            Url::parse(&minio_mock.uri()).unwrap();
+        config.minio.host = Url::parse(&minio_mock.uri()).unwrap();
 
         let jawn_mock = start_mock_for_test(
             &get_stubs_path("jawn"),

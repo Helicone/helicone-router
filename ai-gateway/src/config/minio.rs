@@ -45,10 +45,14 @@ pub struct Config {
     pub host: Url,
     #[serde(default = "default_region")]
     pub region: String,
-    /// set via env vars: `MINIO__ACCESS_KEY`
+    /// set via env vars: `AI_GATEWAY__MINIO__ACCESS_KEY`
+    ///
+    /// Only required if running with `DeploymentTarget::Cloud`.
     #[serde(default = "default_access_key")]
     pub access_key: Secret<String>,
-    /// set via env vars: `MINIO__SECRET_KEY`
+    /// set via env vars: `AI_GATEWAY__MINIO__SECRET_KEY`
+    ///
+    /// Only required if running with `DeploymentTarget::Cloud`.
     #[serde(default = "default_secret_key")]
     pub secret_key: Secret<String>,
 }

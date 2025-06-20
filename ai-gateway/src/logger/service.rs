@@ -88,13 +88,7 @@ impl LoggerService {
         let resp_body_len = response_body.len();
         let request_id = Uuid::new_v4();
         let s3_client = match self.app_state.config().deployment_target {
-            DeploymentTarget::Cloud => S3Client::cloud(
-                self.app_state
-                    .0
-                    .minio
-                    .as_ref()
-                    .ok_or(LoggerError::MinioNotConfigured)?,
-            ),
+            DeploymentTarget::Cloud => S3Client::cloud(&self.app_state.0.minio),
             DeploymentTarget::Sidecar => {
                 S3Client::sidecar(&self.app_state.0.jawn_http_client)
             }

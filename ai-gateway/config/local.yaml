@@ -5,4 +5,12 @@ telemetry:
 helicone-observability:
   base-url: "http://localhost:8585"
   websocket-url: "ws://localhost:8585/ws/v1/router/control-plane"
-  enable-auth: false
+  enable-auth: true
+
+routers:
+  default:
+    load-balance:
+      chat:
+        strategy: latency
+        targets:
+          - openai

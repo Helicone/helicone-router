@@ -121,8 +121,6 @@ impl<'a> S3Client<'a> {
         let _resp = app_state
             .0
             .minio
-            .as_ref()
-            .ok_or(LoggerError::MinioNotConfigured)?
             .client
             .put(signed_url)
             .json(&s3_log)
