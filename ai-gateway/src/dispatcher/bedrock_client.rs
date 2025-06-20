@@ -21,7 +21,7 @@ use crate::{
     utils::host_header,
 };
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone)]
 pub struct Client {
     pub(super) inner: reqwest::Client,
     pub(super) access_key: Secret<String>,

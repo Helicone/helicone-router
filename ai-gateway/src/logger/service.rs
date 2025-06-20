@@ -148,7 +148,7 @@ impl LoggerService {
             .build();
         let log = Log::new(request_log, response_log);
         let log_message = LogMessage::builder()
-            .authorization(auth_ctx.api_key.expose().clone())
+            .authorization(auth_ctx.api_key.expose().to_string())
             .helicone_meta(helicone_metadata)
             .log(log)
             .build();
