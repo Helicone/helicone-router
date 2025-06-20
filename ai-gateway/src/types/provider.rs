@@ -143,6 +143,7 @@ pub enum ProviderKey {
 }
 
 impl ProviderKey {
+    #[must_use]
     pub fn as_secret(&self) -> Option<&Secret<String>> {
         match self {
             ProviderKey::Secret(key) => Some(key),
@@ -150,6 +151,7 @@ impl ProviderKey {
         }
     }
 
+    #[must_use]
     pub fn as_aws_credentials(
         &self,
     ) -> (Option<&Secret<String>>, Option<&Secret<String>>) {
@@ -205,7 +207,7 @@ impl std::ops::Deref for ProviderKeys {
 impl ProviderKeys {
     fn from_env_inner(
         balance_config: &BalanceConfig,
-    ) -> Result<HashMap<InferenceProvider, ProviderKey>, ProviderError> {
+    ) -> HashMap<InferenceProvider, ProviderKey> {
         tracing::debug!("Discovering provider keys");
         let mut keys = HashMap::default();
         let providers = balance_config.providers();
@@ -229,13 +231,13 @@ impl ProviderKeys {
             }
         }
 
-        Ok(keys)
+        keys
     }
 
     pub fn from_env(
         router_config: &Arc<RouterConfig>,
     ) -> Result<Self, ProviderError> {
-        let mut keys = Self::from_env_inner(&router_config.load_balance)?;
+        let mut keys = Self::from_env_inner(&router_config.load_balance);
         let default_provider = SDK;
         if let Some(key) = ProviderKey::from_env(default_provider) {
             keys.insert(default_provider, key);

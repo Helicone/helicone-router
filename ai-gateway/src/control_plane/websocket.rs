@@ -220,8 +220,10 @@ mod tests {
         let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
         let addr = listener.local_addr().unwrap();
         let ws_url = format!("ws://{addr}");
-        let mut helicone_config = HeliconeConfig::default();
-        helicone_config.websocket_url = ws_url.parse().unwrap();
+        let helicone_config = HeliconeConfig {
+            websocket_url: ws_url.parse().unwrap(),
+            ..Default::default()
+        };
 
         // Spawn mock server that just accepts connections
         tokio::spawn(async move {
@@ -241,7 +243,10 @@ mod tests {
 
     #[tokio::test]
     async fn test_integration_localhost_8585() {
-        let helicone_config = HeliconeConfig::default();
+        let helicone_config = HeliconeConfig {
+            websocket_url: "ws://localhost:8585".parse().unwrap(),
+            ..Default::default()
+        };
 
         // This will fail if no server is running on 8585, which is expected
         let result =
@@ -269,7 +274,10 @@ mod tests {
             );
         }
         println!("setting api key");
-        let helicone_config = HeliconeConfig::default();
+        let helicone_config = HeliconeConfig {
+            websocket_url: "ws://localhost:8585".parse().unwrap(),
+            ..Default::default()
+        };
 
         let control_plane_state: Arc<RwLock<ControlPlaneState>> =
             Arc::default();

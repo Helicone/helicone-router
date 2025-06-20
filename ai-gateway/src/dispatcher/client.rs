@@ -13,10 +13,7 @@ use crate::{
         ollama_client::Client as OllamaClient,
         openai_client::Client as OpenAIClient,
     },
-    error::{
-        api::ApiError, init::InitError, internal::InternalError,
-        provider::ProviderError,
-    },
+    error::{api::ApiError, init::InitError, internal::InternalError},
     types::{
         provider::{InferenceProvider, ProviderKey},
         router::RouterId,
@@ -80,7 +77,7 @@ impl Client {
             .timeout(app_state.0.config.dispatcher.timeout)
             .tcp_nodelay(true);
 
-        match (inference_provider) {
+        match inference_provider {
             InferenceProvider::OpenAI => Ok(Self::OpenAI(OpenAIClient::new(
                 app_state,
                 base_client,

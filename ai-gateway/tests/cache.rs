@@ -9,7 +9,7 @@ use serde_json::json;
 use tower::Service;
 
 /// Helper function to make a POST request to the specified URL
-async fn make_request(
+fn make_request(
     url: &str,
     cache_control: Option<(&str, &str)>,
 ) -> Request<axum_core::body::Body> {
@@ -72,8 +72,7 @@ async fn cache_enabled_globally() {
     let request = make_request(
         "http://router.helicone.com/router/default/v1/chat/completions",
         Some(("cache-control", "max-age=3600")),
-    )
-    .await;
+    );
     let response = harness.call(request).await.unwrap();
     assert_eq!(response.status(), StatusCode::OK);
     assert_eq!(
@@ -86,8 +85,7 @@ async fn cache_enabled_globally() {
     let request = make_request(
         "http://router.helicone.com/router/default/v1/chat/completions",
         Some(("cache-control", "max-age=3600")),
-    )
-    .await;
+    );
     let response = harness.call(request).await.unwrap();
     assert_eq!(response.status(), StatusCode::OK);
     assert_eq!(
@@ -102,8 +100,7 @@ async fn cache_enabled_globally() {
     let request = make_request(
         "http://router.helicone.com/openai/v1/chat/completions",
         Some(("cache-control", "max-age=3600")),
-    )
-    .await;
+    );
     let response = harness.call(request).await.unwrap();
     assert_eq!(response.status(), StatusCode::OK);
     assert_eq!(
@@ -115,8 +112,7 @@ async fn cache_enabled_globally() {
     let request = make_request(
         "http://router.helicone.com/openai/v1/chat/completions",
         Some(("cache-control", "max-age=3600")),
-    )
-    .await;
+    );
     let response = harness.call(request).await.unwrap();
     assert_eq!(response.status(), StatusCode::OK);
     assert_eq!(
@@ -130,8 +126,7 @@ async fn cache_enabled_globally() {
     let request = make_request(
         "http://router.helicone.com/ai/v1/chat/completions",
         Some(("cache-control", "max-age=3600")),
-    )
-    .await;
+    );
     let response = harness.call(request).await.unwrap();
     assert_eq!(response.status(), StatusCode::OK);
     assert_eq!(
@@ -143,8 +138,7 @@ async fn cache_enabled_globally() {
     let request = make_request(
         "http://router.helicone.com/ai/v1/chat/completions",
         Some(("cache-control", "max-age=3600")),
-    )
-    .await;
+    );
     let response = harness.call(request).await.unwrap();
     assert_eq!(response.status(), StatusCode::OK);
     assert_eq!(
@@ -191,8 +185,7 @@ async fn cache_disabled_globally() {
     let request = make_request(
         "http://router.helicone.com/router/default/v1/chat/completions",
         Some(("cache-control", "max-age=3600")),
-    )
-    .await;
+    );
     let response = harness.call(request).await.unwrap();
     assert_eq!(response.status(), StatusCode::OK);
     assert!(
@@ -204,8 +197,7 @@ async fn cache_disabled_globally() {
     let request = make_request(
         "http://router.helicone.com/router/default/v1/chat/completions",
         Some(("cache-control", "max-age=3600")),
-    )
-    .await;
+    );
     let response = harness.call(request).await.unwrap();
     assert_eq!(response.status(), StatusCode::OK);
     assert!(
@@ -219,8 +211,7 @@ async fn cache_disabled_globally() {
     let request = make_request(
         "http://router.helicone.com/openai/v1/chat/completions",
         Some(("cache-control", "max-age=3600")),
-    )
-    .await;
+    );
     let response = harness.call(request).await.unwrap();
     assert_eq!(response.status(), StatusCode::OK);
     assert!(
@@ -232,8 +223,7 @@ async fn cache_disabled_globally() {
     let request = make_request(
         "http://router.helicone.com/openai/v1/chat/completions",
         Some(("cache-control", "max-age=3600")),
-    )
-    .await;
+    );
     let response = harness.call(request).await.unwrap();
     assert_eq!(response.status(), StatusCode::OK);
     assert!(
@@ -247,8 +237,7 @@ async fn cache_disabled_globally() {
     let request = make_request(
         "http://router.helicone.com/ai/v1/chat/completions",
         Some(("cache-control", "max-age=3600")),
-    )
-    .await;
+    );
     let response = harness.call(request).await.unwrap();
     assert_eq!(response.status(), StatusCode::OK);
     assert!(
@@ -260,8 +249,7 @@ async fn cache_disabled_globally() {
     let request = make_request(
         "http://router.helicone.com/ai/v1/chat/completions",
         Some(("cache-control", "max-age=3600")),
-    )
-    .await;
+    );
     let response = harness.call(request).await.unwrap();
     assert_eq!(response.status(), StatusCode::OK);
     assert!(
@@ -362,8 +350,7 @@ async fn cache_enabled_per_router() {
     let request = make_request(
         "http://router.helicone.com/router/cached/v1/chat/completions",
         Some(("cache-control", "max-age=3600")),
-    )
-    .await;
+    );
     let response = harness.call(request).await.unwrap();
     assert_eq!(response.status(), StatusCode::OK);
     assert_eq!(
@@ -376,8 +363,7 @@ async fn cache_enabled_per_router() {
     let request = make_request(
         "http://router.helicone.com/router/cached/v1/chat/completions",
         Some(("cache-control", "max-age=3600")),
-    )
-    .await;
+    );
     let response = harness.call(request).await.unwrap();
     assert_eq!(response.status(), StatusCode::OK);
     assert_eq!(
@@ -391,8 +377,7 @@ async fn cache_enabled_per_router() {
     let request = make_request(
         "http://router.helicone.com/router/uncached/v1/chat/completions",
         Some(("cache-control", "max-age=3600")),
-    )
-    .await;
+    );
     let response = harness.call(request).await.unwrap();
     assert_eq!(response.status(), StatusCode::OK);
     assert!(
@@ -404,8 +389,7 @@ async fn cache_enabled_per_router() {
     let request = make_request(
         "http://router.helicone.com/router/uncached/v1/chat/completions",
         Some(("cache-control", "max-age=3600")),
-    )
-    .await;
+    );
     let response = harness.call(request).await.unwrap();
     assert_eq!(response.status(), StatusCode::OK);
     assert!(
@@ -418,8 +402,7 @@ async fn cache_enabled_per_router() {
     let request = make_request(
         "http://router.helicone.com/router/default/v1/chat/completions",
         Some(("cache-control", "max-age=3600")),
-    )
-    .await;
+    );
     let response = harness.call(request).await.unwrap();
     assert_eq!(response.status(), StatusCode::OK);
     assert!(
@@ -431,8 +414,7 @@ async fn cache_enabled_per_router() {
     let request = make_request(
         "http://router.helicone.com/router/default/v1/chat/completions",
         Some(("cache-control", "max-age=3600")),
-    )
-    .await;
+    );
     let response = harness.call(request).await.unwrap();
     assert_eq!(response.status(), StatusCode::OK);
     assert!(

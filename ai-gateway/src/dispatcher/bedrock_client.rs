@@ -65,8 +65,8 @@ impl Client {
             .map_err(InitError::CreateReqwestClient)?;
         Ok(Self {
             inner,
-            access_key: access_key.map(|k| k.clone()),
-            secret_key: secret_key.map(|k| k.clone()),
+            access_key: access_key.cloned(),
+            secret_key: secret_key.cloned(),
         })
     }
 

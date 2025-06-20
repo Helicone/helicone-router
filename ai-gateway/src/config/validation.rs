@@ -196,8 +196,10 @@ mod tests {
     fn test_can_map_model_error_no_valid_mapping() {
         let config = Config::default();
 
-        let mut router_config = RouterConfig::default();
-        router_config.model_mappings = None;
+        let router_config = RouterConfig {
+            model_mappings: None,
+            ..Default::default()
+        };
 
         let target_models = indexmap::IndexSet::from([
             ModelName::owned("gpt-4".to_string()),

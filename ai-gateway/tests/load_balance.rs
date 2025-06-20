@@ -4,7 +4,7 @@ use ai_gateway::{
     config::{
         Config,
         balance::{BalanceConfig, BalanceConfigInner},
-        router::{RouterConfig, RouterConfigs},
+        router::{RouterConfig, RouterConfigs, RouterRateLimitConfig},
     },
     endpoints::EndpointType,
     tests::{TestDefault, harness::Harness, mock::MockArgs},
@@ -32,7 +32,7 @@ fn p2c_config_openai_anthropic_google() -> RouterConfigs {
             model_mappings: None,
             cache: None,
             retries: None,
-            rate_limit: Default::default(),
+            rate_limit: RouterRateLimitConfig::default(),
         },
     )]))
 }
