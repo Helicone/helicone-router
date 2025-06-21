@@ -12,6 +12,8 @@ ai-gateway = { workspace = true, features = ["testing"] }
 tokio = { workspace = true }
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true }
+stubr = { workspace = true }
+serde_json = { workspace = true }
 
 [lints]
 workspace = true

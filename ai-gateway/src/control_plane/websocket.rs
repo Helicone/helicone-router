@@ -46,6 +46,7 @@ async fn handle_message(
 ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let bytes = message.into_data();
     let m: MessageTypeRX = serde_json::from_slice(&bytes)?;
+    tracing::trace!(websocket_msg = ?m, "received message");
     let mut state_guard = state.write().await;
     state_guard.update(m);
 
@@ -137,11 +138,10 @@ impl ControlPlaneClient {
 
         Ok(())
     }
-}
 
-impl ControlPlaneClient {
     async fn run_control_plane_forever(mut self) -> Result<(), RuntimeError> {
         let state_clone = Arc::clone(&self.state);
+        tracing::info!("starting control plane client");
         loop {
             while let Some(message) = self.channel.msg_rx.next().await {
                 match message {
