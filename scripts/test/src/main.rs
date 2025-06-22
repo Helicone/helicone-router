@@ -17,7 +17,7 @@ struct Args {
 }
 
 pub async fn test(run_forever_mode: bool) {
-    let is_stream = false;
+    let is_stream = true;
     let openai_request_body = serde_json::json!({
         "model": "openai/gpt-4o-mini",
         "messages": [

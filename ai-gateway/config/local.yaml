@@ -14,3 +14,5 @@ routers:
         strategy: latency
         providers:
           - openai
+          - anthropic
+          - google
