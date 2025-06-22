@@ -60,16 +60,7 @@ impl BodyReader {
                     }
                 }
                 Err(e) => {
-                    // once if-let chains are stablized, this can be written much nicer :)
-                    let should_log_error = match e {
-                        InternalError::StreamError(error) => {
-                            !matches!(error.as_ref(), reqwest_eventsource::Error::StreamEnded)
-                        }
-                        _ => true,
-                    };
-                    if should_log_error {
-                        tracing::error!(error = %e, "encountered internal error in stream");
-                    }
+                    tracing::error!(error = %e, "encountered internal error in stream");
                 }
             }
             b

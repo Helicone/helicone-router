@@ -76,7 +76,7 @@ pub enum InferenceProvider {
     Anthropic,
     Bedrock,
     Ollama,
-    #[strum(serialize = "google")]
+    #[strum(serialize = "gemini")]
     GoogleGemini,
 }
 

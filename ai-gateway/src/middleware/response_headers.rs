@@ -261,7 +261,7 @@ mod tests {
 
         assert_eq!(
             response.headers().get("helicone-provider").unwrap(),
-            "google"
+            "gemini"
         );
         assert_eq!(
             response.headers().get("helicone-provider-req-id").unwrap(),

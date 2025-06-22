@@ -125,6 +125,7 @@ impl LoggerService {
         let req_path = self.target_url.path().to_string();
         let provider = match self.provider {
             InferenceProvider::Ollama => "CUSTOM".to_string(),
+            InferenceProvider::GoogleGemini => "GOOGLE".to_string(),
             provider => provider.to_string().to_uppercase(),
         };
         let request_log = RequestLog::builder()

@@ -1,5 +1,6 @@
 use bytes::Bytes;
 use futures::StreamExt;
+use http_body_util::BodyExt;
 use reqwest::RequestBuilder;
 use reqwest_eventsource::{Event, EventSource, RequestBuilderExt};
 use tracing::{Instrument, info_span};
@@ -164,13 +165,27 @@ pub(super) fn sse_stream(mut event_source: EventSource) -> SSEStream {
             while let Some(ev) = event_source.next().await {
                 match ev {
                     Err(e) => {
-                        if let Err(_e) = tx
-                            .send(Err(InternalError::StreamError(Box::new(e))))
-                        {
-                            tracing::trace!("rx dropped before stream ended");
-                            // rx dropped
+                        if matches!(e, reqwest_eventsource::Error::StreamEnded) {
+                            // `StreamEnded` is returned for valid stream end cases
+                            // so we don't send the error in the channel
+                            tracing::trace!("stream ended");
                             break;
                         }
+
+                        cfg_if::cfg_if! {
+                            if #[cfg(debug_assertions)] {
+                                if let Err(e) = debug_stream_error(tx.clone(), e).await {
+                                    tracing::error!(error = %e, "rx dropped before stream ended");
+                                    break;
+                                }
+                            } else {
+                                if let Err(e) = tx.send(Err(InternalError::StreamError(Box::new(e)))) {
+                                    tracing::error!(error = %e, "rx dropped before stream ended");
+                                    break;
+                                }
+                            }
+                        }
+
                     }
                     Ok(event) => match event {
                         Event::Message(message) => {
@@ -181,10 +196,10 @@ pub(super) fn sse_stream(mut event_source: EventSource) -> SSEStream {
                             let data = Bytes::from(message.data);
 
                             if let Err(_e) = tx.send(Ok(data)) {
+                                // rx dropped
                                 tracing::trace!(
                                     "rx dropped before stream ended"
                                 );
-                                // rx dropped
                                 break;
                             }
                         }
@@ -199,4 +214,47 @@ pub(super) fn sse_stream(mut event_source: EventSource) -> SSEStream {
     );
 
     Box::pin(tokio_stream::wrappers::UnboundedReceiverStream::new(rx))
+}
+
+async fn debug_stream_error(
+    tx: tokio::sync::mpsc::UnboundedSender<Result<Bytes, InternalError>>,
+    error: reqwest_eventsource::Error,
+) -> Result<(), tokio::sync::mpsc::error::SendError<Result<Bytes, InternalError>>>
+{
+    match error {
+        reqwest_eventsource::Error::InvalidStatusCode(
+            status_code,
+            response,
+        ) => {
+            let http_resp = http::Response::from(response);
+            let (parts, body) = http_resp.into_parts();
+            let Ok(body) = body.collect().await else {
+                tracing::error!("failed to collect body in stream");
+                // silence the error
+                return Ok(());
+            };
+            let body = body.to_bytes();
+            let text = String::from_utf8_lossy(&body);
+            tracing::debug!(status_code = %status_code, body = %text, "received error response in stream");
+            let stream = futures::stream::once(futures::future::ok::<
+                _,
+                InternalError,
+            >(body));
+            let new_body = reqwest::Body::wrap_stream(stream);
+            let new_response = http::Response::from_parts(parts, new_body);
+            let new_response = reqwest::Response::from(new_response);
+
+            let e = reqwest_eventsource::Error::InvalidStatusCode(
+                status_code,
+                new_response,
+            );
+            tx.send(Err(InternalError::StreamError(Box::new(e))))?;
+            Ok(())
+        }
+        e => {
+            // propagate other errors
+            tx.send(Err(InternalError::StreamError(Box::new(e))))?;
+            Ok(())
+        }
+    }
 }

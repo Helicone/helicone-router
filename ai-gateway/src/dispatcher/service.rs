@@ -448,7 +448,7 @@ impl Dispatcher {
         if status.is_server_error() || status.is_client_error() {
             let body =
                 response.text().await.map_err(InternalError::ReqwestError)?;
-            tracing::error!(error_resp = %body, "received error response");
+            tracing::debug!(error_resp = %body, "received error response");
             let bytes = bytes::Bytes::from(body);
             let stream = futures::stream::once(futures::future::ok::<
                 _,
