@@ -1,12 +1,12 @@
 use chrono::{DateTime, Utc};
 use http::HeaderMap;
 use indexmap::IndexMap;
-use serde::{Deserialize, Serialize, Serializer};
+use serde::{Deserialize, Serialize};
 use typed_builder::TypedBuilder;
 use url::Url;
 use uuid::Uuid;
 
-use super::{provider::InferenceProvider, user::UserId};
+use super::user::UserId;
 use crate::error::logger::LoggerError;
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -94,8 +94,7 @@ pub struct RequestLog {
     #[builder(default)]
     pub helicone_proxy_key_id: Option<String>,
     pub target_url: Url,
-    #[serde(serialize_with = "serialize_uppercase")]
-    pub provider: InferenceProvider,
+    pub provider: String,
     pub body_size: f64,
     pub path: String,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -116,17 +115,6 @@ pub struct RequestLog {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[builder(default)]
     pub experiment_row_index: Option<String>,
-}
-
-#[allow(clippy::trivially_copy_pass_by_ref)]
-fn serialize_uppercase<S>(
-    value: &InferenceProvider,
-    serializer: S,
-) -> Result<S::Ok, S::Error>
-where
-    S: Serializer,
-{
-    serializer.serialize_str(&value.to_string().to_uppercase())
 }
 
 #[derive(Debug, Serialize, Deserialize, Default, TypedBuilder)]

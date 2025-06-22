@@ -123,12 +123,16 @@ impl LoggerService {
         let helicone_metadata =
             HeliconeLogMetadata::from_headers(&mut self.request_headers)?;
         let req_path = self.target_url.path().to_string();
+        let provider = match self.provider {
+            InferenceProvider::Ollama => "CUSTOM".to_string(),
+            provider => provider.to_string().to_uppercase(),
+        };
         let request_log = RequestLog::builder()
             .id(request_id)
             .user_id(auth_ctx.user_id)
             .properties(IndexMap::new())
             .target_url(self.target_url)
-            .provider(self.provider)
+            .provider(provider)
             .body_size(req_body_len as f64)
             .path(req_path)
             .request_created_at(self.req_ctx.start_time)

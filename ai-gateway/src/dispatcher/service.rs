@@ -309,7 +309,6 @@ impl Dispatcher {
             tokio::spawn(
                 async move {
                     if let Err(e) = response_logger.log().await {
-                        tracing::error!(error = %e, "failed to log response");
                         let error_str = e.as_ref().to_string();
                         app_state
                             .0
