@@ -193,7 +193,7 @@ dependencies = [
 [[package]]
 name = "anthropic-ai-sdk"
 version = "0.2.24"
-source = "git+https://github.com/tomharmon/anthropic-sdk-rs.git?branch=task%2Fadd-serde-impls#72d2c3b95958112fa2d78abc134179be11af41df"
+source = "git+https://github.com/katsuhirohonda/anthropic-sdk-rs.git#25ad721c75ef697acc0a9fd7653496b671968de7"
 dependencies = [
  "async-trait",
  "eventsource-stream",
