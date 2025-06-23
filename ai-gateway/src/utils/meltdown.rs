@@ -50,6 +50,7 @@ where
     type Future = TaggedFuture<S::Future>;
 
     fn run(self, token: Token) -> Self::Future {
+        info!(name = self.tag, "starting task");
         TaggedFuture {
             tag: self.tag,
             future: self.service.run(token),

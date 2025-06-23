@@ -103,7 +103,7 @@ async fn connect_with_retry(
 ) -> Result<WebsocketChannel, InitError> {
     (|| async { connect_async_and_split(helicone_config).await })
             // Retry with exponential backoff + jitter
-            .retry(ExponentialBuilder::default().with_jitter())
+            .retry(ExponentialBuilder::default().with_jitter().without_max_times())
             .sleep(tokio::time::sleep)
             .when(|e: &InitError| {
                 matches!(e, InitError::WebsocketConnection(_))
@@ -164,7 +164,6 @@ impl ControlPlaneClient {
 
     async fn run_control_plane_forever(mut self) -> Result<(), RuntimeError> {
         let state_clone = Arc::clone(&self.state);
-        tracing::info!("starting control plane client");
         loop {
             while let Some(message) = self.channel.msg_rx.next().await {
                 match message {
