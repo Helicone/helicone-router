@@ -5,8 +5,8 @@ Here are instructions for running a demo of Helicone AI Gateway locally.
 ## Basic Setup
 1. Set up environment variables as described in the [Development Setup](DEVELOPMENT.md) section
 2. Run the router locally with OpenAI/Anthropic:
-   cargo run -- -c ./ai-gateway/config/demo.yaml
    ```bash
+   cargo run -- -c ./ai-gateway/config/demo.yaml
    ```
 3. Send a test request:
    ```bash
