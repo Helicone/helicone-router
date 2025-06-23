@@ -97,11 +97,56 @@ async fn connect_async_and_split(
     })
 }
 
+async fn connect_with_retry(
+    helicone_config: &HeliconeConfig,
+    operation_name: &str,
+) -> WebsocketChannel {
+    let mut retry_delay = Duration::from_secs(1); // Start with 1 second
+    let max_delay = Duration::from_secs(30); // Maximum 30 seconds
+    let mut attempt = 1;
+
+    loop {
+        match connect_async_and_split(helicone_config).await {
+            Ok(channel) => {
+                if attempt > 1 {
+                    tracing::info!(
+                        attempt = attempt,
+                        operation = operation_name,
+                        "Successfully {} after {} attempts",
+                        operation_name,
+                        attempt
+                    );
+                }
+                return channel;
+            }
+            Err(e) => {
+                tracing::warn!(
+                    attempt = attempt,
+                    delay_secs = retry_delay.as_secs(),
+                    error = %e,
+                    operation = operation_name,
+                    "Failed to {}, retrying in {}s...",
+                    operation_name,
+                    retry_delay.as_secs()
+                );
+
+                tokio::time::sleep(retry_delay).await;
+
+                // Double the delay for next attempt, but cap at max_delay
+                retry_delay = std::cmp::min(retry_delay * 2, max_delay);
+                attempt += 1;
+            }
+        }
+    }
+}
+
 impl ControlPlaneClient {
     async fn reconnect_websocket(&mut self) -> Result<(), InitError> {
         // TODO: add retries w/ exponential backoff
         // https://crates.io/crates/backon
-        let channel = connect_async_and_split(&self.config).await?;
+        let channel =
+            connect_with_retry(&self.config, "reconnect to control plane")
+                .await;
         self.channel = channel;
         tracing::info!("Successfully reconnected to control plane");
         Ok(())
@@ -111,8 +156,10 @@ impl ControlPlaneClient {
         control_plane_state: Arc<RwLock<ControlPlaneState>>,
         config: HeliconeConfig,
     ) -> Result<Self, InitError> {
+        let channel =
+            connect_with_retry(&config, "connect to control plane").await;
         Ok(Self {
-            channel: connect_async_and_split(&config).await?,
+            channel,
             config,
             state: control_plane_state,
         })
