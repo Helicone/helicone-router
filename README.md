@@ -199,7 +199,7 @@ routers:
     helicone: # Include your HELICONE_API_KEY in your .env file
       enable: true
     telemetry:
-      level: "info,ai_gateway=trace"
+      level: "info,llm_proxy=trace"
 ```
 ### Run with your custom config file
 
@@ -290,7 +290,7 @@ claude_response = client.chat.completions.create(model="claude-3-5-sonnet", ...)
 
 ### Support
 - 🎫 **[Report bugs](https://github.com/helicone/ai-gateway/issues)**: Github issues
-- 💼 **[Enterprise Support](https://helicone.ai/contact)**: Contact sales
+- 💼 **[Enterprise Support](https://cal.com/team/helicone/helicone-discovery)**: Book a discovery call with our team
 
 ---
 
