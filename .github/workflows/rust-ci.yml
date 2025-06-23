@@ -11,23 +11,25 @@ env:
 
 jobs:
   format:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - uses: actions/checkout@v4
       - name: Use nightly rustfmt
-        run: rustup override set nightly && rustup component add --toolchain nightly-x86_64-unknown-linux-gnu rustfmt
-      - name: Output rust version for educational purposes
-        run: rustup --version
+        run: rustup component add --toolchain nightly-x86_64-unknown-linux-gnu rustfmt
+      - name: Output rustup and cargo version for educational purposes
+        run: rustup --version && echo "\n" && cargo --version
       - name: Format
         run: cargo +nightly fmt --check
   clippy:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - uses: actions/checkout@v4
+      - name: print version
+        run: cargo --version
       - name: Clippy
-        run: cargo ci-clippy
+        run: cargo +stable ci-clippy
   test:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     env:
       HELICONE_API_KEY: "sk-helicone-..."
     services:
@@ -39,4 +41,4 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Test
-        run: cargo test --tests --all-features
+        run: cargo +stable test --tests --all-features
