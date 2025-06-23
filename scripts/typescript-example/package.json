@@ -1,0 +1,20 @@
+{
+  "name": "typescript-example",
+  "version": "0.1.0",
+  "description": "An example TypeScript client for the Helicone AI Gateway",
+  "license": "Apache-2.0",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "start": "ts-node index.ts"
+  },
+  "dependencies": {
+    "openai": "^5.7.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.3",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  }
+}

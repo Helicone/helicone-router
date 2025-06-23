@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use url::Url;
 
-use crate::{types::secret::Secret, utils::default_true};
+use crate::types::secret::Secret;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case", deny_unknown_fields)]
@@ -20,7 +20,7 @@ pub struct HeliconeConfig {
     ///
     /// **Note**: without this enabled, anyone sending requests to your
     /// AI gateway instance will be able to use your provider API keys!
-    #[serde(alias = "enable", default = "default_true")]
+    #[serde(alias = "enable")]
     pub enable_auth: bool,
 }
 
@@ -30,7 +30,7 @@ impl Default for HeliconeConfig {
             api_key: default_api_key(),
             base_url: default_base_url(),
             websocket_url: default_websocket_url(),
-            enable_auth: true,
+            enable_auth: false,
         }
     }
 }

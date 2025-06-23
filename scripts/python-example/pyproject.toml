@@ -1,0 +1,13 @@
+[project]
+name = "python-example"
+version = "0.1.0"
+description = "A example showing Python usage of the Helicone AI Gateway"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "openai>=1.91.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

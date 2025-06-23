@@ -1,0 +1,22 @@
+from openai import OpenAI
+
+client = OpenAI(
+    # Required by SDK, but AI gateway handles real auth
+    base_url="http://localhost:8080/ai/v1",
+    api_key="fake-api-key"
+)
+
+
+def main():
+    print("Hello, World!")
+
+    response = client.chat.completions.create(
+        model="openai/gpt-4o-mini",  # 100+ models available
+        messages=[{"role": "user", "content": "Hello, world!"}]
+    )
+
+    print(response.choices[0].message.content)
+
+
+if __name__ == "__main__":
+    main()

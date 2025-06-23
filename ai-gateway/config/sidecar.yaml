@@ -5,3 +5,7 @@ routers:
         strategy: latency
         providers:
           - openai
+          - anthropic
+
+helicone-observability:
+  enable-auth: true
