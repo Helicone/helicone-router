@@ -16,7 +16,7 @@ edition = "2024"
 authors = [ "Thomas Harmon <tom@helicone.ai>, Justin Torre <justin@helicone.ai>, Kavin Desi Valli <kavin@helicone.ai>, Charlie Wu <charlie@helicone.ai>", "Helicone Developers" ]
 license = "UNLICENSED"
 publish = false
-version = "0.2.0-beta.2"
+version = "0.2.0-beta.3"
 
 [profile.release]
 opt-level = 3
@@ -53,6 +53,7 @@ aws-sigv4 = "1.3.2"
 aws-smithy-runtime-api = "1.8.0"
 aws-credential-types = "1.2.3"
 axum-server = "0.7.2"
+backon = "1.5.1"
 base64 = "0.22.1"
 bytes = "1.10.1"
 cargo-husky = "1.5.0"
