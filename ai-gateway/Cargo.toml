@@ -152,3 +152,7 @@ required-features = ["testing"]
 [[test]]
 name = "cache"
 required-features = ["testing"]
+
+[[test]]
+name = "health_check"
+required-features = ["testing"]

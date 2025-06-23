@@ -42,7 +42,10 @@ use crate::{
     },
     router::meta::MetaRouter,
     types::provider::ProviderKeys,
-    utils::{catch_panic::PanicResponder, handle_error::ErrorHandlerLayer},
+    utils::{
+        catch_panic::PanicResponder, handle_error::ErrorHandlerLayer,
+        health_check::HealthCheckLayer,
+    },
 };
 
 pub(crate) const BUFFER_SIZE: usize = 1024;
@@ -254,6 +257,7 @@ impl App {
             .propagate_x_request_id()
             .layer(NormalizePathLayer::trim_trailing_slash())
             .layer(metrics::request_count::Layer::new(app_state.clone()))
+            .layer(HealthCheckLayer::new())
             .layer(ErrorHandlerLayer::new(app_state.clone()))
             // NOTE: not sure if there is perf impact from Auth layer coming
             // before buffer layer, but required due to Clone bound.
