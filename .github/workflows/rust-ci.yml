@@ -37,7 +37,7 @@ jobs:
       HELICONE_API_KEY: "sk-helicone-..."
     services:
       redis:
-        image: redis:6.2.6-alpine
+        image: redis:8.0.2-alpine
         ports:
           - 6379:6379
     # remove if reverting self hosted
