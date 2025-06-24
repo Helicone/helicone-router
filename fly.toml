@@ -28,4 +28,24 @@ cmd = ["/usr/local/bin/ai-gateway", "-c", "/app/config/config.yaml"]
 
 [[files]]
   guest_path = "/app/config/config.yaml"
-  local_path = "ai-gateway/config/sidecar.yaml"
+  raw_value = '''
+server:
+  address: 0.0.0.0
+  port: 8080
+
+routers:
+  default:
+    load-balance:
+      chat:
+        strategy: latency
+        providers:
+          - openai
+          - anthropic
+
+helicone-observability:
+  enable-auth: true
+'''
+
+# [[files]]
+#   guest_path = "/app/config/config.yaml"
+#   local_path = "ai-gateway/config/sidecar.yaml"
