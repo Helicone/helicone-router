@@ -20,6 +20,7 @@ use tracing::info;
 static GLOBAL: jemallocator::Jemalloc = jemallocator::Jemalloc;
 
 #[derive(Debug, Parser)]
+#[command(version)]
 pub struct Args {
     /// Path to the default config file.
     /// Configs in this file can be overridden by environment variables.
