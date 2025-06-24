@@ -26,6 +26,7 @@ use tracing::{Level, info};
 
 use crate::{
     app_state::{AppState, InnerAppState},
+    cli,
     config::{Config, cache::CacheStore, minio::Minio, server::TlsConfig},
     control_plane::control_plane_state::ControlPlaneState,
     discover::monitor::{
@@ -177,7 +178,7 @@ impl tower::Service<crate::types::request::Request> for App {
 
 impl App {
     pub async fn new(config: Config) -> Result<Self, InitError> {
-        tracing::info!("creating app");
+        tracing::debug!("creating app");
         let minio = Minio::new(config.minio.clone())?;
 
         let jawn_http_client = JawnClient::new()?;
@@ -295,6 +296,7 @@ impl meltdown::Service for App {
             let addr =
                 SocketAddr::from((config.server.address, config.server.port));
             info!(address = %addr, tls = %config.server.tls, "server starting");
+            cli::helpers::show_welcome_banner(&addr);
 
             let handle = axum_server::Handle::new();
             let app_factory = AppFactory::new_hyper_app(self);

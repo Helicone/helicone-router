@@ -14,7 +14,7 @@ use ai_gateway::{
 };
 use clap::Parser;
 use meltdown::Meltdown;
-use tracing::info;
+use tracing::{debug, info};
 
 #[global_allocator]
 static GLOBAL: jemallocator::Jemalloc = jemallocator::Jemalloc;
@@ -25,13 +25,17 @@ pub struct Args {
     /// Configs in this file can be overridden by environment variables.
     #[arg(short, long)]
     config: Option<PathBuf>,
+
+    /// Enable verbose logging
+    #[arg(short, long)]
+    verbose: bool,
 }
 
 #[tokio::main]
 async fn main() -> Result<(), RuntimeError> {
     dotenvy::dotenv().ok();
     let args = Args::parse();
-    let config = match Config::try_read(args.config) {
+    let mut config = match Config::try_read(args.config) {
         Ok(config) => config,
         Err(error) => {
             eprintln!("failed to read config: {error}");
@@ -39,14 +43,19 @@ async fn main() -> Result<(), RuntimeError> {
         }
     };
 
+    // Override telemetry level if verbose flag is provided
+    if args.verbose {
+        config.telemetry.level = "info,ai_gateway=trace".to_string();
+    }
+
     let (logger_provider, tracer_provider, metrics_provider) =
         telemetry::init_telemetry(&config.telemetry)
             .map_err(InitError::Telemetry)?;
 
-    info!("telemetry initialized");
+    debug!("telemetry initialized");
     let pretty_config = serde_yml::to_string(&config)
         .expect("config should always be serializable");
-    info!(config = pretty_config, "Creating app with config");
+    tracing::debug!(config = pretty_config, "Creating app with config");
 
     #[cfg(debug_assertions)]
     tracing::warn!("running in debug mode");
@@ -129,7 +138,7 @@ async fn main() -> Result<(), RuntimeError> {
         }
     }
 
-    info!("shut down");
+    println!("shut down");
 
     Ok(())
 }

@@ -1,6 +1,6 @@
 use futures::future::BoxFuture;
 use meltdown::Token;
-use tracing::{error, info};
+use tracing::error;
 
 use crate::error::{init::InitError, runtime::RuntimeError};
 
@@ -28,12 +28,12 @@ impl meltdown::Service for SystemMetrics {
                     if let Err(e) = result {
                         error!(name = "system-metrics-task", error = ?e, "System metrics task encountered error, shutting down");
                     } else {
-                        info!(name = "system-metrics-task", "System metrics task shut down successfully");
+                        tracing::debug!(name = "system-metrics-task", "System metrics task shut down successfully");
                     }
                     token.trigger();
                 }
                 () = &mut token => {
-                    info!(name = "system-metrics-task", "Shutdown signal received, aborting system metrics task");
+                    tracing::debug!(name = "system-metrics-task", "Shutdown signal received, aborting system metrics task");
                     handle.abort();
                     token.trigger();
                 }

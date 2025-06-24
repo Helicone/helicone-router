@@ -291,7 +291,7 @@ impl HealthMonitor {
     }
 
     pub async fn run_forever(self) -> Result<(), runtime::RuntimeError> {
-        info!("Starting provider monitors");
+        tracing::trace!("Starting provider monitors");
 
         let interval_duration =
             self.app_state.config().discover.monitor.health_interval();

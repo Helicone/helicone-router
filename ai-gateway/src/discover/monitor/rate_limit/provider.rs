@@ -121,7 +121,7 @@ impl ProviderMonitorInner<Key> {
         self,
         mut rx: Receiver<RateLimitEvent>,
     ) -> Result<(), RuntimeError> {
-        info!(router_id = ?self.router_id, "Starting P2C rate limit monitor");
+        tracing::trace!(router_id = ?self.router_id, "Starting P2C rate limit monitor");
 
         let mut rate_limited_providers: HashSet<Key> = HashSet::default();
         let mut pending_restores: FuturesUnordered<ProviderRestore<Key>> =
@@ -377,7 +377,7 @@ impl RateLimitMonitor {
     }
 
     pub async fn run_forever(mut self) -> Result<(), RuntimeError> {
-        info!("Starting provider rate limit monitors");
+        tracing::trace!("Starting provider rate limit monitors");
         let mut interval = time::interval(RATE_LIMIT_MONITOR_INTERVAL);
         let app_state = self.app_state.clone();
 
