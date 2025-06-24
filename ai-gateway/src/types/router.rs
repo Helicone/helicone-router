@@ -10,9 +10,10 @@ use crate::config::router::RouterConfig;
 )]
 #[serde(rename_all = "kebab-case")]
 pub enum RouterId {
-    Named(CompactString),
     #[default]
     Default,
+    #[serde(untagged)]
+    Named(CompactString),
 }
 
 impl AsRef<str> for RouterId {
