@@ -1,0 +1,353 @@
+---
+title: "Deployment Options"
+sidebarTitle: "Overview"
+description: "Deploy the AI Gateway to any infrastructure with Docker, Kubernetes, cloud providers, or direct binary"
+---
+
+The AI Gateway can be deployed to any infrastructure that supports containers or binaries, from local development to enterprise production environments.
+
+**Benefits:**
+- **Deploy anywhere** - Docker containers, Kubernetes, cloud providers, or bare metal
+- **Scale to your needs** - From single instance to distributed clusters
+- **Production ready** - Built-in observability, health checks, and graceful shutdown
+- **Infrastructure as code** - Terraform, Helm charts, and automation-friendly
+- **Cloud agnostic** - Works on AWS, GCP, Azure, or any container platform
+
+## Quick Start
+
+<Steps>
+  <Step title="Choose your deployment method">
+    Select the deployment option that best fits your infrastructure:
+
+    - **[NPX/Binary](#npx--binary)** - Fastest for development and testing
+    - **[Docker](#docker)** - Most portable for any container platform
+    - **[Kubernetes](#kubernetes)** - Best for production clusters
+    - **[Cloud Providers](#cloud-providers)** - Managed deployments with one-click setup
+  </Step>
+
+  <Step title="Set your environment variables">
+    ```bash
+    export OPENAI_API_KEY="sk-..."
+    export ANTHROPIC_API_KEY="sk-ant-..."
+    export GEMINI_API_KEY="..."
+    ```
+  </Step>
+
+  <Step title="Deploy and test">
+    ```bash
+    # Test your deployment
+    curl -X POST http://your-gateway-url/router/default/v1/chat/completions \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "gpt-4o-mini",
+        "messages": [{"role": "user", "content": "Hello!"}]
+      }'
+    ```
+    
+    ✅ Your AI Gateway is now routing requests across providers!
+  </Step>
+</Steps>
+
+## Deployment Options
+
+<AccordionGroup>
+  <Accordion title="NPX & Binary - Development" icon="terminal">
+    **Direct binary execution for development and testing**
+    
+    The fastest way to get started. No containers or complex setup required. Includes CLI distribution via cargo-dist with multiple installation methods.
+    
+    **Best for:** Local development, testing, proof of concepts
+    
+    **Installation options:**
+    ```bash
+    # NPX (recommended for quick start)
+    npx @helicone/ai-gateway start
+    
+    # Homebrew (macOS)
+    brew tap helicone/ai-gateway
+    brew install ai-gateway
+    
+    # Cargo (Rust users)
+    cargo install ai-gateway
+    
+    # Direct binary download
+    # Download from GitHub releases
+    ```
+    
+    **With configuration:**
+    ```bash
+    npx @helicone/ai-gateway --config ai-gateway-config.yaml
+    ```
+  </Accordion>
+
+  <Accordion title="Docker - Portable Containers" icon="docker">
+    **Containerized deployment for any Docker-compatible platform**
+    
+    Deploy to any cloud provider or infrastructure that supports Docker containers. Requires additional configuration compared to managed options but provides maximum flexibility.
+    
+    **Best for:** Cloud deployments, container platforms, custom infrastructure
+    
+    **Docker Hub:**
+    ```bash
+    docker run -d \
+      --name ai-gateway \
+      -p 8080:8080 \
+      -e OPENAI_API_KEY=sk-... \
+      -e ANTHROPIC_API_KEY=sk-ant-... \
+      helicone/ai-gateway
+    ```
+    
+    **With configuration file:**
+    ```bash
+    docker run -d \
+      --name ai-gateway \
+      -p 8080:8080 \
+      -v $(pwd)/config.yaml:/app/config.yaml \
+      -e OPENAI_API_KEY=sk-... \
+      helicone/ai-gateway --config /app/config.yaml
+    ```
+  </Accordion>
+
+  <Accordion title="Kubernetes - Production Clusters" icon="kubernetes">
+    **Helm chart deployment for Kubernetes clusters**
+    
+    Production-ready Kubernetes deployment with the official Helicone Helm chart. Includes the full Helicone stack (web, backend, AI Gateway) with proper scaling, health checks, and observability.
+    
+    **Best for:** Production environments, enterprise deployments, auto-scaling
+    
+    **Helm installation:**
+    ```bash
+    # Add Helicone Helm repository
+    helm repo add helicone https://helicone.github.io/helicone-helm-v3
+    helm repo update
+    
+    # Install AI Gateway as part of helicone-core chart
+    helm install helicone helicone/helicone-core
+    
+    # Or install just the AI Gateway
+    helm install ai-gateway helicone/ai-gateway
+    ```
+    
+    **Custom values:**
+    ```yaml
+    # values.yaml
+    aiGateway:
+      replicas: 3
+      resources:
+        requests:
+          memory: "256Mi"
+          cpu: "200m"
+        limits:
+          memory: "512Mi"
+          cpu: "500m"
+      env:
+        - name: OPENAI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: provider-keys
+              key: openai
+    ```
+  </Accordion>
+
+  <Accordion title="Cloud Providers - Managed Deployment" icon="cloud">
+    **One-click deployments to major cloud providers**
+    
+    Automated infrastructure provisioning with Terraform and managed services. Includes load balancers, auto-scaling, and cloud-native integrations.
+    
+    **Best for:** Production workloads, enterprise requirements, managed infrastructure
+    
+    **AWS ECS (One-click):**
+    ```bash
+    # Clone repository and run deploy script
+    git clone https://github.com/Helicone/helicone-router.git
+    cd helicone-router
+    ./infrastructure/deploy.sh
+    ```
+    
+    **Platform as a Service (Porter):**
+    - Set up Porter cluster following their [documentation](https://porter.run/docs)
+    - Create application with Docker image: `helicone/ai-gateway`
+    - Configure environment variables and deploy
+  </Accordion>
+</AccordionGroup>
+
+## Use Cases
+
+<Tabs>
+  <Tab title="Development & Testing">
+    **Use case:** Local development, CI/CD pipelines, and proof of concepts where you need quick setup and teardown.
+
+    ```bash
+    # Quick start for development
+    npx @helicone/ai-gateway start
+    
+    # Or with Docker for CI/CD
+    docker run -d --name ai-gateway-test \
+      -p 8080:8080 \
+      -e OPENAI_API_KEY=$OPENAI_API_KEY \
+      helicone/ai-gateway
+    ```
+  </Tab>
+
+  <Tab title="Production Single Instance">
+    **Use case:** Production workloads that don't require high availability or auto-scaling. Simple, reliable deployment.
+
+    ```bash
+    # Docker on cloud VM (EC2, GCE, etc.)
+    docker run -d \
+      --name ai-gateway \
+      --restart unless-stopped \
+      -p 8080:8080 \
+      -v /opt/ai-gateway/config.yaml:/app/config.yaml \
+      -e OPENAI_API_KEY=$OPENAI_API_KEY \
+      -e ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY \
+      helicone/ai-gateway --config /app/config.yaml
+    ```
+  </Tab>
+
+  <Tab title="Enterprise Production">
+    **Use case:** High-availability production deployments with auto-scaling, load balancing, and enterprise security requirements.
+
+    ```bash
+    # Kubernetes with Helm
+    helm install ai-gateway helicone/helicone-core \
+      --set aiGateway.replicas=5 \
+      --set aiGateway.autoscaling.enabled=true \
+      --set aiGateway.autoscaling.minReplicas=3 \
+      --set aiGateway.autoscaling.maxReplicas=20
+    ```
+  </Tab>
+
+  <Tab title="Multi-Cloud & Hybrid">
+    **Use case:** Deployments across multiple cloud providers or hybrid cloud/on-premises infrastructure for compliance or redundancy.
+
+    ```yaml
+    # Multi-region deployment example
+    # AWS us-east-1
+    terraform apply -var="region=us-east-1" -var="env=prod-east"
+    
+    # AWS eu-west-1  
+    terraform apply -var="region=eu-west-1" -var="env=prod-eu"
+    
+    # On-premises Kubernetes
+    helm install ai-gateway-onprem helicone/ai-gateway \
+      --set ingress.enabled=false \
+      --set service.type=NodePort
+    ```
+  </Tab>
+</Tabs>
+
+## How It Works
+
+### Deployment Architecture
+
+<Steps>
+  <Step title="Infrastructure Provisioning">
+    Choose your infrastructure platform and provision resources:
+    
+    - **Cloud**: Use Terraform for AWS ECS, GKE, or AKS
+    - **Kubernetes**: Use Helm charts for any K8s cluster
+    - **Docker**: Deploy to any container platform
+    - **Binary**: Run directly on any Linux/macOS/Windows system
+  </Step>
+  
+  <Step title="Configuration Management">
+    Set up your configuration and secrets:
+    
+    - **Environment variables**: Provider API keys and runtime settings
+    - **Configuration files**: Router settings, load balancing, caching
+    - **Secret management**: Use cloud secret managers or Kubernetes secrets
+  </Step>
+  
+  <Step title="Service Deployment">
+    Deploy the AI Gateway service with proper networking and health checks
+  </Step>
+  
+  <Step title="Load Balancing & Scaling">
+    Configure load balancing, auto-scaling, and monitoring based on your deployment method
+  </Step>
+  
+  <Step title="Observability Setup">
+    Enable logging, metrics, and tracing through built-in Helicone integration or OpenTelemetry
+  </Step>
+</Steps>
+
+### Deployment Comparison
+
+| Method | Setup Time | Scalability | Maintenance | Best For |
+|--------|------------|-------------|-------------|----------|
+| **NPX/Binary** | < 1 minute | Manual | Low | Development, testing |
+| **Docker** | < 5 minutes | Manual | Medium | Cloud VMs, simple production |
+| **Kubernetes** | 10-30 minutes | Automatic | Medium | Enterprise production |
+| **Cloud Managed** | 5-15 minutes | Automatic | Low | Managed production workloads |
+
+### Resource Requirements
+
+**Minimum requirements:**
+- **CPU**: 1 vCPU (2+ recommended for production)
+- **Memory**: 512MB (1GB+ recommended for production)
+- **Storage**: 1GB (for logs and cache)
+- **Network**: Outbound HTTPS access to LLM providers
+
+**Production recommendations:**
+- **CPU**: 2-4 vCPUs per instance
+- **Memory**: 2-4GB per instance
+- **Storage**: 10GB+ for logs and persistent cache
+- **Network**: Load balancer with health checks
+
+## Environment-Specific Guides
+
+### Local Development
+```bash
+# Docker Compose for full development stack
+cd infrastructure
+docker compose up -d
+cd ..
+
+# Run AI Gateway with development config
+cargo run -- --config ./ai-gateway/config/local.yaml
+```
+
+### Bare Metal / On-Premises
+```bash
+# Proxmox with Terraform and Packer
+# See: https://github.com/devinat1/proxmox-infra-as-code
+terraform apply -var="proxmox_host=your-proxmox-server"
+
+# Kubernetes on bare metal
+helm install ai-gateway helicone/ai-gateway \
+  --set service.type=NodePort \
+  --set ingress.enabled=false
+```
+
+### Cloud-Specific Deployments
+
+**AWS ECS:**
+- One-click Terraform deployment
+- Auto-scaling groups with load balancer
+- CloudWatch integration for monitoring
+
+**Google Cloud Run:**
+- Serverless container deployment
+- Automatic scaling to zero
+- Built-in load balancing
+
+**Azure Container Instances:**
+- Managed container deployment
+- Integration with Azure Monitor
+- Virtual network support
+
+<Note>
+  For detailed deployment instructions for each method, see the specific deployment guides in the [deployment section](/ai-gateway/deployment/).
+</Note>
+
+## Coming Soon
+
+The following deployment features are planned for future releases:
+
+| Feature | Description | Version |
+|---------|-------------|---------|
+| **Terraform Modules** | Pre-built Terraform modules for major cloud providers | v1 |
+| **Operator for Kubernetes** | Custom Kubernetes operator for advanced AI Gateway management | v2 |
+| **Serverless Deployment** | Native support for AWS Lambda, Google Cloud Functions, Azure Functions | v2 |
+| **Multi-Region Setup** | Automated multi-region deployment with traffic routing | v2 | 

@@ -1,0 +1,16 @@
+helicone-observability:
+  enable-auth: true
+
+routers:
+  default:
+    load-balance:
+      chat:
+        strategy: latency
+        providers:
+          - openai
+          - anthropic
+    cache:
+      store:
+        in-memory:
+          max_size: 268435456
+      directive: "max-age=1800"
