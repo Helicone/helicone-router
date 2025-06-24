@@ -228,6 +228,7 @@ impl ProviderKeys {
         let mut keys = Self::from_env_inner(&router_config.load_balance);
         let default_provider = SDK;
         if let Some(key) = ProviderKey::from_env(default_provider) {
+            tracing::debug!(provider = %default_provider, "got llm provider key");
             keys.insert(default_provider, key);
         }
         Ok(Self(Arc::new(keys)))
@@ -239,7 +240,10 @@ impl ProviderKeys {
         let keys = providers_config
             .iter()
             .filter_map(|(&provider, _)| {
-                ProviderKey::from_env(provider).map(|key| (provider, key))
+                ProviderKey::from_env(provider).map(|key| {
+                    tracing::debug!(provider = %provider, "got llm provider key");
+                    (provider, key)
+                })
             })
             .collect();
 
