@@ -1,5 +1,6 @@
-use std::time::Duration;
+use std::{str::FromStr, time::Duration};
 
+use ai_gateway::types::{model_id::ModelId, provider::InferenceProvider};
 use clap::{Parser, Subcommand};
 use futures::StreamExt;
 use rand::Rng;
@@ -35,6 +36,10 @@ enum Commands {
         #[arg(short = 'a', long = "auth", default_value_t = false)]
         auth: bool,
 
+        /// Request type
+        #[arg(short = 'r', long = "request-type", default_value_t = RequestType::LoadBalanced)]
+        request_type: RequestType,
+
         /// Model identifier to use
         #[arg(
             short = 'm',
@@ -55,6 +60,10 @@ enum Commands {
         #[arg(short = 'a', long = "auth", default_value_t = false)]
         auth: bool,
 
+        /// Request type
+        #[arg(short = 'r', long = "request-type", default_value_t = RequestType::LoadBalanced)]
+        request_type: RequestType,
+
         /// Model identifier to use
         #[arg(
             short = 'm',
@@ -65,9 +74,31 @@ enum Commands {
     },
 }
 
+#[derive(
+    Default, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, clap::ValueEnum,
+)]
+#[clap(rename_all = "kebab-case")]
+enum RequestType {
+    Direct,
+    UnifiedApi,
+    #[default]
+    LoadBalanced,
+}
+
+impl std::fmt::Display for RequestType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            RequestType::Direct => write!(f, "direct"),
+            RequestType::UnifiedApi => write!(f, "unified-api"),
+            RequestType::LoadBalanced => write!(f, "load-balanced"),
+        }
+    }
+}
+
 impl Default for Commands {
     fn default() -> Self {
         Self::TestRequest {
+            request_type: RequestType::LoadBalanced,
             stream: false,
             auth: false,
             model: "openai/gpt-4o-mini".to_string(),
@@ -75,10 +106,11 @@ impl Default for Commands {
     }
 }
 
-pub async fn test(
+async fn test(
     print_response: bool,
     is_stream: bool,
     send_auth: bool,
+    request_type: RequestType,
     model: &str,
 ) {
     let openai_request_body = serde_json::json!({
@@ -98,9 +130,30 @@ pub async fn test(
         serde_json::from_value(openai_request_body).unwrap();
 
     let bytes = serde_json::to_vec(&openai_request).unwrap();
+    let model_id = ModelId::from_str(model).expect("Invalid model");
+    let url = match request_type {
+        RequestType::Direct => {
+            let provider = match model_id {
+                ModelId::OpenAI(_) => InferenceProvider::OpenAI,
+                ModelId::Anthropic(_) => InferenceProvider::Anthropic,
+                ModelId::GoogleGemini(_) => InferenceProvider::GoogleGemini,
+                ModelId::Bedrock(_) => InferenceProvider::Bedrock,
+                ModelId::Ollama(_) => InferenceProvider::Ollama,
+                ModelId::Unknown(_) => InferenceProvider::OpenAI,
+            };
+            format!("http://localhost:8080/{}/v1/chat/completions", provider)
+        }
+        RequestType::UnifiedApi => {
+            "http://localhost:8080/ai/v1/chat/completions".to_string()
+        }
+        RequestType::LoadBalanced => {
+            "http://localhost:8080/router/default/v1/chat/completions"
+                .to_string()
+        }
+    };
 
     let mut request_builder = reqwest::Client::new()
-        .post("http://localhost:8080/ai/v1/chat/completions")
+        .post(url)
         .header("Content-Type", "application/json");
 
     if send_auth {
@@ -143,7 +196,12 @@ pub async fn test(
     }
 }
 
-async fn run_forever_loop(is_stream: bool, send_auth: bool, model: String) {
+async fn run_forever_loop(
+    is_stream: bool,
+    send_auth: bool,
+    request_type: RequestType,
+    model: String,
+) {
     let mut rng = rand::thread_rng();
     let mut request_count = 0u64;
     let start_time = Instant::now();
@@ -160,7 +218,7 @@ async fn run_forever_loop(is_stream: bool, send_auth: bool, model: String) {
                 break;
             }
             _ = async {
-                test(false, is_stream, send_auth, &model).await;
+                test(false, is_stream, send_auth, request_type, &model).await;
                 request_count += 1;
 
                 if request_count % 100 == 0 {
@@ -183,21 +241,23 @@ async fn main() {
 
     match cli.command.unwrap_or_default() {
         Commands::TestRequest {
+            request_type,
             stream,
             auth,
             model,
         } => {
             println!("Starting single test...");
-            test(true, stream, auth, &model).await;
+            test(true, stream, auth, request_type, &model).await;
             println!("Test completed successfully!");
         }
         Commands::LoadTest {
+            request_type,
             stream,
             auth,
             model,
         } => {
             println!("Starting load test - press Ctrl+C to stop...");
-            run_forever_loop(stream, auth, model).await;
+            run_forever_loop(stream, auth, request_type, model).await;
         }
     }
 }
