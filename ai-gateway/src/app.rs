@@ -447,25 +447,8 @@ fn setup_cache(config: &Config, metrics: Metrics) -> Option<MokaManager> {
     if global_cache_config.is_none() && !any_router_has_cache {
         return None;
     }
-
-    // Determine the cache capacity to use
-    let capacity = if let Some(global_config) = global_cache_config {
-        // Use global cache config if available
-        match &global_config.store {
-            CacheStore::InMemory { max_size } => *max_size,
-        }
-    } else {
-        // Find the largest cache size among router configs
-        config
-            .routers
-            .as_ref()
-            .values()
-            .filter_map(|router_config| router_config.cache.as_ref())
-            .map(|cache_config| match &cache_config.store {
-                CacheStore::InMemory { max_size } => *max_size,
-            })
-            .max()
-            .unwrap_or(1024 * 1024 * 256)
+    let capacity = match config.cache_store {
+        CacheStore::InMemory { max_size } => max_size,
     };
 
     let listener = move |_k, _v, cause| {

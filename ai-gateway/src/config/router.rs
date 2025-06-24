@@ -130,14 +130,10 @@ mod tests {
     use std::time::Duration;
 
     use super::*;
-    use crate::config::{
-        cache::{CacheConfig, CacheStore},
-        retry::Strategy,
-    };
+    use crate::config::{cache::CacheConfig, retry::Strategy};
 
     fn test_router_config() -> RouterConfig {
         let cache = CacheConfig {
-            store: CacheStore::InMemory { max_size: 100 },
             directive: Some("max-age=3600, max-stale=1800".to_string()),
             buckets: 10,
             seed: Some("test-seed".to_string()),

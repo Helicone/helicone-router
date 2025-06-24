@@ -52,6 +52,7 @@ dependencies = [
  "axum-server",
  "backon",
  "bytes",
+ "cache_control",
  "cargo-husky",
  "cfg-if",
  "chrono",
@@ -1102,6 +1103,12 @@ dependencies = [
  "bytes",
  "either",
 ]
+
+[[package]]
+name = "cache_control"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1bf2a5fb3207c12b5d208ebc145f967fea5cac41a021c37417ccc31ba40f39ee"
 
 [[package]]
 name = "cargo-husky"

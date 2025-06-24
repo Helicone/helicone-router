@@ -21,6 +21,7 @@ aws-smithy-runtime-api = { workspace = true }
 aws-credential-types = { workspace = true }
 backon = { workspace = true, features = ['tokio-sleep'] }
 bytes = { workspace = true, features = ['serde'] }
+cache_control = { workspace = true }
 cfg-if = { workspace = true }
 chrono = { workspace = true, features = ['default', 'serde'] }
 clap = { workspace = true }

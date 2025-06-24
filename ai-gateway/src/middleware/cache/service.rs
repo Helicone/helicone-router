@@ -11,7 +11,9 @@ use futures::{StreamExt, future::BoxFuture, stream::FuturesUnordered};
 use http::{HeaderMap, HeaderName, HeaderValue, StatusCode, request::Parts};
 use http_body_util::BodyExt;
 use http_cache::{CacheManager, HttpResponse, MokaManager};
-use http_cache_semantics::{BeforeRequest, CacheOptions, CachePolicy};
+use http_cache_semantics::{
+    BeforeRequest, CacheOptions, CachePolicy, ResponseLike,
+};
 use opentelemetry::KeyValue;
 use rustc_hash::FxHasher;
 use url::Url;
@@ -230,25 +232,42 @@ fn bucket_header_value(bucket: u8) -> HeaderValue {
 
 async fn handle_response_for_cache_miss<C: CacheManager>(
     cache: &C,
+    ctx: &CacheContext,
     key: String,
     req: Request,
     resp: Response,
     bucket: u8,
-    cache_options: CacheOptions,
     now: std::time::SystemTime,
 ) -> Result<Response, ApiError> {
-    let policy = CachePolicy::new_options(&req, &resp, now, cache_options);
+    let cacheable_resp =
+        CacheableResponse::new(ctx, resp.headers(), resp.status());
+    let cache_options = ctx.options.unwrap_or_default();
+    let policy =
+        CachePolicy::new_options(&req, &cacheable_resp, now, cache_options);
 
-    if !policy.is_storable() {
+    if !policy.is_storable() || !resp.status().is_success() {
         tracing::trace!(
-            policy = ?policy,
+            status = ?resp.status(),
+            is_storable = policy.is_storable(),
             "got response that is not storable"
         );
         return Ok(resp);
     }
+    tracing::trace!("caching storable response");
+    let host = req.uri().host().unwrap_or_else(|| {
+        tracing::warn!("no host in request uri");
+        "localhost"
+    });
+    let scheme = req.uri().scheme().unwrap_or_else(|| {
+        tracing::warn!("no scheme in request uri");
+        &http::uri::Scheme::HTTP
+    });
 
-    let url = Url::parse(&req.uri().to_string())
+    let full_url = format!("{}://{}{}", scheme, host, req.uri());
+
+    let url = Url::parse(&full_url)
         .map_err(|e| InvalidRequestError::InvalidUrl(e.to_string()))?;
+
     let (parts, body) = resp.into_parts();
     let body_bytes = body
         .collect()
@@ -258,7 +277,7 @@ async fn handle_response_for_cache_miss<C: CacheManager>(
 
     let http_resp = HttpResponse {
         body: body_bytes.clone().into(),
-        headers: get_headers(parts.headers),
+        headers: header_map_to_hash_map(parts.headers),
         status: parts.status.as_u16(),
         url,
         version: get_version(parts.version),
@@ -293,12 +312,22 @@ where
         + Send
         + 'static,
 {
-    if let Some(directive) = ctx.directive {
-        req.headers_mut().insert(
-            http::header::CACHE_CONTROL,
-            HeaderValue::from_str(&directive)
-                .map_err(InternalError::InvalidHeader)?,
-        );
+    // just call inner service if caching is disabled
+    if ctx.enabled.is_some_and(|enabled| !enabled) {
+        return inner.call(req).await.map_err(|e| {
+            tracing::error!(error = %e, "encountered infallible error");
+            ApiError::Internal(InternalError::Internal)
+        });
+    }
+
+    if let Some(directive) = &ctx.directive {
+        if req.headers().get(http::header::CACHE_CONTROL).is_none() {
+            req.headers_mut().insert(
+                http::header::CACHE_CONTROL,
+                HeaderValue::from_str(directive)
+                    .map_err(InternalError::InvalidHeader)?,
+            );
+        }
     }
 
     let (parts, body) = req.into_parts();
@@ -313,7 +342,7 @@ where
     // Try each bucket in parallel
     let mut futures = FuturesUnordered::new();
     let hasher = get_hasher(&parts, &body_bytes, ctx.seed.as_deref());
-    // fairly samply different buckets
+    // fairly sample different buckets
     let mut bucket_indices: Vec<u8> = (0..buckets).collect();
     {
         use rand::seq::SliceRandom;
@@ -360,8 +389,6 @@ where
         }
     }
 
-    let cache_options = ctx.options.unwrap_or_default();
-
     // Try stale hits
     if let Some((bucket, key, stale_parts)) = stale_hits.into_iter().next() {
         let req =
@@ -374,11 +401,11 @@ where
             Request::from_parts(stale_parts, body_bytes.clone().into());
         return handle_response_for_cache_miss(
             cache,
+            &ctx,
             key,
             req_for_cache,
             resp,
             bucket,
-            cache_options,
             now,
         )
         .await;
@@ -403,11 +430,11 @@ where
     let req_for_cache = Request::from_parts(parts, body_bytes.into());
     handle_response_for_cache_miss(
         cache,
+        &ctx,
         key,
         req_for_cache,
         resp,
         bucket,
-        cache_options,
         now,
     )
     .await
@@ -479,7 +506,7 @@ fn get_version(version: http::Version) -> http_cache::HttpVersion {
     }
 }
 
-fn get_headers(headers: HeaderMap) -> HashMap<String, String> {
+fn header_map_to_hash_map(headers: HeaderMap) -> HashMap<String, String> {
     headers
         .into_iter()
         .filter_map(|(name, value)| {
@@ -503,4 +530,93 @@ fn build_response(
 
     response.headers_mut().extend(extra_headers);
     Ok(response)
+}
+
+struct CacheableResponse {
+    resp_headers: HeaderMap,
+    status: StatusCode,
+}
+
+impl CacheableResponse {
+    fn new(ctx: &CacheContext, resp: &HeaderMap, status: StatusCode) -> Self {
+        let mut resp_headers = resp.clone();
+        resp_headers.remove(http::header::SET_COOKIE);
+        if let Some(directive) = ctx.directive.as_ref() {
+            if let Some(value) =
+                cache_control::CacheControl::from_value(directive)
+            {
+                tracing::trace!("parsed cache control value");
+                if let Some(max_age) = value.max_age {
+                    HeaderValue::from_str(&format!(
+                        "max-age={}",
+                        max_age.as_secs()
+                    ))
+                    .inspect_err(|_e| {
+                        tracing::error!(
+                            "failed to set max-age response header"
+                        );
+                    })
+                    .map(|header_value| {
+                        resp_headers
+                            .append(http::header::CACHE_CONTROL, header_value);
+                    })
+                    .ok();
+                }
+                if value.must_revalidate {
+                    let header_value =
+                        HeaderValue::from_static("must-revalidate");
+                    resp_headers
+                        .append(http::header::CACHE_CONTROL, header_value);
+                }
+                if value.proxy_revalidate {
+                    let header_value =
+                        HeaderValue::from_static("proxy-revalidate");
+                    resp_headers
+                        .append(http::header::CACHE_CONTROL, header_value);
+                }
+                if value.no_store {
+                    let header_value = HeaderValue::from_static("no-store");
+                    resp_headers
+                        .append(http::header::CACHE_CONTROL, header_value);
+                }
+                if value.no_transform {
+                    let header_value = HeaderValue::from_static("no-transform");
+                    resp_headers
+                        .append(http::header::CACHE_CONTROL, header_value);
+                }
+                match value.cachability {
+                    Some(cache_control::Cachability::Private) => {
+                        let header_value = HeaderValue::from_static("private");
+                        resp_headers
+                            .append(http::header::CACHE_CONTROL, header_value);
+                    }
+                    Some(cache_control::Cachability::Public) => {
+                        let header_value = HeaderValue::from_static("public");
+                        resp_headers
+                            .append(http::header::CACHE_CONTROL, header_value);
+                    }
+                    Some(cache_control::Cachability::NoCache) => {
+                        let header_value = HeaderValue::from_static("no-cache");
+                        resp_headers
+                            .append(http::header::CACHE_CONTROL, header_value);
+                    }
+                    _ => {}
+                }
+            }
+        }
+        Self {
+            resp_headers,
+            status,
+        }
+    }
+}
+
+impl ResponseLike for CacheableResponse {
+    fn status(&self) -> StatusCode {
+        self.status
+    }
+
+    fn headers(&self) -> &HeaderMap {
+        &self.resp_headers
+    }
 }

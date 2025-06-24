@@ -8,8 +8,6 @@ pub(crate) const DEFAULT_BUCKETS: u8 = 1;
 )]
 #[serde(default, rename_all = "kebab-case")]
 pub struct CacheConfig {
-    #[serde(default)]
-    pub store: CacheStore,
     /// Cache-control header: <https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Cache-Control>
     #[serde(skip_serializing_if = "Option::is_none")]
     pub directive: Option<String>,
@@ -23,9 +21,6 @@ pub struct CacheConfig {
 impl crate::tests::TestDefault for CacheConfig {
     fn test_default() -> Self {
         Self {
-            store: CacheStore::InMemory {
-                max_size: default_max_size(),
-            },
             directive: None,
             buckets: DEFAULT_BUCKETS,
             seed: None,

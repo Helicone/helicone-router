@@ -276,7 +276,7 @@ async fn cache_disabled_globally() {
 async fn cache_enabled_per_router() {
     use ai_gateway::{
         config::{
-            cache::{CacheConfig, CacheStore},
+            cache::CacheConfig,
             router::{RouterConfig, RouterConfigs},
         },
         types::router::RouterId,
@@ -299,9 +299,6 @@ async fn cache_enabled_per_router() {
             router_with_cache_id.clone(),
             RouterConfig {
                 cache: Some(CacheConfig {
-                    store: CacheStore::InMemory {
-                        max_size: 1024 * 1024,
-                    },
                     directive: None,
                     buckets: 1,
                     seed: Some("router-cached-seed".to_string()),

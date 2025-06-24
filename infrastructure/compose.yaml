@@ -78,10 +78,10 @@ services:
     image: redis:8.0.2-alpine
     restart: unless-stopped
     ports:
-      - '6379:6379'
+      - '6340:6340'
     environment:
       - REDIS_PASSWORD=helicone-redis-pw
-      - REDIS_PORT=6379
+      - REDIS_PORT=6340
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
