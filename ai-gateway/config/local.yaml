@@ -13,4 +13,5 @@ routers:
       chat:
         strategy: latency
         providers:
+          - openai
           - gemini

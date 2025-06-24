@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use clap::Parser;
+use clap::{Parser, Subcommand};
 use futures::StreamExt;
 use rand::Rng;
 use tokio::{
@@ -9,26 +9,85 @@ use tokio::{
 };
 
 #[derive(Parser, Debug)]
-#[command(author, version, about, long_about = None)]
-struct Args {
-    /// Run requests forever in a loop until Ctrl+C is pressed
-    #[arg(long)]
-    run_forever: bool,
+#[command(
+    author,
+    version,
+    about,
+    long_about = None,
+    subcommand_required = false,
+    arg_required_else_help = false,
+)]
+struct Cli {
+    #[command(subcommand)]
+    command: Option<Commands>,
 }
 
-pub async fn test(run_forever_mode: bool) {
-    let is_stream = false;
+#[derive(Subcommand, Debug)]
+enum Commands {
+    /// Send a single test request (default when no subcommand is provided)
+    #[command(name = "test-request")]
+    TestRequest {
+        /// Stream the response
+        #[arg(short, long, default_value_t = false)]
+        stream: bool,
+
+        /// Include the Authorization header
+        #[arg(short = 'a', long = "auth", default_value_t = false)]
+        auth: bool,
+
+        /// Model identifier to use
+        #[arg(
+            short = 'm',
+            long = "model",
+            default_value = "openai/gpt-4o-mini"
+        )]
+        model: String,
+    },
+
+    /// Continuously send requests until interrupted (load testing)
+    #[command(name = "load-test")]
+    LoadTest {
+        /// Stream the responses
+        #[arg(short, long, default_value_t = false)]
+        stream: bool,
+
+        /// Include the Authorization header
+        #[arg(short = 'a', long = "auth", default_value_t = false)]
+        auth: bool,
+
+        /// Model identifier to use
+        #[arg(
+            short = 'm',
+            long = "model",
+            default_value = "openai/gpt-4o-mini"
+        )]
+        model: String,
+    },
+}
+
+impl Default for Commands {
+    fn default() -> Self {
+        Self::TestRequest {
+            stream: false,
+            auth: false,
+            model: "openai/gpt-4o-mini".to_string(),
+        }
+    }
+}
+
+pub async fn test(
+    print_response: bool,
+    is_stream: bool,
+    send_auth: bool,
+    model: &str,
+) {
     let openai_request_body = serde_json::json!({
-        "model": "openai/gpt-4o-mini",
+        "model": model,
         "messages": [
             {
                 "role": "system",
                 "content": "You are a helpful assistant that can answer
     questions and help with tasks."
-            },
-            {
-                "role": "user",
-                "content": "hello world"
             }
         ],
         "max_tokens": 400,
@@ -40,17 +99,25 @@ pub async fn test(run_forever_mode: bool) {
 
     let bytes = serde_json::to_vec(&openai_request).unwrap();
 
-    let helicone_api_key =
-        std::env::var("HELICONE_CONTROL_PLANE_API_KEY").unwrap();
+    let mut request_builder = reqwest::Client::new()
+        .post("http://localhost:8080/ai/v1/chat/completions")
+        .header("Content-Type", "application/json");
 
-    let response = reqwest::Client::new()
-        .post("http://localhost:8080/router/default/v1/chat/completions")
-        .header("Content-Type", "application/json")
-        .header("authorization", helicone_api_key)
-        .body(bytes)
-        .send()
-        .await
-        .unwrap();
+    if send_auth {
+        if let Ok(helicone_api_key) =
+            std::env::var("HELICONE_CONTROL_PLANE_API_KEY")
+        {
+            request_builder =
+                request_builder.header("authorization", helicone_api_key);
+        } else {
+            eprintln!(
+                "Warning: HELICONE_CONTROL_PLANE_API_KEY not set, skipping \
+                 Authorization header."
+            );
+        }
+    }
+
+    let response = request_builder.body(bytes).send().await.unwrap();
     println!("Status: {}", response.status());
     let trace_id = response
         .headers()
@@ -59,7 +126,7 @@ pub async fn test(run_forever_mode: bool) {
         .to_str()
         .unwrap();
     println!("Trace ID: {}", trace_id);
-    if !run_forever_mode {
+    if print_response {
         if is_stream {
             let mut body_stream = response.bytes_stream();
             while let Some(Ok(chunk)) = body_stream.next().await {
@@ -76,7 +143,7 @@ pub async fn test(run_forever_mode: bool) {
     }
 }
 
-async fn run_forever_loop() {
+async fn run_forever_loop(is_stream: bool, send_auth: bool, model: String) {
     let mut rng = rand::thread_rng();
     let mut request_count = 0u64;
     let start_time = Instant::now();
@@ -93,7 +160,7 @@ async fn run_forever_loop() {
                 break;
             }
             _ = async {
-                test(true).await;
+                test(false, is_stream, send_auth, &model).await;
                 request_count += 1;
 
                 if request_count % 100 == 0 {
@@ -111,15 +178,26 @@ async fn run_forever_loop() {
 
 #[tokio::main]
 async fn main() {
-    let args = Args::parse();
+    let cli = Cli::parse();
     dotenvy::dotenv().ok();
 
-    if args.run_forever {
-        println!("Starting load test - press Ctrl+C to stop...");
-        run_forever_loop().await;
-    } else {
-        println!("Starting single test...");
-        test(false).await;
-        println!("Test completed successfully!");
+    match cli.command.unwrap_or_default() {
+        Commands::TestRequest {
+            stream,
+            auth,
+            model,
+        } => {
+            println!("Starting single test...");
+            test(true, stream, auth, &model).await;
+            println!("Test completed successfully!");
+        }
+        Commands::LoadTest {
+            stream,
+            auth,
+            model,
+        } => {
+            println!("Starting load test - press Ctrl+C to stop...");
+            run_forever_loop(stream, auth, model).await;
+        }
     }
 }
