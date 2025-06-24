@@ -2,6 +2,7 @@ use aws_sdk_bedrockruntime::{
     operation::converse::{ConverseInput, ConverseOutput},
     types::ConverseStreamOutput,
 };
+use serde::{Deserialize, Serialize};
 
 use crate::{
     endpoints::{AiRequest, Endpoint},
@@ -17,6 +18,7 @@ impl Endpoint for Converse {
     type RequestBody = ConverseInput;
     type ResponseBody = ConverseOutput;
     type StreamResponseBody = ConverseStreamOutput;
+    type ErrorResponseBody = ConverseError;
 }
 
 impl AiRequest for ConverseInput {
@@ -30,3 +32,8 @@ impl AiRequest for ConverseInput {
         ModelId::from_str_and_provider(InferenceProvider::Bedrock, model)
     }
 }
+
+// The AWS SDK does not document the error format so instead we use a unit
+// struct and simply rely on the http status codes to map to the OpenAI error.
+#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
+pub struct ConverseError;

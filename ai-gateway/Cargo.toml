@@ -3,7 +3,7 @@ name = "ai-gateway"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
-repository = "https://github.com/Helicone/helicone-router"
+repository = "https://github.com/Helicone/ai-gateway"
 default-run = "ai-gateway"
 description = "A high-performance LLM proxy router."
 homepage = "https://docs.helicone.ai/ai-gateway"
@@ -153,4 +153,8 @@ required-features = ["testing"]
 
 [[test]]
 name = "health_check"
+required-features = ["testing"]
+
+[[test]]
+name = "error_format"
 required-features = ["testing"]

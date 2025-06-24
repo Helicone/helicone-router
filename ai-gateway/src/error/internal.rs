@@ -75,7 +75,10 @@ impl IntoResponse for InternalError {
         (
             StatusCode::INTERNAL_SERVER_ERROR,
             Json(ErrorResponse {
-                error: "Internal Server Error".to_string(),
+                message: self.to_string(),
+                r#type: Some("server_error".to_string()),
+                param: None,
+                code: None,
             }),
         )
             .into_response()

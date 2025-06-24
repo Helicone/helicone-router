@@ -2,17 +2,14 @@ use axum_core::response::{IntoResponse, Response};
 use displaydoc::Display;
 use http::StatusCode;
 use thiserror::Error;
-use tracing::error;
 
 use super::api::ErrorResponse;
-use crate::types::json::Json;
+use crate::{
+    middleware::mapper::openai::INVALID_REQUEST_ERROR_TYPE, types::json::Json,
+};
 
 #[derive(Debug, strum::AsRefStr, Error, Display)]
 pub enum AuthError {
-    /// Reqwest transport error: {0}
-    Transport(#[from] reqwest::Error),
-    /// Unsuccessful auth response: {0}
-    UnsuccessfulAuthResponse(reqwest::Error),
     /// Missing authorization header
     MissingAuthorizationHeader,
     /// Invalid credentials
@@ -22,34 +19,23 @@ pub enum AuthError {
 impl IntoResponse for AuthError {
     fn into_response(self) -> Response {
         match self {
-            Self::Transport(error) => {
-                error!(error = %error, "reqwest transport error");
-                (
-                    error.status().unwrap_or(StatusCode::INTERNAL_SERVER_ERROR),
-                    Json(ErrorResponse {
-                        error: "Authentication error".to_string(),
-                    }),
-                )
-                    .into_response()
-            }
-            Self::UnsuccessfulAuthResponse(error) => (
-                error.status().unwrap_or(StatusCode::INTERNAL_SERVER_ERROR),
-                Json(ErrorResponse {
-                    error: "Authentication error".to_string(),
-                }),
-            )
-                .into_response(),
             Self::MissingAuthorizationHeader => (
                 StatusCode::UNAUTHORIZED,
                 Json(ErrorResponse {
-                    error: Self::MissingAuthorizationHeader.to_string(),
+                    message: Self::MissingAuthorizationHeader.to_string(),
+                    r#type: Some(INVALID_REQUEST_ERROR_TYPE.to_string()),
+                    param: None,
+                    code: Some("invalid_api_key".to_string()),
                 }),
             )
                 .into_response(),
             Self::InvalidCredentials => (
                 StatusCode::UNAUTHORIZED,
                 Json(ErrorResponse {
-                    error: Self::InvalidCredentials.to_string(),
+                    message: Self::InvalidCredentials.to_string(),
+                    r#type: Some(INVALID_REQUEST_ERROR_TYPE.to_string()),
+                    param: None,
+                    code: Some("invalid_api_key".to_string()),
                 }),
             )
                 .into_response(),
@@ -62,27 +48,15 @@ impl IntoResponse for AuthError {
 /// such that we can use this type in metrics.
 #[derive(Debug, Error, Display, strum::AsRefStr)]
 pub enum AuthErrorMetric {
-    /// Reqwest transport error
-    Transport,
-    /// Unsuccessful auth response
-    UnsuccessfulAuthResponse,
     /// Missing authorization header
     MissingAuthorizationHeader,
     /// Invalid credentials
     InvalidCredentials,
-    /// Invalid user id
-    InvalidUserId,
-    /// Invalid org id
-    InvalidOrgId,
 }
 
 impl From<&AuthError> for AuthErrorMetric {
     fn from(error: &AuthError) -> Self {
         match error {
-            AuthError::Transport(_) => Self::Transport,
-            AuthError::UnsuccessfulAuthResponse(_) => {
-                Self::UnsuccessfulAuthResponse
-            }
             AuthError::MissingAuthorizationHeader => {
                 Self::MissingAuthorizationHeader
             }

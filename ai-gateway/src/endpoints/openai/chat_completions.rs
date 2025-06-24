@@ -19,6 +19,7 @@ impl Endpoint for ChatCompletions {
     type RequestBody = CreateChatCompletionRequest;
     type ResponseBody = CreateChatCompletionResponse;
     type StreamResponseBody = CreateChatCompletionStreamResponse;
+    type ErrorResponseBody = async_openai::error::ApiError;
 }
 
 impl AiRequest for CreateChatCompletionRequest {

@@ -1,10 +1,14 @@
 use std::{collections::HashMap, str::FromStr};
 
+use http::response::Parts;
+
 use super::{TryConvert, TryConvertStreamData};
 use crate::{
     endpoints::openai::chat_completions::system_prompt,
     error::mapper::MapperError,
-    middleware::mapper::{DEFAULT_MAX_TOKENS, model::ModelMapper},
+    middleware::mapper::{
+        DEFAULT_MAX_TOKENS, TryConvertError, model::ModelMapper,
+    },
     types::{
         model_id::{ModelId, Version},
         provider::InferenceProvider,
@@ -739,5 +743,30 @@ impl
         Self::Error,
     > {
         Ok(Some(value))
+    }
+}
+
+impl
+    TryConvertError<
+        crate::endpoints::anthropic::messages::AnthropicApiError,
+        async_openai::error::ApiError,
+    > for AnthropicConverter
+{
+    type Error = MapperError;
+    fn try_convert_error(
+        &self,
+        resp_parts: &Parts,
+        value: crate::endpoints::anthropic::messages::AnthropicApiError,
+    ) -> Result<async_openai::error::ApiError, Self::Error> {
+        tracing::info!("converting anthropic error");
+        let r#type = super::openai::get_error_type(resp_parts);
+        let code = super::openai::get_error_code(resp_parts);
+        let error = async_openai::error::ApiError {
+            message: value.error.message,
+            code,
+            param: None,
+            r#type: Some(r#type.to_string()),
+        };
+        Ok(error)
     }
 }

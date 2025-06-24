@@ -2,7 +2,6 @@ use axum_core::response::IntoResponse;
 use futures::future::BoxFuture;
 use http::Request;
 use tower_http::auth::AsyncAuthorizeRequest;
-use tracing::warn;
 
 use crate::{
     app_state::AppState,
@@ -81,11 +80,7 @@ where
                 }
                 Err(e) => {
                     match &e {
-                        AuthError::Transport(_) => {
-                            warn!(error = %e, "Authentication error");
-                        }
-                        AuthError::UnsuccessfulAuthResponse(_)
-                        | AuthError::MissingAuthorizationHeader
+                        AuthError::MissingAuthorizationHeader
                         | AuthError::InvalidCredentials => {
                             app_state.0.metrics.auth_rejections.add(1, &[]);
                         }

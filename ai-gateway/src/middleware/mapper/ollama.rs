@@ -3,12 +3,13 @@ use std::str::FromStr;
 use async_openai::types::{
     CreateChatCompletionResponse, CreateChatCompletionStreamResponse,
 };
+use http::response::Parts;
 
 use super::{TryConvert, TryConvertStreamData};
 use crate::{
     endpoints::ollama::chat_completions::CreateChatCompletionRequestOllama,
     error::mapper::MapperError,
-    middleware::mapper::model::ModelMapper,
+    middleware::mapper::{TryConvertError, model::ModelMapper},
     types::{model_id::ModelId, provider::InferenceProvider},
 };
 
@@ -74,5 +75,22 @@ impl
         value: CreateChatCompletionStreamResponse,
     ) -> Result<Option<CreateChatCompletionStreamResponse>, Self::Error> {
         Ok(Some(value))
+    }
+}
+
+impl
+    TryConvertError<
+        async_openai::error::ApiError,
+        async_openai::error::ApiError,
+    > for OllamaConverter
+{
+    type Error = MapperError;
+
+    fn try_convert_error(
+        &self,
+        _resp_parts: &Parts,
+        value: async_openai::error::ApiError,
+    ) -> Result<async_openai::error::ApiError, Self::Error> {
+        Ok(value)
     }
 }

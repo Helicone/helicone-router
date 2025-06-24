@@ -19,6 +19,7 @@ impl crate::endpoints::Endpoint for ChatCompletions {
     type RequestBody = CreateChatCompletionRequestOllama;
     type ResponseBody = CreateChatCompletionResponse;
     type StreamResponseBody = CreateChatCompletionStreamResponse;
+    type ErrorResponseBody = async_openai::error::ApiError;
 }
 
 #[derive(Clone, Serialize, Default, Debug, Deserialize, PartialEq)]

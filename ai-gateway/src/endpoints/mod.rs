@@ -23,6 +23,7 @@ pub trait Endpoint {
     const PATH: &'static str;
     type RequestBody;
     type ResponseBody;
+    type ErrorResponseBody;
     /// To support streaming response body types with different
     /// concrete type than the regular response body type.
     type StreamResponseBody;

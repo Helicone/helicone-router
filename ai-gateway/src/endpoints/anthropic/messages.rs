@@ -1,6 +1,7 @@
 use anthropic_ai_sdk::types::message::{
     self, CreateMessageParams, CreateMessageResponse,
 };
+use serde::{Deserialize, Serialize};
 
 use crate::{
     endpoints::{AiRequest, Endpoint},
@@ -16,6 +17,7 @@ impl Endpoint for Messages {
     type RequestBody = CreateMessageParams;
     type ResponseBody = CreateMessageResponse;
     type StreamResponseBody = message::StreamEvent;
+    type ErrorResponseBody = AnthropicApiError;
 }
 
 impl AiRequest for CreateMessageParams {
@@ -29,4 +31,18 @@ impl AiRequest for CreateMessageParams {
             &self.model,
         )
     }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct AnthropicApiError {
+    pub error: ErrorDetails,
+    #[serde(rename = "type")]
+    pub kind: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ErrorDetails {
+    pub message: String,
+    #[serde(rename = "type")]
+    pub kind: String,
 }

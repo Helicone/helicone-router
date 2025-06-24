@@ -32,6 +32,7 @@ pub mod registry;
 pub mod service;
 
 use bytes::Bytes;
+use http::response::Parts;
 use serde::{Serialize, de::DeserializeOwned};
 
 pub use self::service::*;
@@ -53,6 +54,16 @@ pub trait TryConvert<Source, Target>: Sized {
 
     fn try_convert(
         &self,
+        value: Source,
+    ) -> std::result::Result<Target, Self::Error>;
+}
+
+pub trait TryConvertError<Source, Target>: Sized {
+    type Error;
+
+    fn try_convert_error(
+        &self,
+        resp_parts: &Parts,
         value: Source,
     ) -> std::result::Result<Target, Self::Error>;
 }
@@ -83,6 +94,7 @@ pub trait EndpointConverter {
     /// when converting stream response bodies.
     fn convert_resp_body(
         &self,
+        resp_parts: Parts,
         resp_body_bytes: Bytes,
         is_stream: bool,
     ) -> Result<Option<Bytes>, ApiError>;
@@ -120,17 +132,21 @@ where
     S::RequestBody: DeserializeOwned + AiRequest,
     S::ResponseBody: Serialize,
     S::StreamResponseBody: Serialize,
+    S::ErrorResponseBody: Serialize,
     T: Endpoint,
     T::RequestBody: Serialize + AiRequest,
     T::ResponseBody: DeserializeOwned,
     T::StreamResponseBody: DeserializeOwned,
+    T::ErrorResponseBody: DeserializeOwned,
     C: TryConvert<S::RequestBody, T::RequestBody>,
     C: TryConvert<T::ResponseBody, S::ResponseBody>,
     C: TryConvertStreamData<T::StreamResponseBody, S::StreamResponseBody>,
+    C: TryConvertError<T::ErrorResponseBody, S::ErrorResponseBody>,
     <C as TryConvert<S::RequestBody, T::RequestBody>>::Error: Into<MapperError>,
     <C as TryConvert<T::ResponseBody, S::ResponseBody>>::Error: Into<MapperError>,
     <C as TryConvertStreamData<T::StreamResponseBody, S::StreamResponseBody>>::Error:
         Into<MapperError>,
+    <C as TryConvertError<T::ErrorResponseBody, S::ErrorResponseBody>>::Error: Into<MapperError>,
 {
     fn convert_req_body(
         &self,
@@ -159,7 +175,12 @@ where
         Ok((target_bytes, mapper_ctx))
     }
 
-    fn convert_resp_body(&self, bytes: Bytes, is_stream: bool) -> Result<Option<Bytes>, ApiError> {
+    fn convert_resp_body(
+        &self,
+        resp_parts: Parts,
+        bytes: Bytes,
+        is_stream: bool,
+    ) -> Result<Option<Bytes>, ApiError> {
         if is_stream {
             let source_response: T::StreamResponseBody =
                 serde_json::from_slice(&bytes)
@@ -185,6 +206,26 @@ where
             } else {
                 Ok(None)
             }
+        } else if resp_parts.status.is_client_error() || resp_parts.status.is_server_error() {
+            let source_error: T::ErrorResponseBody = serde_json::from_slice(&bytes)
+                .map_err(|e| InternalError::Deserialize {
+                    ty: std::any::type_name::<T::ErrorResponseBody>(),
+                    error: e,
+                })?;
+            let target_response: S::ErrorResponseBody = self
+                .converter
+                .try_convert_error(&resp_parts, source_error)
+                .map_err(|e| InternalError::MapperError(e.into()))?;
+
+            let target_bytes =
+            serde_json::to_vec(&target_response).map_err(|e| {
+                InternalError::Serialize {
+                    ty: std::any::type_name::<T::ResponseBody>(),
+                    error: e,
+                }
+            })?;
+
+            Ok(Some(Bytes::from(target_bytes)))
         } else {
             let source_response: T::ResponseBody =
             serde_json::from_slice(&bytes)

@@ -1,9 +1,11 @@
 use std::str::FromStr;
 
+use http::{StatusCode, response::Parts};
+
 use super::{TryConvertStreamData, model::ModelMapper};
 use crate::{
     error::mapper::MapperError,
-    middleware::mapper::TryConvert,
+    middleware::mapper::{TryConvert, TryConvertError},
     types::{model_id::ModelId, provider::InferenceProvider},
 };
 
@@ -631,3 +633,45 @@ impl
         Ok(Some(value))
     }
 }
+
+impl
+    TryConvertError<
+        async_openai::error::ApiError,
+        async_openai::error::ApiError,
+    > for OpenAIConverter
+{
+    type Error = MapperError;
+
+    fn try_convert_error(
+        &self,
+        _resp_parts: &Parts,
+        value: async_openai::error::ApiError,
+    ) -> Result<async_openai::error::ApiError, Self::Error> {
+        Ok(value)
+    }
+}
+
+pub(super) fn get_error_type(resp_parts: &Parts) -> String {
+    if resp_parts.status == StatusCode::TOO_MANY_REQUESTS {
+        "tokens".to_string()
+    } else if resp_parts.status.is_client_error() {
+        INVALID_REQUEST_ERROR_TYPE.to_string()
+    } else {
+        SERVER_ERROR_TYPE.to_string()
+    }
+}
+
+pub(super) fn get_error_code(resp_parts: &Parts) -> Option<String> {
+    if resp_parts.status == StatusCode::UNAUTHORIZED
+        || resp_parts.status == StatusCode::FORBIDDEN
+    {
+        Some("invalid_api_key".to_string())
+    } else if resp_parts.status == StatusCode::TOO_MANY_REQUESTS {
+        Some("rate_limit_exceeded".to_string())
+    } else {
+        None
+    }
+}
+
+pub(crate) const SERVER_ERROR_TYPE: &str = "server_error";
+pub(crate) const INVALID_REQUEST_ERROR_TYPE: &str = "invalid_request_error";

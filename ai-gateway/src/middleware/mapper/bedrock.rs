@@ -3,13 +3,14 @@ use std::{collections::HashMap, str::FromStr};
 use async_openai::types::{
     CreateChatCompletionResponse, CreateChatCompletionStreamResponse,
 };
+use http::response::Parts;
 use uuid::Uuid;
 
 use super::{
     MapperError, TryConvert, TryConvertStreamData, model::ModelMapper,
 };
 use crate::{
-    middleware::mapper::DEFAULT_MAX_TOKENS,
+    middleware::mapper::{DEFAULT_MAX_TOKENS, TryConvertError},
     types::{model_id::ModelId, provider::InferenceProvider},
 };
 
@@ -637,5 +638,30 @@ impl
             service_tier: None,
             usage: Some(completion_usage),
         }))
+    }
+}
+
+impl
+    TryConvertError<
+        crate::endpoints::bedrock::converse::ConverseError,
+        async_openai::error::ApiError,
+    > for BedrockConverter
+{
+    type Error = MapperError;
+
+    fn try_convert_error(
+        &self,
+        resp_parts: &Parts,
+        _value: crate::endpoints::bedrock::converse::ConverseError,
+    ) -> Result<async_openai::error::ApiError, Self::Error> {
+        let kind = super::openai::get_error_type(resp_parts);
+        let code = super::openai::get_error_code(resp_parts);
+        let error = async_openai::error::ApiError {
+            message: kind.clone(),
+            code,
+            param: None,
+            r#type: Some(kind),
+        };
+        Ok(error)
     }
 }

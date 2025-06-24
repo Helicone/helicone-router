@@ -6,6 +6,7 @@ use tracing::debug;
 
 use crate::{
     error::api::ErrorResponse,
+    middleware::mapper::openai::INVALID_REQUEST_ERROR_TYPE,
     types::{json::Json, provider::InferenceProvider},
 };
 
@@ -37,67 +38,35 @@ pub enum InvalidRequestError {
 impl IntoResponse for InvalidRequestError {
     fn into_response(self) -> axum_core::response::Response {
         debug!(error = %self, "Invalid request");
+        let message = self.to_string();
         match self {
-            Self::NotFound(path) => (
+            Self::NotFound(_) | Self::RouterIdNotFound(_) => (
                 StatusCode::NOT_FOUND,
                 Json(ErrorResponse {
-                    error: format!("Not found: {path}"),
-                }),
-            )
-                .into_response(),
-            Self::UnsupportedEndpoint(path) => (
-                StatusCode::BAD_REQUEST,
-                Json(ErrorResponse {
-                    error: format!("Unsupported endpoint: {path}"),
-                }),
-            )
-                .into_response(),
-            Self::RouterIdNotFound(router_id) => (
-                StatusCode::NOT_FOUND,
-                Json(ErrorResponse {
-                    error: format!("Router id not found: {router_id}"),
-                }),
-            )
-                .into_response(),
-            Self::MissingRouterId => (
-                StatusCode::BAD_REQUEST,
-                Json(ErrorResponse {
-                    error: "Missing router id".to_string(),
-                }),
-            )
-                .into_response(),
-            Self::InvalidRequest(_) | Self::InvalidUrl(_) => (
-                StatusCode::BAD_REQUEST,
-                Json(ErrorResponse {
-                    error: "Invalid request".to_string(),
-                }),
-            )
-                .into_response(),
-            Self::UnsupportedProvider(provider) => (
-                StatusCode::BAD_REQUEST,
-                Json(ErrorResponse {
-                    error: format!("Unsupported provider: {provider}"),
-                }),
-            )
-                .into_response(),
-            Self::InvalidRequestBody(e) => (
-                StatusCode::BAD_REQUEST,
-                Json(ErrorResponse {
-                    error: format!("Invalid request body: {e}"),
+                    message,
+                    r#type: Some(INVALID_REQUEST_ERROR_TYPE.to_string()),
+                    param: None,
+                    code: None,
                 }),
             )
                 .into_response(),
             Self::Provider4xxError(status) => (
                 status,
                 Json(ErrorResponse {
-                    error: format!("Upstream 4xx error: {status}"),
+                    message: self.to_string(),
+                    r#type: Some(INVALID_REQUEST_ERROR_TYPE.to_string()),
+                    param: None,
+                    code: None,
                 }),
             )
                 .into_response(),
-            Self::InvalidCacheConfig => (
+            _ => (
                 StatusCode::BAD_REQUEST,
                 Json(ErrorResponse {
-                    error: "Invalid cache config".to_string(),
+                    message,
+                    r#type: Some(INVALID_REQUEST_ERROR_TYPE.to_string()),
+                    param: None,
+                    code: None,
                 }),
             )
                 .into_response(),

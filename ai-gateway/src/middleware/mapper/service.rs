@@ -203,8 +203,10 @@ async fn map_response(
             .map_err(|e| ApiError::Internal(InternalError::CollectBodyError(e)))
             .try_filter_map({
                 let captured_registry = converter_registry.clone();
+                let resp_parts = parts.clone();
                 move |bytes| {
                     let registry_for_future = captured_registry.clone();
+                    let resp_parts = resp_parts.clone();
                     async move {
                         let converter = registry_for_future
                             .get_converter(&target_endpoint, &source_endpoint)
@@ -215,8 +217,8 @@ async fn map_response(
                                 )
                             })?;
 
-                        let converted_data =
-                            converter.convert_resp_body(bytes, is_stream)?;
+                        let converted_data = converter
+                            .convert_resp_body(resp_parts, bytes, is_stream)?;
 
                         // add the `data: ` prefix expected by the OpenAI SDK
                         if let Some(converted_data) = converted_data {
@@ -251,7 +253,7 @@ async fn map_response(
             .to_bytes();
 
         let mapped_body_bytes = converter
-            .convert_resp_body(body_bytes, is_stream)?
+            .convert_resp_body(parts.clone(), body_bytes, is_stream)?
             .ok_or(MapperError::EmptyResponseBody)
             .map_err(InternalError::MapperError)?;
         let final_body = axum_core::body::Body::from(mapped_body_bytes);

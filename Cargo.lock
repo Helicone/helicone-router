@@ -209,8 +209,9 @@ dependencies = [
 
 [[package]]
 name = "anthropic-ai-sdk"
-version = "0.2.24"
-source = "git+https://github.com/katsuhirohonda/anthropic-sdk-rs.git#25ad721c75ef697acc0a9fd7653496b671968de7"
+version = "0.2.25"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e8ee364486bd259bd11a2ace0e7ccd9c3f6aeb75dc277047621230105949e56e"
 dependencies = [
  "async-trait",
  "eventsource-stream",
@@ -285,9 +286,9 @@ dependencies = [
 
 [[package]]
 name = "async-compression"
-version = "0.4.23"
+version = "0.4.25"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b37fc50485c4f3f736a4fb14199f6d5f5ba008d7f28fe710306c92780f004c07"
+checksum = "40f6024f3f856663b45fd0c9b6f2024034a702f453549449e0d84a305900dad4"
 dependencies = [
  "brotli",
  "flate2",
@@ -361,8 +362,7 @@ dependencies = [
 [[package]]
 name = "async-openai"
 version = "0.28.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4df839a6643e1e3248733b01f229dc4f462d7256f808bbaf04cac40739b345c2"
+source = "git+https://github.com/tomharmon/async-openai.git?branch=task%2Fadd-serialize-for-api-error#0cc601c1fc251e6ea547d18cf1f052a57c7bb2f2"
 dependencies = [
  "async-openai-macros",
  "backoff",
@@ -387,8 +387,7 @@ dependencies = [
 [[package]]
 name = "async-openai-macros"
 version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0289cba6d5143bfe8251d57b4a8cac036adf158525a76533a7082ba65ec76398"
+source = "git+https://github.com/tomharmon/async-openai.git?branch=task%2Fadd-serialize-for-api-error#0cc601c1fc251e6ea547d18cf1f052a57c7bb2f2"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1084,9 +1083,9 @@ dependencies = [
 
 [[package]]
 name = "brotli"
-version = "8.0.0"
+version = "8.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cf19e729cdbd51af9a397fb9ef8ac8378007b797f8273cfbfdf45dcaa316167b"
+checksum = "9991eea70ea4f293524138648e41ee89b0b2b12ddef3b255effa43c8056e0e0d"
 dependencies = [
  "alloc-no-stdlib",
  "alloc-stdlib",
