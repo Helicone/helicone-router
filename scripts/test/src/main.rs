@@ -183,10 +183,30 @@ async fn test(
         if is_stream {
             let mut body_stream = response.bytes_stream();
             while let Some(Ok(chunk)) = body_stream.next().await {
-                let json = serde_json::from_slice::<serde_json::Value>(&chunk)
-                    .unwrap();
-                let pretty_json = serde_json::to_string_pretty(&json).unwrap();
-                println!("Chunk: {}", pretty_json);
+                let chunk_str = String::from_utf8_lossy(&chunk);
+
+                // Handle SSE format: look for "data: " prefix
+                for line in chunk_str.lines() {
+                    if line.starts_with("data: ") {
+                        let json_str = &line[6..]; // Skip "data: "
+
+                        // Skip "[DONE]" messages
+                        if json_str.trim() == "[DONE]" {
+                            continue;
+                        }
+
+                        // Try to parse the JSON
+                        if let Ok(json) =
+                            serde_json::from_str::<serde_json::Value>(json_str)
+                        {
+                            let pretty_json =
+                                serde_json::to_string_pretty(&json).unwrap();
+                            println!("Chunk: {}", pretty_json);
+                        } else {
+                            println!("Failed to parse JSON: {}", json_str);
+                        }
+                    }
+                }
             }
         } else {
             let response_bytes =
