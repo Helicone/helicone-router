@@ -32,6 +32,7 @@ pub struct Args {
     verbose: bool,
 }
 
+#[allow(clippy::too_many_lines)]
 #[tokio::main]
 async fn main() -> Result<(), RuntimeError> {
     dotenvy::dotenv().ok();
@@ -80,6 +81,13 @@ async fn main() -> Result<(), RuntimeError> {
             )
         });
 
+    let mut tasks = vec![
+        "shutdown-signals",
+        "gateway",
+        "provider-health-monitor",
+        "provider-rate-limit-monitor",
+        "system-metrics",
+    ];
     let mut meltdown = Meltdown::new().register(TaggedService::new(
         "shutdown-signals",
         ai_gateway::utils::meltdown::wait_for_shutdown_signals,
@@ -91,10 +99,11 @@ async fn main() -> Result<(), RuntimeError> {
             ControlPlaneClient::connect(control_plane_state, helicone_config)
                 .await?,
         ));
+        tasks.push("control-plane-client");
     }
 
     meltdown = meltdown
-        .register(TaggedService::new("proxy", app))
+        .register(TaggedService::new("gateway", app))
         .register(TaggedService::new(
             "provider-health-monitor",
             health_monitor,
@@ -110,16 +119,19 @@ async fn main() -> Result<(), RuntimeError> {
             "rate-limiting-cleanup",
             rate_limiting_cleanup_service,
         ));
+        tasks.push("rate-limiting-cleanup");
     }
+
+    info!(tasks = ?tasks, "starting services");
 
     while let Some((service, result)) = meltdown.next().await {
         match result {
-            Ok(()) => info!(%service, "service stopped"),
+            Ok(()) => info!(%service, "service stopped successfully"),
             Err(error) => tracing::error!(%service, %error, "service crashed"),
         }
 
         if !shutting_down {
-            info!("shutting down");
+            info!("propagating shutdown signal...");
             meltdown.trigger();
             shutting_down = true;
         }

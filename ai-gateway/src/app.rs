@@ -296,10 +296,13 @@ impl meltdown::Service for App {
             let addr =
                 SocketAddr::from((config.server.address, config.server.port));
             info!(address = %addr, tls = %config.server.tls, "server starting");
-            cli::helpers::show_welcome_banner(&addr);
 
             let handle = axum_server::Handle::new();
             let app_factory = AppFactory::new_hyper_app(self);
+            // sleep so that the banner is not printed before the server is
+            // ready
+            tokio::time::sleep(std::time::Duration::from_millis(250)).await;
+            cli::helpers::show_welcome_banner(&addr);
             match &config.server.tls {
                 TlsConfig::Enabled { cert, key } => {
                     let tls_config =

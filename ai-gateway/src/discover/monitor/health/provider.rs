@@ -11,7 +11,7 @@ use tokio::{
     time,
 };
 use tower::discover::Change;
-use tracing::{Instrument, error, info, trace};
+use tracing::{Instrument, debug, error, trace};
 use weighted_balance::weight::Weight;
 
 use crate::{
@@ -291,7 +291,7 @@ impl HealthMonitor {
     }
 
     pub async fn run_forever(self) -> Result<(), runtime::RuntimeError> {
-        tracing::trace!("Starting provider monitors");
+        tracing::info!("starting health and uptime monitors");
 
         let interval_duration =
             self.app_state.config().discover.monitor.health_interval();
@@ -332,12 +332,12 @@ impl meltdown::Service for HealthMonitor {
                     if let Err(e) = result {
                         error!(name = "provider-health-monitor-task", error = ?e, "Monitor encountered error, shutting down");
                     } else {
-                        info!(name = "provider-health-monitor-task", "Monitor shut down successfully");
+                        debug!(name = "provider-health-monitor-task", "Monitor shut down successfully");
                     }
                     token.trigger();
                 }
                 () = &mut token => {
-                    info!(name = "provider-health-monitor-task", "task shut down successfully");
+                    debug!(name = "provider-health-monitor-task", "task shut down successfully");
                 }
             }
             Ok(())

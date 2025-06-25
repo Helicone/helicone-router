@@ -121,7 +121,7 @@ impl ProviderMonitorInner<Key> {
         self,
         mut rx: Receiver<RateLimitEvent>,
     ) -> Result<(), RuntimeError> {
-        tracing::trace!(router_id = ?self.router_id, "Starting P2C rate limit monitor");
+        info!(router_id = ?self.router_id, "starting rate limit monitor for latency strategy LB");
 
         let mut rate_limited_providers: HashSet<Key> = HashSet::default();
         let mut pending_restores: FuturesUnordered<ProviderRestore<Key>> =
@@ -264,7 +264,7 @@ impl ProviderMonitorInner<WeightedKey> {
         self,
         mut rx: Receiver<RateLimitEvent>,
     ) -> Result<(), RuntimeError> {
-        info!(router_id = ?self.router_id, "Starting Weighted rate limit monitor");
+        info!(router_id = ?self.router_id, "starting rate limit monitor for weighted strategy LB");
 
         let mut rate_limited_providers: HashMap<WeightedKey, Instant> =
             HashMap::default();
@@ -377,7 +377,7 @@ impl RateLimitMonitor {
     }
 
     pub async fn run_forever(mut self) -> Result<(), RuntimeError> {
-        tracing::trace!("Starting provider rate limit monitors");
+        tracing::debug!("Starting provider rate limit monitors");
         let mut interval = time::interval(RATE_LIMIT_MONITOR_INTERVAL);
         let app_state = self.app_state.clone();
 
@@ -428,12 +428,12 @@ impl meltdown::Service for RateLimitMonitor {
                     if let Err(e) = result {
                         error!(name = "provider-rate-limit-monitor-task", error = ?e, "Monitor encountered error, shutting down");
                     } else {
-                        info!(name = "provider-rate-limit-monitor-task", "Monitor shut down successfully");
+                        debug!(name = "provider-rate-limit-monitor-task", "Monitor shut down successfully");
                     }
                     token.trigger();
                 }
                 () = &mut token => {
-                    info!(name = "provider-rate-limit-monitor-task", "task shut down successfully");
+                    debug!(name = "provider-rate-limit-monitor-task", "task shut down successfully");
                 }
             }
             Ok(())

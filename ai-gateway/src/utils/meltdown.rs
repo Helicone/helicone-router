@@ -89,13 +89,13 @@ pub async fn wait_for_shutdown_signals(
 
     tokio::select! {
         () = &mut token => {
-            info!("Shutdown signal received, starting shutdown");
+            info!("Shutdown signal received");
         },
         _ = sigint.recv() => {
-            info!("SIGINT received, starting shutdown");
+            info!("SIGINT received");
         },
         _ = sigterm.recv() => {
-            info!("SIGTERM received, starting shutdown");
+            info!("SIGTERM received");
         },
     }
 

@@ -14,7 +14,7 @@ use tokio_tungstenite::{
         self, Message, client::IntoClientRequest, handshake::client::Request,
     },
 };
-use tracing::{error, info};
+use tracing::{debug, error};
 
 use super::{
     control_plane_state::ControlPlaneState,
@@ -207,12 +207,12 @@ impl meltdown::Service for ControlPlaneClient {
                     if let Err(e) = result {
                         error!(name = "control-plane-client-task", error = ?e, "Monitor encountered error, shutting down");
                     } else {
-                        info!(name = "control-plane-client-task", "Monitor shut down successfully");
+                        debug!(name = "control-plane-client-task", "Monitor shut down successfully");
                     }
                     token.trigger();
                 }
                 () = &mut token => {
-                    info!(name = "control-plane-client-task", "task shut down successfully");
+                    debug!(name = "control-plane-client-task", "task shut down successfully");
                 }
             }
             Ok(())
