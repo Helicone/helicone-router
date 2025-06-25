@@ -1,0 +1,43 @@
+services:
+  - type: web
+    name: ai-gateway
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: starter  # You can change this to 'standard' or 'pro' as needed
+    region: oregon  # You can change this to your preferred region
+    branch: render-deploy  # TODO Change this later back to main
+    healthCheckPath: /health  # Adjust if your app has a different health endpoint
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: RUST_LOG
+        value: info
+      # Add other environment variables your application needs
+      # For example:
+      # - key: DATABASE_URL
+      #   sync: false  # Set to true if this should be synced across deploys
+      # - key: API_KEY
+      #   sync: false
+    # Uncomment and configure if you need a custom start command
+    # startCommand: /usr/local/bin/ai-gateway
+    
+    # Resource allocation (adjust based on your needs)
+    # disk:
+    #   name: ai-gateway-disk
+    #   mountPath: /data
+    #   sizeGB: 1
+
+# Uncomment if you need databases or other services
+# databases:
+#   - name: ai-gateway-db
+#     databaseName: ai_gateway
+#     user: ai_gateway_user
+#     plan: starter  # or 'standard', 'pro'
+#     region: oregon
+
+# Uncomment if you need Redis
+# - type: redis
+#   name: ai-gateway-redis
+#   plan: starter
+#   region: oregon
+#   maxmemoryPolicy: allkeys-lru 
