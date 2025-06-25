@@ -2,8 +2,8 @@
 
 # Helicone AI Gateway
 
-[![GitHub stars](https://img.shields.io/github/stars/Helicone/aia-gateway?style=for-the-badge)](https://github.com/helicone/aia-gateway/)
-[![Downloads](https://img.shields.io/github/downloads/Helicone/aia-gateway/total?style=for-the-badge)](https://github.com/helicone/aia-gateway/releases)
+[![GitHub stars](https://img.shields.io/github/stars/Helicone/ai-gateway?style=for-the-badge)](https://github.com/helicone/ai-gateway/)
+[![Downloads](https://img.shields.io/github/downloads/Helicone/ai-gateway/total?style=for-the-badge)](https://github.com/helicone/ai-gateway/releases)
 [![Docker pulls](https://img.shields.io/docker/pulls/helicone/ai-gateway?style=for-the-badge)](https://hub.docker.com/r/helicone/ai-gateway)
 [![License](https://img.shields.io/badge/license-APACHE-green?style=for-the-badge)](LICENSE)
 
