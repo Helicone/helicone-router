@@ -18,6 +18,9 @@ license = "Apache-2.0"
 publish = false
 version = "0.2.0-beta.5"
 
+[profile.dev]
+opt-level = 1
+
 [profile.release]
 opt-level = 3
 lto = true
