@@ -39,6 +39,7 @@ fn p2c_config_openai_anthropic_google() -> RouterConfigs {
 
 #[tokio::test]
 #[serial_test::serial]
+#[ignore = "issue with stubr latency not working correctly"]
 async fn openai_slow() {
     let mut config = Config::test_default();
     // Disable auth for this test since we're testing load balancing behavior
@@ -91,6 +92,7 @@ async fn openai_slow() {
 
 #[tokio::test]
 #[serial_test::serial]
+#[ignore = "issue with stubr latency not working correctly"]
 async fn anthropic_slow() {
     let mut config = Config::test_default();
     // Disable auth for this test since we're testing load balancing behavior

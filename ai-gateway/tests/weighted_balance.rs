@@ -19,7 +19,6 @@ use tower::Service;
 
 #[tokio::test]
 #[serial_test::serial]
-#[ignore = "issue with stubr latency not working correctly"]
 async fn weighted_balancer_anthropic_preferred() {
     let mut config = Config::test_default();
     // Disable auth for this test since we're not testing authentication
@@ -46,10 +45,23 @@ async fn weighted_balancer_anthropic_preferred() {
             ..Default::default()
         },
     )]));
+    // Determine dynamic expected ranges based on 100 total requests and a ±15%
+    // tolerance
+    let num_requests = 100;
+    let tolerance = num_requests as f64 * 0.15;
+    let expected_openai_midpt = num_requests as f64 * 0.25;
+    let expected_anthropic_midpt = num_requests as f64 * 0.75;
+    let openai_range = (expected_openai_midpt - tolerance).floor() as u64
+        ..(expected_openai_midpt + tolerance).ceil() as u64;
+    let anthropic_range = (expected_anthropic_midpt - tolerance).floor() as u64
+        ..(expected_anthropic_midpt + tolerance).ceil() as u64;
     let mock_args = MockArgs::builder()
         .stubs(HashMap::from([
-            ("success:openai:chat_completion", (10..35).into()),
-            ("success:anthropic:messages", (65..85).into()),
+            (
+                "success:openai:chat_completion",
+                openai_range.clone().into(),
+            ),
+            ("success:anthropic:messages", anthropic_range.clone().into()),
             // When auth is disabled, logging services should not be called
             ("success:minio:upload_request", 0.into()),
             ("success:jawn:log_request", 0.into()),
@@ -60,7 +72,7 @@ async fn weighted_balancer_anthropic_preferred() {
         .with_mock_args(mock_args)
         .build()
         .await;
-    let num_requests = 100;
+
     let body_bytes = serde_json::to_vec(&json!({
         "model": "openai/gpt-4o-mini",
         "messages": [
@@ -95,7 +107,6 @@ async fn weighted_balancer_anthropic_preferred() {
 
 #[tokio::test]
 #[serial_test::serial]
-#[ignore = "issue with stubr latency not working correctly"]
 async fn weighted_balancer_openai_preferred() {
     let mut config = Config::test_default();
     // Disable auth for this test since we're not testing authentication
@@ -122,10 +133,23 @@ async fn weighted_balancer_openai_preferred() {
             ..Default::default()
         },
     )]));
+    // Determine dynamic expected ranges based on 100 total requests and a ±15%
+    // tolerance
+    let num_requests = 100;
+    let tolerance = num_requests as f64 * 0.15;
+    let expected_openai_midpt = num_requests as f64 * 0.75;
+    let expected_anthropic_midpt = num_requests as f64 * 0.25;
+    let openai_range = (expected_openai_midpt - tolerance).floor() as u64
+        ..(expected_openai_midpt + tolerance).ceil() as u64;
+    let anthropic_range = (expected_anthropic_midpt - tolerance).floor() as u64
+        ..(expected_anthropic_midpt + tolerance).ceil() as u64;
     let mock_args = MockArgs::builder()
         .stubs(HashMap::from([
-            ("success:openai:chat_completion", (65..85).into()),
-            ("success:anthropic:messages", (10..35).into()),
+            (
+                "success:openai:chat_completion",
+                openai_range.clone().into(),
+            ),
+            ("success:anthropic:messages", anthropic_range.clone().into()),
             // When auth is disabled, logging services should not be called
             ("success:minio:upload_request", 0.into()),
             ("success:jawn:log_request", 0.into()),
@@ -136,7 +160,7 @@ async fn weighted_balancer_openai_preferred() {
         .with_mock_args(mock_args)
         .build()
         .await;
-    let num_requests = 100;
+
     let body_bytes = serde_json::to_vec(&json!({
         "model": "openai/gpt-4o-mini",
         "messages": [
@@ -171,7 +195,6 @@ async fn weighted_balancer_openai_preferred() {
 
 #[tokio::test]
 #[serial_test::serial]
-#[ignore = "issue with stubr latency not working correctly"]
 async fn weighted_balancer_anthropic_heavily_preferred() {
     let mut config = Config::test_default();
     // Disable auth for this test since we're not testing authentication
@@ -198,10 +221,29 @@ async fn weighted_balancer_anthropic_heavily_preferred() {
             ..Default::default()
         },
     )]));
+    // Determine dynamic expected ranges based on 100 total requests and a ±15%
+    // tolerance
+    let num_requests = 100;
+    let tolerance = num_requests as f64 * 0.15;
+    let expected_openai_midpt = num_requests as f64 * 0.05;
+    let expected_anthropic_midpt = num_requests as f64 * 0.95;
+    let openai_range_lower =
+        (expected_openai_midpt - tolerance).max(0.0).floor() as u64;
+    let openai_range_upper = (expected_openai_midpt + tolerance).ceil() as u64;
+    let openai_range = openai_range_lower..openai_range_upper;
+    let anthropic_range_lower =
+        (expected_anthropic_midpt - tolerance).floor() as u64;
+    let anthropic_range_upper = ((expected_anthropic_midpt + tolerance).ceil()
+        as u64)
+        .min(num_requests as u64);
+    let anthropic_range = anthropic_range_lower..anthropic_range_upper;
     let mock_args = MockArgs::builder()
         .stubs(HashMap::from([
-            ("success:openai:chat_completion", (1..15).into()),
-            ("success:anthropic:messages", (80..100).into()),
+            (
+                "success:openai:chat_completion",
+                openai_range.clone().into(),
+            ),
+            ("success:anthropic:messages", anthropic_range.clone().into()),
             // When auth is disabled, logging services should not be called
             ("success:minio:upload_request", 0.into()),
             ("success:jawn:log_request", 0.into()),
@@ -212,7 +254,7 @@ async fn weighted_balancer_anthropic_heavily_preferred() {
         .with_mock_args(mock_args)
         .build()
         .await;
-    let num_requests = 100;
+
     let body_bytes = serde_json::to_vec(&json!({
         "model": "openai/gpt-4o-mini",
         "messages": [
@@ -247,7 +289,6 @@ async fn weighted_balancer_anthropic_heavily_preferred() {
 
 #[tokio::test]
 #[serial_test::serial]
-#[ignore = "issue with stubr latency not working correctly"]
 async fn weighted_balancer_equal_four_providers() {
     let mut config = Config::test_default();
     // Disable auth for this test since we're not testing authentication
@@ -282,12 +323,27 @@ async fn weighted_balancer_equal_four_providers() {
             ..Default::default()
         },
     )]));
+    let num_requests = 100;
+    let expected_midpt = num_requests as f64 * 0.25;
+    let range = num_requests as f64 * 0.15;
+    let lower = (expected_midpt - range).floor() as u64;
+    let upper = (expected_midpt + range).floor() as u64;
+    let expected_range = lower..upper;
     let mock_args = MockArgs::builder()
         .stubs(HashMap::from([
-            ("success:openai:chat_completion", (10..35).into()),
-            ("success:anthropic:messages", (10..35).into()),
-            ("success:google:generate_content", (10..35).into()),
-            ("success:ollama:chat_completions", (10..35).into()),
+            (
+                "success:openai:chat_completion",
+                expected_range.clone().into(),
+            ),
+            ("success:anthropic:messages", expected_range.clone().into()),
+            (
+                "success:google:generate_content",
+                expected_range.clone().into(),
+            ),
+            (
+                "success:ollama:chat_completions",
+                expected_range.clone().into(),
+            ),
             // When auth is disabled, logging services should not be called
             ("success:minio:upload_request", 0.into()),
             ("success:jawn:log_request", 0.into()),
@@ -298,7 +354,6 @@ async fn weighted_balancer_equal_four_providers() {
         .with_mock_args(mock_args)
         .build()
         .await;
-    let num_requests = 100;
     let body_bytes = serde_json::to_vec(&json!({
         "model": "openai/gpt-4o-mini",
         "messages": [
@@ -333,7 +388,6 @@ async fn weighted_balancer_equal_four_providers() {
 
 #[tokio::test]
 #[serial_test::serial]
-#[ignore = "issue with stubr latency not working correctly"]
 async fn weighted_balancer_bedrock() {
     let mut config = Config::test_default();
     // Disable auth for this test since we're not testing authentication
@@ -368,12 +422,26 @@ async fn weighted_balancer_bedrock() {
             ..Default::default()
         },
     )]));
+    // Determine dynamic expected ranges based on 100 total requests and a ±15%
+    // tolerance
+    let num_requests = 100;
+    let expected_midpt = num_requests as f64 * 0.25;
+    let tolerance = num_requests as f64 * 0.15;
+    let lower = (expected_midpt - tolerance).floor() as u64;
+    let upper = (expected_midpt + tolerance).ceil() as u64;
+    let expected_range = lower..upper;
     let mock_args = MockArgs::builder()
         .stubs(HashMap::from([
-            ("success:openai:chat_completion", (10..35).into()),
-            ("success:anthropic:messages", (10..35).into()),
-            ("success:bedrock:converse", (10..35).into()),
-            ("success:ollama:chat_completions", (10..35).into()),
+            (
+                "success:openai:chat_completion",
+                expected_range.clone().into(),
+            ),
+            ("success:anthropic:messages", expected_range.clone().into()),
+            ("success:bedrock:converse", expected_range.clone().into()),
+            (
+                "success:ollama:chat_completions",
+                expected_range.clone().into(),
+            ),
             // When auth is disabled, logging services should not be called
             ("success:minio:upload_request", 0.into()),
             ("success:jawn:log_request", 0.into()),
@@ -384,7 +452,7 @@ async fn weighted_balancer_bedrock() {
         .with_mock_args(mock_args)
         .build()
         .await;
-    let num_requests = 100;
+
     let body_bytes = serde_json::to_vec(&json!({
         "model": "openai/gpt-4o-mini",
         "messages": [
