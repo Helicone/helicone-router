@@ -110,6 +110,22 @@ impl ResponseFuture {
     }
 }
 
+pub enum UnifiedApi {
+    ChatCompletions(),
+}
+
+impl TryFrom<&str> for UnifiedApi {
+    type Error = InvalidRequestError;
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        match value {
+            "/chat/completions" => Ok(Self::ChatCompletions()),
+            _ => {
+                Err(InvalidRequestError::UnsupportedEndpoint(value.to_string()))
+            }
+        }
+    }
+}
+
 impl Future for ResponseFuture {
     type Output = Result<Response, ApiError>;
 
@@ -141,35 +157,34 @@ impl Future for ResponseFuture {
                                 .into(),
                         ));
                     };
-                    let Some(api_endpoint) = ApiEndpoint::new(
-                        extracted_path_and_query.path(),
-                        InferenceProvider::OpenAI,
-                    ) else {
-                        return Poll::Ready(Err(
-                            InvalidRequestError::UnsupportedEndpoint(
-                                extracted_path_and_query.path().to_string(),
-                            )
-                            .into(),
-                        ));
-                    };
-                    // since we *need* to have first class support for the
-                    // OpenAI endpoint in order to
-                    // deserialize it and extract the model
-                    // id (in order to know the appropriate
-                    // provider), we can only support OpenAI chat completions
-                    // as the endpoint for now.
-                    match api_endpoint {
-                        ApiEndpoint::OpenAI(OpenAI::ChatCompletions(_)) => {}
-                        _ => {
-                            return Poll::Ready(Err(
-                                InvalidRequestError::UnsupportedEndpoint(
-                                    extracted_path_and_query.path().to_string(),
-                                )
-                                .into(),
+
+                    let unified_api =
+                        UnifiedApi::try_from(extracted_path_and_query.path())?;
+
+                    match unified_api {
+                        UnifiedApi::ChatCompletions() => {
+                            // since we *need* to have first class support for
+                            // the OpenAI endpoint
+                            // in order to
+                            // deserialize it and extract the model
+                            // id (in order to know the appropriate
+                            // provider), we can only support OpenAI chat
+                            // completions
+                            // as the endpoint for now.
+
+                            parts.extensions.insert(ApiEndpoint::OpenAI(
+                                OpenAI::chat_completions(),
+                            ));
+
+                            // THIS IS A TEMPORARY FIX TO GET THE PATH AND QUERY
+                            // TODO: make the path map from the api endpoint
+                            // instead of using the PathAndQuery
+                            parts.extensions.insert(PathAndQuery::from_static(
+                                "/v1/chat/completions",
                             ));
                         }
                     }
-                    parts.extensions.insert(api_endpoint);
+
                     this.state.set(State::DetermineProvider {
                         collected_body: Some(collected.to_bytes()),
                         parts: Some(parts),
