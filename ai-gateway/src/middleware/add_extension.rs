@@ -49,9 +49,10 @@ where
     }
 
     fn call(&mut self, mut req: Request<ReqBody>) -> Self::Future {
-        req.extensions_mut().insert(self.inference_provider);
+        let extensions = req.extensions_mut();
+        extensions.insert(self.inference_provider);
         if let Some(router_id) = self.router_id.clone() {
-            req.extensions_mut().insert(router_id);
+            extensions.insert(router_id);
         }
         self.inner.call(req)
     }

@@ -45,7 +45,7 @@ use crate::{
     types::provider::ProviderKeys,
     utils::{
         catch_panic::PanicResponder, handle_error::ErrorHandlerLayer,
-        health_check::HealthCheckLayer,
+        health_check::HealthCheckLayer, timer::TimerLayer,
     },
 };
 
@@ -266,6 +266,7 @@ impl App {
             .layer(metrics::request_count::Layer::new(app_state.clone()))
             .layer(compression_layer)
             .layer(HealthCheckLayer::new())
+            .layer(TimerLayer::new())
             .layer(ErrorHandlerLayer::new(app_state.clone()))
             // NOTE: not sure if there is perf impact from Auth layer coming
             // before buffer layer, but required due to Clone bound.

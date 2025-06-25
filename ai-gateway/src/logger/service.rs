@@ -1,7 +1,7 @@
-use std::{sync::Arc, time::Duration};
+use std::time::Duration;
 
 use bytes::Bytes;
-use chrono::Utc;
+use chrono::{DateTime, Utc};
 use http::{HeaderMap, StatusCode};
 use http_body_util::BodyExt;
 use indexmap::IndexMap;
@@ -20,7 +20,7 @@ use crate::{
     metrics::tfft::TFFTFuture,
     types::{
         body::BodyReader,
-        extensions::{MapperContext, RequestContext},
+        extensions::{AuthContext, MapperContext},
         logger::{
             HeliconeLogMetadata, Log, LogMessage, RequestLog, ResponseLog,
         },
@@ -50,7 +50,9 @@ impl JawnClient {
 #[derive(Debug, TypedBuilder)]
 pub struct LoggerService {
     app_state: AppState,
-    req_ctx: Arc<RequestContext>,
+    auth_ctx: AuthContext,
+    start_time: DateTime<Utc>,
+    start_instant: Instant,
     response_body: BodyReader,
     request_body: Bytes,
     target_url: Url,
@@ -58,7 +60,6 @@ pub struct LoggerService {
     response_status: StatusCode,
     provider: InferenceProvider,
     mapper_ctx: MapperContext,
-    request_start: Instant,
     tfft_rx: oneshot::Receiver<()>,
 }
 
@@ -67,12 +68,7 @@ impl LoggerService {
     #[allow(clippy::cast_precision_loss, clippy::too_many_lines)]
     pub async fn log(mut self) -> Result<(), LoggerError> {
         tracing::trace!("logging request");
-        let auth_ctx = self
-            .req_ctx
-            .auth_context
-            .as_ref()
-            .ok_or(LoggerError::NoAuthContextSet)?;
-        let tfft_future = TFFTFuture::new(self.request_start, self.tfft_rx);
+        let tfft_future = TFFTFuture::new(self.start_instant, self.tfft_rx);
         let collect_future = self.response_body.collect();
         let (response_body, tfft_duration) =
             tokio::join!(collect_future, tfft_future);
@@ -97,7 +93,7 @@ impl LoggerService {
         s3_client
             .log_bodies(
                 &self.app_state,
-                auth_ctx,
+                &self.auth_ctx,
                 request_id,
                 self.request_body,
                 response_body,
@@ -130,13 +126,13 @@ impl LoggerService {
         };
         let request_log = RequestLog::builder()
             .id(request_id)
-            .user_id(auth_ctx.user_id)
+            .user_id(self.auth_ctx.user_id)
             .properties(IndexMap::new())
             .target_url(self.target_url)
             .provider(provider)
             .body_size(req_body_len as f64)
             .path(req_path)
-            .request_created_at(self.req_ctx.start_time)
+            .request_created_at(self.start_time)
             .is_stream(false)
             .build();
         let response_log = ResponseLog::builder()
@@ -148,7 +144,7 @@ impl LoggerService {
             .build();
         let log = Log::new(request_log, response_log);
         let log_message = LogMessage::builder()
-            .authorization(auth_ctx.api_key.expose().to_string())
+            .authorization(self.auth_ctx.api_key.expose().to_string())
             .helicone_meta(helicone_metadata)
             .log(log)
             .build();
@@ -169,7 +165,7 @@ impl LoggerService {
             .json(&log_message)
             .header(
                 "authorization",
-                format!("Bearer {}", auth_ctx.api_key.expose()),
+                format!("Bearer {}", self.auth_ctx.api_key.expose()),
             )
             .send()
             .await

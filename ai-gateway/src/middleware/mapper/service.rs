@@ -69,7 +69,7 @@ where
                 .extensions_mut()
                 .get::<InferenceProvider>()
                 .ok_or(ApiError::Internal(InternalError::ExtensionNotFound(
-                    "Provider",
+                    "InferenceProvider",
                 )))?;
             let extracted_path_and_query = req
                 .extensions_mut()

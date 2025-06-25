@@ -2,11 +2,13 @@ use std::{
     collections::HashMap,
     convert::Infallible,
     hash::{Hash, Hasher},
+    str::FromStr,
     sync::Arc,
     task::{Context, Poll},
 };
 
 use bytes::Bytes;
+use chrono::{DateTime, Utc};
 use futures::{StreamExt, future::BoxFuture, stream::FuturesUnordered};
 use http::{HeaderMap, HeaderName, HeaderValue, StatusCode, request::Parts};
 use http_body_util::BodyExt;
@@ -16,6 +18,7 @@ use http_cache_semantics::{
 };
 use opentelemetry::KeyValue;
 use rustc_hash::FxHasher;
+use tracing::Instrument;
 use url::Url;
 
 use crate::{
@@ -28,7 +31,15 @@ use crate::{
         api::ApiError, init::InitError, internal::InternalError,
         invalid_req::InvalidRequestError,
     },
-    types::{request::Request, response::Response},
+    logger::service::LoggerService,
+    types::{
+        body::BodyReader,
+        extensions::{AuthContext, MapperContext},
+        model_id::ModelId,
+        provider::InferenceProvider,
+        request::Request,
+        response::Response,
+    },
 };
 
 const CACHE_HIT_HEADER: HeaderName = HeaderName::from_static("helicone-cache");
@@ -192,24 +203,128 @@ where
     }
 }
 
+#[allow(clippy::too_many_lines)]
 async fn check_cache<C: CacheManager>(
+    app_state: AppState,
     cache: &C,
     key: &str,
     req: Request,
     bucket: u8,
     now: std::time::SystemTime,
-) -> Result<CacheCheckResult, Box<dyn std::error::Error + Send + Sync>> {
-    let Some((http_resp, policy)) = cache.get(key).await? else {
+) -> Result<CacheCheckResult, ApiError> {
+    let Some((http_resp, policy)) =
+        cache.get(key).await.map_err(InternalError::CacheError)?
+    else {
         return Ok(CacheCheckResult::Miss);
     };
 
     match policy.before_request(&req, now) {
         BeforeRequest::Fresh(parts) => {
-            let headers = vec![
+            let additional_headers = vec![
                 (CACHE_HIT_HEADER, CACHE_HIT_HEADER_VALUE),
                 (CACHE_BUCKET_IDX, bucket_header_value(bucket)),
             ];
-            let response = build_response(http_resp, parts.status, headers)?;
+            let response =
+                build_response(http_resp, parts.status, additional_headers)?;
+
+            let start_instant = req
+                .extensions()
+                .get::<tokio::time::Instant>()
+                .copied()
+                .ok_or(InternalError::ExtensionNotFound("Instant"))?;
+            let start_time =
+                req.extensions()
+                    .get::<DateTime<Utc>>()
+                    .copied()
+                    .ok_or(InternalError::ExtensionNotFound("DateTime<Utc>"))?;
+
+            let target_url = get_url(&req)?;
+            let req_headers = req.headers().clone();
+
+            let (req_parts, req_body) = req.into_parts();
+            let req_body_bytes = req_body
+                .collect()
+                .await
+                .map_err(InternalError::CollectBodyError)?
+                .to_bytes();
+            let (resp_parts, resp_body) = response.into_parts();
+            let stream = futures::TryStreamExt::map_err(
+                resp_body.into_data_stream(),
+                InternalError::CollectBodyError,
+            );
+            let (user_resp_body, body_reader, tfft_rx) =
+                BodyReader::wrap_stream(stream);
+            let response = Response::from_parts(resp_parts, user_resp_body);
+
+            if app_state.config().helicone.observability {
+                if !app_state.config().helicone.authentication {
+                    tracing::warn!(
+                        "Authentication is disabled, skipping response logging"
+                    );
+                    return Ok(CacheCheckResult::Fresh(response));
+                }
+                let auth_ctx =
+                    req_parts.extensions.get::<AuthContext>().cloned().ok_or(
+                        InternalError::ExtensionNotFound("AuthContext"),
+                    )?;
+
+                let app_state_cloned = app_state.clone();
+                tokio::spawn(
+            async move {
+                        // TODO(eng-2160): make cache service agnostic to which endpoint is used
+                        let deserialized_body = serde_json::from_slice::<async_openai::types::CreateChatCompletionRequest>(&req_body_bytes).map_err(|e| {
+                            InternalError::Deserialize {
+                                ty: "async_openai::types::CreateChatCompletionRequest",
+                                error: e,
+                            }
+                        });
+                        let Ok(deserialized_body) = deserialized_body else {
+                            tracing::error!("Could not deserialize request body");
+                            return;
+                        };
+                        let Ok(model) = ModelId::from_str(&deserialized_body.model) else {
+                            tracing::error!("Could not parse model id from request body");
+                            return;
+                        };
+                        let provider = model.inference_provider().unwrap_or_else(|| {
+                            // this should never happen in practice, but we need to handle it, so we
+                            // default to OpenAI
+                            tracing::error!("Could not parse inference provider from request body");
+                            InferenceProvider::OpenAI
+                        });
+                        let is_stream = deserialized_body.stream.is_some_and(|stream| stream);
+                        let mapper_ctx = MapperContext {
+                            is_stream,
+                            model: Some(model),
+                        };
+
+                        let response_logger = LoggerService::builder()
+                            .app_state(app_state.clone())
+                            .auth_ctx(auth_ctx)
+                            .start_time(start_time)
+                            .start_instant(start_instant)
+                            .target_url(target_url)
+                            .request_headers(req_headers)
+                            .request_body(req_body_bytes)
+                            .response_status(parts.status)
+                            .response_body(body_reader)
+                            .provider(provider)
+                            .tfft_rx(tfft_rx)
+                            .mapper_ctx(mapper_ctx)
+                            .build();
+                        if let Err(e) = response_logger.log().await {
+                            let error_str = e.as_ref().to_string();
+                            app_state_cloned
+                                .0
+                                .metrics
+                                .error_count
+                                .add(1, &[KeyValue::new("type", error_str)]);
+                        }
+                    }
+                    .instrument(tracing::Span::current()),
+                );
+            }
+
             Ok(CacheCheckResult::Fresh(response))
         }
         BeforeRequest::Stale { request, matches } if matches => {
@@ -254,20 +369,7 @@ async fn handle_response_for_cache_miss<C: CacheManager>(
         return Ok(resp);
     }
     tracing::trace!("caching storable response");
-    let host = req.uri().host().unwrap_or_else(|| {
-        tracing::warn!("no host in request uri");
-        "localhost"
-    });
-    let scheme = req.uri().scheme().unwrap_or_else(|| {
-        tracing::warn!("no scheme in request uri");
-        &http::uri::Scheme::HTTP
-    });
-
-    let full_url = format!("{}://{}{}", scheme, host, req.uri());
-
-    let url = Url::parse(&full_url)
-        .map_err(|e| InvalidRequestError::InvalidUrl(e.to_string()))?;
-
+    let url = get_url(&req)?;
     let (parts, body) = resp.into_parts();
     let body_bytes = body
         .collect()
@@ -313,7 +415,7 @@ where
         + 'static,
 {
     // just call inner service if caching is disabled
-    if ctx.enabled.is_some_and(|enabled| !enabled) {
+    if ctx.enabled.is_none_or(|enabled| !enabled) {
         return inner.call(req).await.map_err(|e| {
             tracing::error!(error = %e, "encountered infallible error");
             ApiError::Internal(InternalError::Internal)
@@ -356,7 +458,7 @@ where
         let key = cloned_hasher.finish().to_string();
         let req = Request::from_parts(parts.clone(), body_bytes.clone().into());
         futures.push(async move {
-            check_cache(cache, &key, req, bucket, now)
+            check_cache(app_state.clone(), cache, &key, req, bucket, now)
                 .await
                 .map(|result| (bucket, key, result))
         });
@@ -376,11 +478,9 @@ where
                 return Ok(resp);
             }
             Ok((bucket, key, CacheCheckResult::Stale(stale_parts))) => {
-                record_cache_miss(app_state, &parts.uri, bucket);
                 stale_hits.push((bucket, key, stale_parts));
             }
             Ok((bucket, _, CacheCheckResult::Miss)) => {
-                record_cache_miss(app_state, &parts.uri, bucket);
                 empty_buckets.push(bucket);
             }
             Err(e) => {
@@ -513,6 +613,23 @@ fn header_map_to_hash_map(headers: HeaderMap) -> HashMap<String, String> {
             Some((name?.to_string(), value.to_str().ok()?.to_string()))
         })
         .collect()
+}
+
+fn get_url(req: &Request) -> Result<Url, InvalidRequestError> {
+    let host = req.uri().host().unwrap_or_else(|| {
+        tracing::warn!("no host in request uri");
+        "localhost"
+    });
+    let scheme = req.uri().scheme().unwrap_or_else(|| {
+        tracing::warn!("no scheme in request uri");
+        &http::uri::Scheme::HTTP
+    });
+
+    let full_url = format!("{}://{}{}", scheme, host, req.uri());
+
+    let url = Url::parse(&full_url)
+        .map_err(|e| InvalidRequestError::InvalidUrl(e.to_string()))?;
+    Ok(url)
 }
 
 fn build_response(

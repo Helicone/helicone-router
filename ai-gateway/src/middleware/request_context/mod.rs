@@ -3,7 +3,8 @@ use std::{
     task::{Context, Poll},
 };
 
-use chrono::Utc;
+use chrono::{DateTime, Utc};
+use tokio::time::Instant;
 
 use crate::{
     config::router::RouterConfig,
@@ -60,13 +61,28 @@ where
         let router_config = self.router_config.clone();
         let provider_api_keys = self.provider_keys.clone();
         let auth_context = req.extensions_mut().remove::<AuthContext>();
+        let req_start_dt = req
+            .extensions_mut()
+            .remove::<DateTime<Utc>>()
+            .unwrap_or_else(|| {
+                tracing::error!(
+                    "did not find expected DateTime<Utc> in req extensions"
+                );
+                Utc::now()
+            });
+        let req_start_instant =
+            req.extensions_mut().remove::<Instant>().unwrap_or_else(|| {
+                tracing::error!(
+                    "did not find expected Instant in req extensions"
+                );
+                Instant::now()
+            });
         let req_ctx = RequestContext {
             router_config,
             provider_api_keys,
             auth_context,
-            // TODO: this is probably tracked earlier by other middleware,
-            // can we re-use that more accurate timestamp?
-            start_time: Utc::now(),
+            start_time: req_start_dt,
+            start_instant: req_start_instant,
         };
         req.extensions_mut().insert(Arc::new(req_ctx));
         self.inner.call(req)

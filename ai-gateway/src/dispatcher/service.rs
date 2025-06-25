@@ -226,6 +226,7 @@ impl Dispatcher {
             .copied()
             .ok_or(InternalError::ExtensionNotFound("InferenceProvider"))?;
         let router_id = req.extensions().get::<RouterId>().cloned();
+        let start_instant = req_ctx.start_instant;
 
         let target_url = base_url
             .join(extracted_path_and_query.as_str())
@@ -260,7 +261,6 @@ impl Dispatcher {
             endpoint_metrics.incr_req_count();
         }
 
-        let request_start = tokio::time::Instant::now();
         let (mut response, body_reader, tfft_rx): (
             http::Response<crate::types::body::Body>,
             crate::types::body::BodyReader,
@@ -290,6 +290,7 @@ impl Dispatcher {
             .router_id(router_id)
             .auth_context(auth_ctx.cloned())
             .provider_request_id(provider_request_id)
+            .mapper_ctx(mapper_ctx.clone())
             .build();
         extensions_copier.copy_extensions(response.extensions_mut());
         response.extensions_mut().insert(mapper_ctx.clone());
@@ -297,34 +298,47 @@ impl Dispatcher {
         response.extensions_mut().insert(extracted_path_and_query);
 
         if self.app_state.config().helicone.observability {
-            let response_logger = LoggerService::builder()
-                .app_state(self.app_state.clone())
-                .req_ctx(req_ctx)
-                .target_url(target_url)
-                .request_headers(headers)
-                .request_body(req_body_bytes)
-                .response_status(response.status())
-                .response_body(body_reader)
-                .provider(target_provider)
-                .tfft_rx(tfft_rx)
-                .request_start(request_start)
-                .mapper_ctx(mapper_ctx)
-                .build();
+            if self.app_state.config().helicone.authentication {
+                let auth_ctx = req_ctx
+                    .auth_context
+                    .clone()
+                    .ok_or(InternalError::ExtensionNotFound("AuthContext"))?;
+                let start_time = req_ctx.start_time;
 
-            let app_state = self.app_state.clone();
-            tokio::spawn(
-                async move {
-                    if let Err(e) = response_logger.log().await {
-                        let error_str = e.as_ref().to_string();
-                        app_state
-                            .0
-                            .metrics
-                            .error_count
-                            .add(1, &[KeyValue::new("type", error_str)]);
+                let response_logger = LoggerService::builder()
+                    .app_state(self.app_state.clone())
+                    .auth_ctx(auth_ctx)
+                    .start_time(start_time)
+                    .start_instant(start_instant)
+                    .target_url(target_url)
+                    .request_headers(headers)
+                    .request_body(req_body_bytes)
+                    .response_status(response.status())
+                    .response_body(body_reader)
+                    .provider(target_provider)
+                    .tfft_rx(tfft_rx)
+                    .mapper_ctx(mapper_ctx)
+                    .build();
+
+                let app_state = self.app_state.clone();
+                tokio::spawn(
+                    async move {
+                        if let Err(e) = response_logger.log().await {
+                            let error_str = e.as_ref().to_string();
+                            app_state
+                                .0
+                                .metrics
+                                .error_count
+                                .add(1, &[KeyValue::new("type", error_str)]);
+                        }
                     }
-                }
-                .instrument(tracing::Span::current()),
-            );
+                    .instrument(tracing::Span::current()),
+                );
+            } else {
+                tracing::warn!(
+                    "Authentication is disabled, skipping response logging"
+                );
+            }
         } else {
             let app_state = self.app_state.clone();
             let model = mapper_ctx.model.as_ref().map_or_else(
@@ -334,7 +348,7 @@ impl Dispatcher {
             let path = target_url.path().to_string();
             tokio::spawn(
                 async move {
-                    let tfft_future = TFFTFuture::new(request_start, tfft_rx);
+                    let tfft_future = TFFTFuture::new(start_instant, tfft_rx);
                     let collect_future = body_reader.collect();
                     let (_response_body, tfft_duration) = tokio::join!(collect_future, tfft_future);
                     if let Ok(tfft_duration) = tfft_duration {

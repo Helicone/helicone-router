@@ -8,6 +8,11 @@ helicone:
   authentication: true
   observability: true
 
+global:
+  cache:
+    buckets: 1
+    directive: "max-age=3600"
+
 routers:
   default:
     load-balance:
