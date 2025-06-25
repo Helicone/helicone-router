@@ -36,7 +36,7 @@ ANTHROPIC_API_KEY=your_anthropic_key
 
 2. Run locally in your terminal
 ```bash
-npx @helicone/ai-gateway start
+npx @helicone/ai-gateway@latest [--config /path/config.yaml]
 ```
 
 3. Make your requests using any OpenAI SDK:
@@ -45,7 +45,8 @@ npx @helicone/ai-gateway start
 from openai import OpenAI
 
 client = OpenAI(
-    base_url="http://localhost:8080/production"
+    base_url="http://localhost:8080/router/default/v1"
+    # base_url="http://localhost:8080/ai"
 )
 
 # Route to any LLM provider through the same interface, we handle the rest.
@@ -99,13 +100,13 @@ Deploy in seconds to your own infrastructure by using our **Docker** or **binary
 
 <!-- TODO: include correct metrics -->
 
-| Metric | Helicone AI Gateway | Typical Setup | Improvement |
-|--------|-------|---------------|-------------|
-| **P95 Latency** | ~1-5ms | ~60-100ms | **10-100x faster** |
-| **Memory Usage** | ~64MB | ~512MB | **8x lower** |
-| **Requests/sec** | ~10,000 | ~1,000 | **10x throughput** |
-| **Binary Size** | ~15MB | ~200MB | **13x smaller** |
-| **Cold Start** | ~100ms | ~2s | **20x faster** |
+| Metric | Helicone AI Gateway | Typical Setup |
+|--------|-------|---------------|
+| **P95 Latency** | <10ms | ~60-100ms |
+| **Memory Usage** | ~64MB | ~512MB |
+| **Requests/sec** | ~2,000 | ~500 |
+| **Binary Size** | ~15MB | ~200MB |
+| **Cold Start** | ~100ms | ~2s |
 
 ---
 
