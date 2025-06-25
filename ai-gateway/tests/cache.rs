@@ -124,7 +124,7 @@ async fn cache_enabled_globally() {
     // test unified api
     // Test /ai/v1/chat/completions
     let request = make_request(
-        "http://router.helicone.com/ai/v1/chat/completions",
+        "http://router.helicone.com/ai/chat/completions",
         Some(("cache-control", "max-age=3600")),
     );
     let response = harness.call(request).await.unwrap();
@@ -136,7 +136,7 @@ async fn cache_enabled_globally() {
     );
 
     let request = make_request(
-        "http://router.helicone.com/ai/v1/chat/completions",
+        "http://router.helicone.com/ai/chat/completions",
         Some(("cache-control", "max-age=3600")),
     );
     let response = harness.call(request).await.unwrap();
@@ -235,7 +235,7 @@ async fn cache_disabled_globally() {
     // Test unified api
     // Test /ai/v1/chat/completions
     let request = make_request(
-        "http://router.helicone.com/ai/v1/chat/completions",
+        "http://router.helicone.com/ai/chat/completions",
         Some(("cache-control", "max-age=3600")),
     );
     let response = harness.call(request).await.unwrap();
@@ -247,7 +247,7 @@ async fn cache_disabled_globally() {
     );
 
     let request = make_request(
-        "http://router.helicone.com/ai/v1/chat/completions",
+        "http://router.helicone.com/ai/chat/completions",
         Some(("cache-control", "max-age=3600")),
     );
     let response = harness.call(request).await.unwrap();
