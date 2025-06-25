@@ -156,7 +156,7 @@ impl LoggerService {
         let helicone_url = self
             .app_state
             .config()
-            .helicone_observability
+            .helicone
             .base_url
             .join("/v1/log/request")?;
 

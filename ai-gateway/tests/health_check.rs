@@ -11,7 +11,7 @@ use tower::Service;
 #[serial_test::serial]
 async fn health_check() {
     let mut config = Config::test_default();
-    config.helicone_observability.enable_auth = true;
+    config.helicone.authentication = true;
 
     let mock_args = MockArgs::builder()
         .stubs(HashMap::from([

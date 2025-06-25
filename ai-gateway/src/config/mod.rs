@@ -77,7 +77,7 @@ pub struct Config {
     /// If a request is made with a model that is not in the `RouterConfig`
     /// model mapping, then we fallback to this.
     pub default_model_mapping: self::model_mapping::ModelMappingConfig,
-    pub helicone_observability: self::helicone::HeliconeConfig,
+    pub helicone: self::helicone::HeliconeConfig,
     /// *ALL* supported providers, independent of router configuration.
     pub providers: self::providers::ProvidersConfig,
 
@@ -142,7 +142,7 @@ impl Config {
         if let Ok(helicone_control_plane_api_key) =
             std::env::var("HELICONE_CONTROL_PLANE_API_KEY")
         {
-            config.helicone_observability.api_key =
+            config.helicone.api_key =
                 Secret::from(helicone_control_plane_api_key);
         }
         Ok(config)
@@ -185,8 +185,7 @@ impl crate::tests::TestDefault for Config {
                 self::model_mapping::ModelMappingConfig::default(),
             global: middleware,
             providers: self::providers::ProvidersConfig::default(),
-            helicone_observability:
-                self::helicone::HeliconeConfig::test_default(),
+            helicone: self::helicone::HeliconeConfig::test_default(),
             deployment_target: DeploymentTarget::Sidecar,
             discover: self::discover::DiscoverConfig::test_default(),
             cache_store: self::cache::CacheStore::default(),

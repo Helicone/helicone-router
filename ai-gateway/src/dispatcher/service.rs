@@ -290,7 +290,7 @@ impl Dispatcher {
         response.extensions_mut().insert(api_endpoint);
         response.extensions_mut().insert(extracted_path_and_query);
 
-        if auth_ctx.is_some() {
+        if self.app_state.config().helicone.observability {
             let response_logger = LoggerService::builder()
                 .app_state(self.app_state.clone())
                 .req_ctx(req_ctx)

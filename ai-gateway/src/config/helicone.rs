@@ -20,8 +20,9 @@ pub struct HeliconeConfig {
     ///
     /// **Note**: without this enabled, anyone sending requests to your
     /// AI gateway instance will be able to use your provider API keys!
-    #[serde(alias = "enable")]
-    pub enable_auth: bool,
+    pub authentication: bool,
+    /// Whether to enable LLM observability via Helicone.
+    pub observability: bool,
 }
 
 impl Default for HeliconeConfig {
@@ -30,7 +31,8 @@ impl Default for HeliconeConfig {
             api_key: default_api_key(),
             base_url: default_base_url(),
             websocket_url: default_websocket_url(),
-            enable_auth: false,
+            authentication: false,
+            observability: false,
         }
     }
 }
@@ -60,7 +62,8 @@ impl crate::tests::TestDefault for HeliconeConfig {
             websocket_url: "ws://localhost:8585/ws/v1/router/control-plane"
                 .parse()
                 .unwrap(),
-            enable_auth: true,
+            authentication: true,
+            observability: true,
             api_key: default_api_key(),
         }
     }

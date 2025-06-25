@@ -66,7 +66,7 @@ async fn main() -> Result<(), RuntimeError> {
         tracing::error!(error = %e, "configuration validation failed");
     })?;
     let mut shutting_down = false;
-    let helicone_config = config.helicone_observability.clone();
+    let helicone_config = config.helicone.clone();
     let app = App::new(config).await?;
     let config = app.state.config();
     let health_monitor = HealthMonitor::new(app.state.clone());
@@ -93,7 +93,7 @@ async fn main() -> Result<(), RuntimeError> {
         ai_gateway::utils::meltdown::wait_for_shutdown_signals,
     ));
 
-    if app.state.0.config.helicone_observability.enable_auth {
+    if app.state.0.config.helicone.authentication {
         meltdown = meltdown.register(TaggedService::new(
             "control-plane-client",
             ControlPlaneClient::connect(control_plane_state, helicone_config)

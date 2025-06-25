@@ -157,8 +157,7 @@ impl Mock {
             args.jawn_port,
         )
         .await;
-        config.helicone_observability.base_url =
-            Url::parse(&jawn_mock.uri()).unwrap();
+        config.helicone.base_url = Url::parse(&jawn_mock.uri()).unwrap();
 
         handle_presigned_url_mock(&jawn_mock, &minio_mock, args.stubs.as_ref())
             .await;

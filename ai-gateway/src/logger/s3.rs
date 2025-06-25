@@ -71,11 +71,12 @@ impl<'a> S3Client<'a> {
                 (signed_url, s3_log)
             }
             Self::SignedByJawn(client) => {
-                let signed_request_url = app_state
-                    .config()
-                    .helicone_observability
-                    .base_url
-                    .join("/v1/router/control-plane/sign-s3-url")?;
+                let signed_request_url =
+                    app_state
+                        .config()
+                        .helicone
+                        .base_url
+                        .join("/v1/router/control-plane/sign-s3-url")?;
                 let request_body = String::from_utf8(request_body.to_vec())?;
                 let response_body = String::from_utf8(response_body.to_vec())?;
 

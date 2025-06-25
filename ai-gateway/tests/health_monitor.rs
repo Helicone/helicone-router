@@ -23,7 +23,7 @@ use tower::Service;
 async fn errors_remove_provider_from_lb_pool() {
     let mut config = Config::test_default();
     // Enable auth so that logging services are called
-    config.helicone_observability.enable_auth = true;
+    config.helicone.authentication = true;
     let balance_config = BalanceConfig::from(HashMap::from([(
         EndpointType::Chat,
         BalanceConfigInner::Weighted {

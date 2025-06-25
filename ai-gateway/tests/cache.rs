@@ -52,7 +52,7 @@ fn make_request(
 #[serial_test::serial(default_mock)]
 async fn cache_enabled_globally() {
     let mut config = Config::test_default();
-    config.helicone_observability.enable_auth = false;
+    config.helicone.authentication = false;
 
     let mock_args = MockArgs::builder()
         .stubs(HashMap::from([
@@ -160,7 +160,7 @@ async fn cache_enabled_globally() {
 #[serial_test::serial(default_mock)]
 async fn cache_disabled_globally() {
     let mut config = Config::test_default();
-    config.helicone_observability.enable_auth = false;
+    config.helicone.authentication = false;
     // Ensure cache is NOT set globally (None by default)
     config.global.cache = None;
 
@@ -286,7 +286,7 @@ async fn cache_enabled_per_router() {
     let mut config = Config::test_default();
     // Disable auth for this test since we're testing basic passthrough
     // functionality
-    config.helicone_observability.enable_auth = false;
+    config.helicone.authentication = false;
     config.global.cache = None;
 
     // Create multiple routers with different cache configurations

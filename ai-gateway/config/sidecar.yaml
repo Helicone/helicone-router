@@ -7,5 +7,6 @@ routers:
           - openai
           - anthropic
 
-helicone-observability:
-  enable-auth: true
+helicone:
+  authentication: true
+  observability: true

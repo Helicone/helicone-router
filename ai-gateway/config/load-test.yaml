@@ -9,10 +9,11 @@ providers:
 minio:
   host: "http://localhost:8103"
 
-helicone-observability:
+helicone:
   base-url: "http://localhost:8104"
   websocket-url: "ws://localhost:8585/ws/v1/router/control-plane"
-  enable-auth: true
+  authentication: true
+  observability: true
 
 telemetry:
   level: info,ai_gateway=debug
