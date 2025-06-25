@@ -110,19 +110,6 @@ impl ResponseFuture {
     }
 }
 
-fn prepend_path(base: &str, original: &PathAndQuery) -> PathAndQuery {
-    let mut new_path = String::new();
-
-    new_path.push_str(base.trim_end_matches('/'));
-    new_path.push_str(if original.path().starts_with('/') {
-        &original.path()[1..]
-    } else {
-        original.path()
-    });
-
-    new_path.parse().expect("Invalid PathAndQuery")
-}
-
 impl Future for ResponseFuture {
     type Output = Result<Response, ApiError>;
 
@@ -146,23 +133,24 @@ impl Future for ResponseFuture {
                     };
                     let mut parts =
                         parts.take().expect("future polled after completion");
-                    let Some(extracted_path_and_query) = parts
-                        .extensions
-                        .get::<PathAndQuery>()
-                        .map(|p| prepend_path("/v1", p))
+                    let Some(original_path_and_query) =
+                        parts.extensions.get::<PathAndQuery>()
                     else {
                         return Poll::Ready(Err(
                             InternalError::ExtensionNotFound("PathAndQuery")
                                 .into(),
                         ));
                     };
+                    // First create the ApiEndpoint to validate the request
+                    let validation_path =
+                        format!("/v1{}", original_path_and_query.path());
                     let Some(api_endpoint) = ApiEndpoint::new(
-                        extracted_path_and_query.path(),
+                        &validation_path,
                         InferenceProvider::OpenAI,
                     ) else {
                         return Poll::Ready(Err(
                             InvalidRequestError::UnsupportedEndpoint(
-                                extracted_path_and_query.path().to_string(),
+                                validation_path.to_string(),
                             )
                             .into(),
                         ));
@@ -178,12 +166,26 @@ impl Future for ResponseFuture {
                         _ => {
                             return Poll::Ready(Err(
                                 InvalidRequestError::UnsupportedEndpoint(
-                                    extracted_path_and_query.path().to_string(),
+                                    validation_path.to_string(),
                                 )
                                 .into(),
                             ));
                         }
                     }
+
+                    // Use the proper endpoint path like the mapper service does
+                    let base_path = api_endpoint.path(None, false)?;
+                    let extracted_path_and_query = if let Some(query_params) =
+                        original_path_and_query.query()
+                    {
+                        format!("{base_path}?{query_params}")
+                    } else {
+                        base_path
+                    };
+                    let extracted_path_and_query =
+                        PathAndQuery::from_str(&extracted_path_and_query)
+                            .map_err(InternalError::InvalidUri)?;
+
                     parts.extensions.insert(api_endpoint);
                     parts.extensions.insert(extracted_path_and_query);
                     this.state.set(State::DetermineProvider {
