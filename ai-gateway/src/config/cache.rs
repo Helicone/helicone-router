@@ -32,7 +32,10 @@ impl crate::tests::TestDefault for CacheConfig {
 #[serde(deny_unknown_fields, rename_all = "kebab-case")]
 pub enum CacheStore {
     InMemory {
-        #[serde(default = "default_max_size")]
+        // apparently container-level `rename_all` for enums doesn't
+        // apply to the fields of the enum, so we need to rename the field
+        // manually
+        #[serde(rename = "max-size", default = "default_max_size")]
         max_size: usize,
     },
 }
