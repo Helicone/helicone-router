@@ -110,6 +110,19 @@ impl ResponseFuture {
     }
 }
 
+fn prepend_path(base: &str, original: &PathAndQuery) -> PathAndQuery {
+    let mut new_path = String::new();
+
+    new_path.push_str(base.trim_end_matches('/'));
+    new_path.push_str(if original.path().starts_with('/') {
+        &original.path()[1..]
+    } else {
+        original.path()
+    });
+
+    new_path.parse().expect("Invalid PathAndQuery")
+}
+
 impl Future for ResponseFuture {
     type Output = Result<Response, ApiError>;
 
@@ -133,8 +146,10 @@ impl Future for ResponseFuture {
                     };
                     let mut parts =
                         parts.take().expect("future polled after completion");
-                    let Some(extracted_path_and_query) =
-                        parts.extensions.get::<PathAndQuery>()
+                    let Some(extracted_path_and_query) = parts
+                        .extensions
+                        .get::<PathAndQuery>()
+                        .map(|p| prepend_path("/v1", p))
                     else {
                         return Poll::Ready(Err(
                             InternalError::ExtensionNotFound("PathAndQuery")
@@ -170,6 +185,7 @@ impl Future for ResponseFuture {
                         }
                     }
                     parts.extensions.insert(api_endpoint);
+                    parts.extensions.insert(extracted_path_and_query);
                     this.state.set(State::DetermineProvider {
                         collected_body: Some(collected.to_bytes()),
                         parts: Some(parts),
