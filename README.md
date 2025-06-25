@@ -100,6 +100,8 @@ Deploy in seconds to your own infrastructure by using our **Docker** or **binary
 
 <!-- TODO: include correct metrics -->
 
+*Note: These are preliminary performance metrics. See [benchmarks/README.md](benchmarks/README.md) for detailed benchmarking methodology and results.*
+
 | Metric | Helicone AI Gateway | Typical Setup |
 |--------|-------|---------------|
 | **P95 Latency** | <10ms | ~60-100ms |
