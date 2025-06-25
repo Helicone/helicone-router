@@ -2,7 +2,7 @@ import OpenAI from "openai";
 
 async function main() {
   const client = new OpenAI({
-    baseURL: "http://localhost:8080/ai/v1",
+    baseURL: "http://localhost:8080/ai",
     // Required by SDK, but gateway handles real auth
     apiKey: "fake-api-key",
   });

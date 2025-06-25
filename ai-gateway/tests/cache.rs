@@ -40,7 +40,7 @@ fn make_request(
 
 /// Test that requests are cached when enabled globally via config.
 /// This should check that requests on any of the three possible URLs
-/// (`/ai/v1/chat/completions`, `/openai/v1/chat/completions`,
+/// (`/ai/chat/completions`, `/openai/v1/chat/completions`,
 /// `/router/default/v1/chat/completions`) are cached. Start with the default
 /// router and then expand the test cases.
 ///
@@ -122,7 +122,7 @@ async fn cache_enabled_globally() {
     );
 
     // test unified api
-    // Test /ai/v1/chat/completions
+    // Test /ai/chat/completions
     let request = make_request(
         "http://router.helicone.com/ai/chat/completions",
         Some(("cache-control", "max-age=3600")),
@@ -150,7 +150,7 @@ async fn cache_enabled_globally() {
 
 /// Test that requests are not cached when disabled globally via config.
 /// This should check that requests on any of the three possible URLs
-/// (`/ai/v1/chat/completions`, `/openai/v1/chat/completions`,
+/// (`/ai/chat/completions`, `/openai/v1/chat/completions`,
 /// `/router/default/v1/chat/completions`) are NOT cached. Start with the
 /// default router and then expand the test cases.
 ///
@@ -233,7 +233,7 @@ async fn cache_disabled_globally() {
     );
 
     // Test unified api
-    // Test /ai/v1/chat/completions
+    // Test /ai/chat/completions
     let request = make_request(
         "http://router.helicone.com/ai/chat/completions",
         Some(("cache-control", "max-age=3600")),
@@ -261,7 +261,7 @@ async fn cache_disabled_globally() {
 
 /// Test that requests are cached when enabled per router via config.
 /// This should check that requests on any of the three possible URLs
-/// (`/ai/v1/chat/completions`, `/openai/v1/chat/completions`,
+/// (`/ai/chat/completions`, `/openai/v1/chat/completions`,
 /// `/router/default/v1/chat/completions`) are cached. Start with the default
 /// router and then expand the test cases.
 ///

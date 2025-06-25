@@ -2,7 +2,7 @@ from openai import OpenAI
 
 client = OpenAI(
     # Required by SDK, but AI gateway handles real auth
-    base_url="http://localhost:8080/ai/v1",
+    base_url="http://localhost:8080/ai",
     api_key="fake-api-key"
 )
 
