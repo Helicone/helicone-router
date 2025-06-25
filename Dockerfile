@@ -15,6 +15,8 @@ RUN cargo chef cook --release --recipe-path recipe.json
 COPY . .
 RUN cargo build --release -p ai-gateway
 
+ENV AI_GATEWAY__SERVER__ADDRESS=0.0.0.0
+
 # We do not need the Rust toolchain to run the binary!
 FROM debian:bookworm-slim AS runtime
 RUN apt-get update && apt install -y openssl ca-certificates && rm -rf /var/lib/apt/lists/*
