@@ -10,7 +10,7 @@ terraform {
     organization = "helicone"
 
     workspaces {
-      name = "helix-ecs"
+      name = "ai-gateway-ecs"
     }
   }
 }
