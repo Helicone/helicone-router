@@ -63,7 +63,7 @@ response = client.chat.completions.create(
 
 ## Why Helicone AI Gateway?
 
-<video src="https://marketing-assets-helicone.s3.us-west-2.amazonaws.com/Launch+Final.mp4" width="320" height="240" controls>Helicone AI Gateway Launch Video</video>
+https://marketing-assets-helicone.s3.us-west-2.amazonaws.com/Launch+Final.mp4
 
 
 #### 🌐 **Unified interface**
@@ -88,7 +88,7 @@ Deploy in seconds to your own infrastructure by using our **Docker** or **binary
 
 ## 🎥 Demo
 
-<video src="https://marketing-assets-helicone.s3.us-west-2.amazonaws.com/AI+Gateway+Demo+v0+(3).mp4" width="320" height="240" controls>Helicone AI Gateway Demo</video>
+https://marketing-assets-helicone.s3.us-west-2.amazonaws.com/AI+Gateway+Demo+v0+(3).mp4
 
 ---
 
