@@ -151,8 +151,7 @@ async fn test(
             "http://localhost:8080/ai/chat/completions".to_string()
         }
         RequestType::LoadBalanced => {
-            "http://localhost:8080/router/default/v1/chat/completions"
-                .to_string()
+            "http://localhost:8080/router/default/chat/completions".to_string()
         }
     };
 

@@ -44,7 +44,7 @@ use crate::{
 /// - `/router/default`
 /// - `/router/my-router`
 /// - `/router/my-router?user=bar`
-/// - `/router/default/v1/chat/completions`
+/// - `/router/default/chat/completions`
 /// - `/router/my-router/v1/chat/completions`
 /// - `/router/my-router/v1/chat/completions?user=test&limit=10`
 const URL_REGEX: &str =
@@ -412,7 +412,7 @@ mod tests {
         assert!(regex.is_match("/router/default"));
 
         // Default router id with additional API path
-        assert!(regex.is_match("/router/default/v1/chat/completions"));
+        assert!(regex.is_match("/router/default/chat/completions"));
 
         // Default router id with query parameters
         assert!(regex.is_match("/router/default?user=test"));
@@ -453,8 +453,8 @@ mod tests {
 
         // Default router id with API path and query params
         let path_default_with_path_query =
-            "/router/default/v1/chat/completions?user=test";
-        let expected_api_path_default_with_path_query = "/v1/chat/completions";
+            "/router/default/chat/completions?user=test";
+        let expected_api_path_default_with_path_query = "/chat/completions";
         assert_eq!(
             extract_router_id_and_path(
                 &url_regex,

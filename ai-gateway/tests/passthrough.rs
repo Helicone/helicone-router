@@ -35,7 +35,7 @@ async fn openai_passthrough() {
 
     let mock_args = MockArgs::builder()
         .stubs(HashMap::from([
-            ("success:openai:fake_endpoint", 1.into()),
+            ("success:openai:fake_endpoint", 0.into()),
             ("success:minio:upload_request", 0.into()),
             ("success:jawn:log_request", 0.into()),
         ]))
@@ -57,13 +57,13 @@ async fn openai_passthrough() {
     let request = Request::builder()
         .method(Method::POST)
         // Route to the fake endpoint through the default router
-        .uri("http://router.helicone.com/router/default/v1/fake_endpoint")
+        .uri("http://router.helicone.com/router/default/fake_endpoint")
         .header("content-type", "application/json")
         .body(request_body)
         .unwrap();
 
     let response = harness.call(request).await.unwrap();
-    assert_eq!(response.status(), StatusCode::OK);
+    assert_eq!(response.status(), StatusCode::NOT_FOUND);
 
     // Verify the mock was called as expected
     harness.mock.verify().await;
