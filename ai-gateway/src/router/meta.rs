@@ -67,7 +67,7 @@ pub fn extend_with_v1(path: PathAndQuery) -> PathAndQuery {
     } else {
         let new_path = format!("/v1{}", path.path());
         if let Some(query_params) = path.query() {
-            PathAndQuery::try_from(format!("{}?{}", new_path, query_params))
+            PathAndQuery::try_from(format!("{new_path}?{query_params}"))
                 .expect("todo remove this code. temp hack")
         } else {
             PathAndQuery::try_from(new_path)
