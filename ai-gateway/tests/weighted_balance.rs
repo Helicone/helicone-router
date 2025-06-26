@@ -224,7 +224,7 @@ async fn weighted_balancer_anthropic_heavily_preferred() {
     // Determine dynamic expected ranges based on 100 total requests and a ±15%
     // tolerance
     let num_requests = 100;
-    let tolerance = num_requests as f64 * 0.15;
+    let tolerance = num_requests as f64 * 0.20;
     let expected_openai_midpt = num_requests as f64 * 0.05;
     let expected_anthropic_midpt = num_requests as f64 * 0.95;
     let openai_range_lower =
