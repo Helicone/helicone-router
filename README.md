@@ -2,8 +2,8 @@
 
 # Helicone AI Gateway
 
-[![GitHub stars](https://img.shields.io/github/stars/Helicone/aia-gateway?style=for-the-badge)](https://github.com/helicone/ai-gateway/)
-[![Downloads](https://img.shields.io/github/downloads/Helicone/aia-gateway/total?style=for-the-badge)](https://github.com/helicone/aia-gateway/releases)
+[![GitHub stars](https://img.shields.io/github/stars/Helicone/ai-gateway?style=for-the-badge)](https://github.com/helicone/ai-gateway/)
+[![Downloads](https://img.shields.io/github/downloads/Helicone/ai-gateway/total?style=for-the-badge)](https://github.com/helicone/aia-gateway/releases)
 [![Docker pulls](https://img.shields.io/docker/pulls/helicone/ai-gateway?style=for-the-badge)](https://hub.docker.com/r/helicone/ai-gateway)
 [![License](https://img.shields.io/badge/license-APACHE-green?style=for-the-badge)](LICENSE)
 
@@ -135,7 +135,8 @@ Deploy in seconds to your own infrastructure by using our **Docker** or **binary
 
 ## ⚙️ Custom configuration
 
-### 1. Set up you additional environment variables
+### 1. Set up you environment variables
+
 Include your `PROVIDER_API_KEY`s in your `.env` file.
 
 ```bash
@@ -151,6 +152,13 @@ REDIS_URL=redis://localhost:6379
 *See our [full provider list here.](https://github.com/Helicone/ai-gateway/blob/main/ai-gateway/config/embedded/providers.yaml)*
 
 ```yaml
+helicone: # Include your HELICONE_API_KEY in your .env file
+  observability: true
+  authentication: true
+
+cache-story:
+  in-memory: {}
+
 providers: # Include their PROVIDER_API_KEY in .env file
   openai:
     models:
@@ -166,13 +174,10 @@ providers: # Include their PROVIDER_API_KEY in .env file
 
 global: # Global settings for all routers
   cache:
-    enabled: true
     directive: "max-age=3600, max-stale=1800"
-    buckets: 10
-    seed: "unique-cache-seed"
 
 routers:
-  your-router-name: # Per router configuration
+  your-router-name: # Single router configuration
     load-balance:
       chat:
         strategy: latency
@@ -186,14 +191,9 @@ routers:
         base: 1s
         max: 30s
     rate-limit:
-      global:
-        store: in-memory
-        per-api-key:
-          capacity: 500
-          refill-frequency: 1s
-        cleanup-interval: 5m
-    helicone: # Include your HELICONE_API_KEY in your .env file
-      enable: true
+      per-api-key:
+        capacity: 1000
+        refill-frequency: 1m # 1000 requests per minute
     telemetry:
       level: "info,ai_gateway=trace"
 ```
