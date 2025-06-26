@@ -2,21 +2,20 @@
 
 # Helicone AI Gateway
 
-[![GitHub stars](https://img.shields.io/github/stars/Helicone/ai-gateway?style=for-the-badge)](https://github.com/helicone/ai-gateway/)
-[![Downloads](https://img.shields.io/github/downloads/Helicone/ai-gateway/total?style=for-the-badge)](https://github.com/helicone/ai-gateway/releases)
+[![GitHub stars](https://img.shields.io/github/stars/Helicone/aia-gateway?style=for-the-badge)](https://github.com/helicone/ai-gateway/)
+[![Downloads](https://img.shields.io/github/downloads/Helicone/aia-gateway/total?style=for-the-badge)](https://github.com/helicone/aia-gateway/releases)
 [![Docker pulls](https://img.shields.io/docker/pulls/helicone/ai-gateway?style=for-the-badge)](https://hub.docker.com/r/helicone/ai-gateway)
 [![License](https://img.shields.io/badge/license-APACHE-green?style=for-the-badge)](LICENSE)
-[![Public Beta](https://img.shields.io/badge/status-Public%20Beta-orange?style=for-the-badge)](https://github.com/helicone/ai-gateway)
 
-**The fastest, lightest, and most powerful AI Gateway on the market.**
+**The fastest, lightest, and easiest-to-integrate AI Gateway on the market.**
 
 *Built by the team at [Helicone](https://helicone.ai), open-sourced for the community.*
 
-[🚀 Quick Start](#-deploy-with-docker-in-seconds) • [📖 Docs](https://docs.helicone.ai/ai-gateway) • [💬 Discord](https://discord.gg/7aSCGCGUeu) • [🌐 Website](https://helicone.ai)
+[🚀 Quick Start](https://docs.helicone.ai/ai-gateway/quickstart) • [📖 Docs](https://docs.helicone.ai/ai-gateway/overview) • [💬 Discord](https://discord.gg/7aSCGCGUeu) • [🌐 Website](https://helicone.ai)
 
 ---
 
-### 🚆 One line. 100+ models.
+### 🚆 1 API. 100+ models.
 
 **Open-source, lightweight, and built on Rust.**
 
@@ -37,7 +36,7 @@ ANTHROPIC_API_KEY=your_anthropic_key
 
 2. Run locally in your terminal
 ```bash
-npx @helicone/ai-gateway@latest [--config /path/config.yaml]
+npx @helicone/ai-gateway@latest
 ```
 
 3. Make your requests using any OpenAI SDK:
@@ -46,26 +45,25 @@ npx @helicone/ai-gateway@latest [--config /path/config.yaml]
 from openai import OpenAI
 
 client = OpenAI(
-    base_url="http://localhost:8080/router/default/v1"
-    # base_url="http://localhost:8080/ai"
+    base_url="http://localhost:8080/ai"
 )
 
 # Route to any LLM provider through the same interface, we handle the rest.
 response = client.chat.completions.create(
-    model="anthropic/claude-3-5-sonnet",  # Or openai/gpt-4o, gemini/gemini-2.5-pro, etc.
+    model="anthropic/claude-3-5-sonnet",  # Or other 100+ models..
     messages=[{"role": "user", "content": "Hello from Helicone AI Gateway!"}]
 )
 ```
 
 **That's it.** No new SDKs to learn, no integrations to maintain. Fully-featured and open-sourced.
 
-*-- For advanced config, check out our [configuration guide](https://docs.helicone.ai/ai-gateway/config) and the [providers we support](https://docs.helicone.ai/ai-gateway/providers).*
+*-- For advanced config, check out our [configuration guide](https://docs.helicone.ai/ai-gateway/config) and the [providers we support](https://github.com/Helicone/ai-gateway/blob/main/ai-gateway/config/embedded/providers.yaml).*
 
 ---
 
 ## Why Helicone AI Gateway?
 
-<!-- TODO: include launch video here -->
+![Helicone AI Gateway Launch Video](https://marketing-assets-helicone.s3.us-west-2.amazonaws.com/Launch+Final.mp4)
 
 #### 🌐 **Unified interface**
 Request **any LLM provider** using familiar OpenAI syntax. Stop rewriting integrations—use one API for OpenAI, Anthropic, Google, AWS Bedrock, and [20+ more providers](https://docs.helicone.ai/ai-gateway/providers).
@@ -89,19 +87,11 @@ Deploy in seconds to your own infrastructure by using our **Docker** or **binary
 
 ## 🎥 Demo
 
-<!-- TODO: Add demo GIF/video showing Helicone AI Gateway routing between providers -->
-
-![Helicone AI Gateway Demo](https://via.placeholder.com/800x400/0ea5e9/ffffff?text=Helicone+AI+Gateway+Demo+%28Coming+Soon%29)
-
-*Coming soon: Interactive demo showing real-time load balancing across providers*
+![Helicone AI Gateway Demo](https://marketing-assets-helicone.s3.us-west-2.amazonaws.com/AI+Gateway+Demo+v0+(3).mp4)
 
 ---
 
 ## ⚡ Scalable for production
-
-<!-- TODO: include correct metrics -->
-
-*Note: These are preliminary performance metrics. See [benchmarks/README.md](benchmarks/README.md) for detailed benchmarking methodology and results.*
 
 | Metric | Helicone AI Gateway | Typical Setup |
 |--------|-------|---------------|
@@ -110,6 +100,8 @@ Deploy in seconds to your own infrastructure by using our **Docker** or **binary
 | **Requests/sec** | ~2,000 | ~500 |
 | **Binary Size** | ~15MB | ~200MB |
 | **Cold Start** | ~100ms | ~2s |
+
+*Note: These are preliminary performance metrics. See [benchmarks/README.md](benchmarks/README.md) for detailed benchmarking methodology and results.*
 
 ---
 
@@ -143,7 +135,7 @@ Deploy in seconds to your own infrastructure by using our **Docker** or **binary
 
 ## ⚙️ Custom configuration
 
-### Environment variables
+### 1. Set up you additional environment variables
 Include your `PROVIDER_API_KEY`s in your `.env` file.
 
 ```bash
@@ -153,10 +145,10 @@ HELICONE_API_KEY=sk-...
 REDIS_URL=redis://localhost:6379
 ```
 
-### Sample config file
+### 2. Customize your config file
 
-*Note: This is a sample `config.yaml` file. Please refer to our [configuration guide](https://docs.helicone.ai/gateway/configuration) for the full list of options, examples, and defaults.*
-*See our [full provider list here.](https://docs.helicone.ai/gateway/providers)*
+*Note: This is a sample `config.yaml` file. Please refer to our [configuration guide](https://docs.helicone.ai/ai-gateway/config) for the full list of options, examples, and defaults.*
+*See our [full provider list here.](https://github.com/Helicone/ai-gateway/blob/main/ai-gateway/config/embedded/providers.yaml)*
 
 ```yaml
 providers: # Include their PROVIDER_API_KEY in .env file
@@ -180,7 +172,7 @@ global: # Global settings for all routers
     seed: "unique-cache-seed"
 
 routers:
-  production: # Per router configuration
+  your-router-name: # Per router configuration
     load-balance:
       chat:
         strategy: latency
@@ -205,11 +197,28 @@ routers:
     telemetry:
       level: "info,ai_gateway=trace"
 ```
-### Run with your custom config file
+### 3. Run with your custom configuration
 
 ```bash
-npx @helicone/ai-gateway start --config config.yaml
+npx @helicone/ai-gateway@latest --config config.yaml
 ```
+
+### 4. Make your requests
+
+```python
+from openai import OpenAI
+
+client = OpenAI(
+    base_url="http://localhost:8080/your-router-name"
+)
+
+# Route to any LLM provider through the same interface, we handle the rest.
+response = client.chat.completions.create(
+    model="anthropic/claude-3-5-sonnet",  # Or other 100+ models..
+    messages=[{"role": "user", "content": "Hello from Helicone AI Gateway!"}]
+)
+```
+
 ---
 
 ## 📚 Migration guide
@@ -220,7 +229,7 @@ from openai import OpenAI
 
 client = OpenAI(
 -   api_key=os.getenv("OPENAI_API_KEY")
-+   base_url="http://localhost:8080/production"
++   base_url="http://localhost:8080/your-router-name"
 )
 
 # No other changes needed!
@@ -237,7 +246,7 @@ from langchain_openai import ChatOpenAI
 llm = ChatOpenAI(
     model="gpt-4o",
 -   api_key=os.getenv("OPENAI_API_KEY")
-+   base_url="http://localhost:8080/"
++   base_url="http://localhost:8080/your-router-name"
 )
 ```
 
@@ -249,7 +258,7 @@ anthropic_client = Anthropic(api_key=anthropic_key)
 
 # After: One client for everything
 client = OpenAI(
-    base_url="http://localhost:8080/production"
+    base_url="http://localhost:8080/your-router-name"
 )
 
 # Use any model through the same interface
@@ -259,30 +268,10 @@ claude_response = client.chat.completions.create(model="claude-3-5-sonnet", ...)
 
 ---
 
-## 💗 What they say about The Helicone AI Gateway
-
-> *"The Helicone AI Gateway reduced our LLM integration complexity from 15 different SDKs to just one. We're now spending time building features instead of maintaining integrations."*
->
-> — **Senior Engineer, Fortune 500 Company**
-
-> *"The cost optimization alone saved us $50K/month. The unified observability is just a bonus."*
->
-> — **CTO, AI Startup**
-
-> *"We went from 200ms P95 latency to 50ms with smart caching and load balancing. Our users immediately noticed."*
->
-> — **Staff Engineer, SaaS Platform**
-
-*Want to be featured? [Share your story!](https://github.com/Helicone/aia-gateway/discussions)*
-
----
-
 ## 📚 Resources
 
-<!-- TODO: include correct resources -->
-
 ### Documentation
-- 📖 **[Full Documentation](https://docs.helicone.ai/ai-gateway)** - Complete guides and API reference
+- 📖 **[Full Documentation](https://docs.helicone.ai/ai-gateway/overview)** - Complete guides and API reference
 - 🚀 **[Quickstart Guide](https://docs.helicone.ai/ai-gateway/quickstart)** - Get up and running in 1 minute
 - 🔬 **[Advanced Configurations](https://docs.helicone.ai/ai-gateway/config)** - Configuration reference & examples
 
@@ -306,4 +295,4 @@ The Helicone AI Gateway is licensed under the [Apache License](LICENSE) - see th
 
 **Made with ❤️ by [Helicone](https://helicone.ai).**
 
-[Website](https://helicone.ai) • [Docs](https://docs.helicone.ai) • [Discord](https://discord.gg/7aSCGCGUeu) • [Twitter](https://twitter.com/helicone_ai)
+[Website](https://helicone.ai) • [Docs](https://docs.helicone.ai/ai-gateway/overview) • [Twitter](https://twitter.com/helicone_ai) • [Discord](https://discord.gg/7aSCGCGUeu)
