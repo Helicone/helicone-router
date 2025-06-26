@@ -65,8 +65,12 @@ pub fn extend_with_v1(path: PathAndQuery) -> PathAndQuery {
     if path.path().starts_with("/v1") {
         path
     } else {
-        PathAndQuery::try_from(format!("/v1{}", path.path()))
-            .expect("always valid if tests pass")
+        if let Some(query_params) = req.uri().query() {
+            PathAndQuery::try_from(format!("{rest}?{query_params}"))
+                .expect("todo remove this code. temp hack")
+        } else {
+            PathAndQuery::try_from(rest).expect("always valid if tests pass")
+        };
     }
 }
 
