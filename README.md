@@ -9,7 +9,7 @@
 
 **The fastest, lightest, and easiest-to-integrate AI Gateway on the market.**
 
-_Built by the team at [Helicone](https://helicone.ai), open-sourced for the community._
+*Built by the team at [Helicone](https://helicone.ai), open-sourced for the community.*
 
 [🚀 Quick Start](https://docs.helicone.ai/ai-gateway/quickstart) • [📖 Docs](https://docs.helicone.ai/ai-gateway/introduction) • [💬 Discord](https://discord.gg/7aSCGCGUeu) • [🌐 Website](https://helicone.ai)
 
@@ -35,7 +35,6 @@ ANTHROPIC_API_KEY=your_anthropic_key
 ```
 
 2. Run locally in your terminal
-
 ```bash
 npx @helicone/ai-gateway@latest
 ```
@@ -58,34 +57,28 @@ response = client.chat.completions.create(
 
 **That's it.** No new SDKs to learn, no integrations to maintain. Fully-featured and open-sourced.
 
-_-- For advanced config, check out our [configuration guide](https://docs.helicone.ai/ai-gateway/config) and the [providers we support](https://github.com/Helicone/ai-gateway/blob/main/ai-gateway/config/embedded/providers.yaml)._
+*-- For advanced config, check out our [configuration guide](https://docs.helicone.ai/ai-gateway/config) and the [providers we support](https://github.com/Helicone/ai-gateway/blob/main/ai-gateway/config/embedded/providers.yaml).*
 
 ---
 
 ## Why Helicone AI Gateway?
 
 #### 🌐 **Unified interface**
-
 Request **any LLM provider** using familiar OpenAI syntax. Stop rewriting integrations—use one API for OpenAI, Anthropic, Google, AWS Bedrock, and [20+ more providers](https://docs.helicone.ai/ai-gateway/providers).
 
 #### ⚡ **Smart provider selection**
-
 **Load balance** to always hit the fastest, cheapest, or most reliable option. Built-in strategies include latency-based P2C + PeakEWMA, weighted distribution, and cost optimization. Always aware of provider uptime and rate limits.
 
 #### 💰 **Control your spending**
-
 **Rate limit** to prevent runaway costs and usage abuse. Set limits per user, team, or globally with support for request counts, token usage, and dollar amounts.
 
 #### 🚀 **Improve performance**
-
 **Cache responses** to reduce costs and latency by up to 95%. Supports Redis and S3 backends with intelligent cache invalidation.
 
 #### 📊 **Simplified tracing**
-
 Monitor performance and debug issues with built-in Helicone integration, plus OpenTelemetry support for **logs, metrics, and traces**.
 
 #### ☁️ **One-click deployment**
-
 Deploy in seconds to your own infrastructure by using our **Docker** or **binary** download following our [deployment guides](https://docs.helicone.ai/ai-gateway/deployment/overview).
 
 https://github.com/user-attachments/assets/ed3a9bbe-1c4a-47c8-98ec-2bb4ff16be1f
@@ -94,15 +87,15 @@ https://github.com/user-attachments/assets/ed3a9bbe-1c4a-47c8-98ec-2bb4ff16be1f
 
 ## ⚡ Scalable for production
 
-| Metric           | Helicone AI Gateway | Typical Setup |
-| ---------------- | ------------------- | ------------- |
-| **P95 Latency**  | <10ms               | ~60-100ms     |
-| **Memory Usage** | ~64MB               | ~512MB        |
-| **Requests/sec** | ~2,000              | ~500          |
-| **Binary Size**  | ~15MB               | ~200MB        |
-| **Cold Start**   | ~100ms              | ~2s           |
+| Metric | Helicone AI Gateway | Typical Setup |
+|--------|-------|---------------|
+| **P95 Latency** | <10ms | ~60-100ms |
+| **Memory Usage** | ~64MB | ~512MB |
+| **Requests/sec** | ~2,000 | ~500 |
+| **Binary Size** | ~15MB | ~200MB |
+| **Cold Start** | ~100ms | ~2s |
 
-_Note: These are preliminary performance metrics. See [benchmarks/README.md](benchmarks/README.md) for detailed benchmarking methodology and results._
+*Note: These are preliminary performance metrics. See [benchmarks/README.md](benchmarks/README.md) for detailed benchmarking methodology and results.*
 
 ---
 
@@ -155,8 +148,8 @@ REDIS_URL=redis://localhost:6379
 
 ### 2. Customize your config file
 
-_Note: This is a sample `config.yaml` file. Please refer to our [configuration guide](https://docs.helicone.ai/ai-gateway/config) for the full list of options, examples, and defaults._
-_See our [full provider list here.](https://github.com/Helicone/ai-gateway/blob/main/ai-gateway/config/embedded/providers.yaml)_
+*Note: This is a sample `config.yaml` file. Please refer to our [configuration guide](https://docs.helicone.ai/ai-gateway/config) for the full list of options, examples, and defaults.*
+*See our [full provider list here.](https://github.com/Helicone/ai-gateway/blob/main/ai-gateway/config/embedded/providers.yaml)*
 
 ```yaml
 helicone: # Include your HELICONE_API_KEY in your .env file
@@ -191,7 +184,6 @@ routers:
     telemetry:
       level: "info,ai_gateway=trace"
 ```
-
 ### 3. Run with your custom configuration
 
 ```bash
@@ -219,7 +211,6 @@ response = client.chat.completions.create(
 ## 📚 Migration guide
 
 ### From OpenAI
-
 ```diff
 from openai import OpenAI
 
@@ -236,7 +227,6 @@ response = client.chat.completions.create(
 ```
 
 ### From LangChain
-
 ```diff
 from langchain_openai import ChatOpenAI
 
@@ -248,7 +238,6 @@ llm = ChatOpenAI(
 ```
 
 ### From multiple providers
-
 ```python
 # Before: Managing multiple clients
 openai_client = OpenAI(api_key=openai_key)
@@ -269,20 +258,17 @@ claude_response = client.chat.completions.create(model="claude-3-5-sonnet", ...)
 ## 📚 Resources
 
 ### Documentation
-
 - 📖 **[Full Documentation](https://docs.helicone.ai/ai-gateway/overview)** - Complete guides and API reference
 - 🚀 **[Quickstart Guide](https://docs.helicone.ai/ai-gateway/quickstart)** - Get up and running in 1 minute
 - 🔬 **[Advanced Configurations](https://docs.helicone.ai/ai-gateway/config)** - Configuration reference & examples
 
 ### Community
-
 - 💬 **[Discord Server](https://discord.gg/7aSCGCGUeu)** - Our community of passionate AI engineers
 - 🐙 **[GitHub Discussions](https://github.com/helicone/ai-gateway/discussions)** - Q&A and feature requests
 - 🐦 **[Twitter](https://twitter.com/helicone_ai)** - Latest updates and announcements
 - 📧 **[Newsletter](https://helicone.ai/email-signup)** - Tips and tricks to deploying AI applications
 
 ### Support
-
 - 🎫 **[Report bugs](https://github.com/helicone/ai-gateway/issues)**: Github issues
 - 💼 **[Enterprise Support](https://cal.com/team/helicone/helicone-discovery)**: Book a discovery call with our team
 
