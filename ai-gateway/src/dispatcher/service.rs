@@ -419,7 +419,7 @@ impl Dispatcher {
         resp_builder = resp_builder.status(StatusCode::OK);
 
         let (user_resp_body, body_reader, tfft_rx) =
-            BodyReader::wrap_stream(response_stream, true);
+            BodyReader::wrap_stream(response_stream);
 
         let response = resp_builder
             .body(user_resp_body)
@@ -461,7 +461,7 @@ impl Dispatcher {
                 InternalError,
             >(bytes));
             let (error_body, error_reader, tfft_rx) =
-                BodyReader::wrap_stream(stream, false);
+                BodyReader::wrap_stream(stream);
             let response = resp_builder
                 .body(error_body)
                 .map_err(InternalError::HttpError)?;
@@ -470,7 +470,6 @@ impl Dispatcher {
 
         let (user_resp_body, body_reader, tfft_rx) = BodyReader::wrap_stream(
             response.bytes_stream().map_err(InternalError::ReqwestError),
-            false,
         );
         let response = resp_builder
             .body(user_resp_body)

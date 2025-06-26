@@ -5,7 +5,7 @@ use std::{
 };
 
 pub use axum_core::body::Body;
-use bytes::{BufMut, Bytes, BytesMut};
+use bytes::Bytes;
 use futures::{Stream, StreamExt};
 use hyper::body::{Body as _, Frame, SizeHint};
 use tokio::sync::{
@@ -22,7 +22,6 @@ pub struct BodyReader {
     tfft_tx: Option<oneshot::Sender<()>>,
     is_end_stream: bool,
     size_hint: SizeHint,
-    append_newlines: bool,
 }
 
 impl BodyReader {
@@ -31,14 +30,12 @@ impl BodyReader {
         rx: UnboundedReceiver<Bytes>,
         tfft_tx: oneshot::Sender<()>,
         size_hint: SizeHint,
-        append_newlines: bool,
     ) -> Self {
         Self {
             rx,
             tfft_tx: Some(tfft_tx),
             is_end_stream: false,
             size_hint,
-            append_newlines,
         }
     }
 
@@ -46,7 +43,6 @@ impl BodyReader {
     /// for streaming responses.
     pub fn wrap_stream(
         stream: impl Stream<Item = Result<Bytes, InternalError>> + Send + 'static,
-        append_newlines: bool,
     ) -> (axum_core::body::Body, BodyReader, oneshot::Receiver<()>) {
         // unbounded channel is okay since we limit memory usage higher in the
         // stack by limiting concurrency and request/response body size.
@@ -67,11 +63,7 @@ impl BodyReader {
         });
         let inner = axum_core::body::Body::from_stream(s);
         let size_hint = inner.size_hint();
-        (
-            inner,
-            BodyReader::new(rx, tfft_tx, size_hint, append_newlines),
-            tfft_rx,
-        )
+        (inner, BodyReader::new(rx, tfft_tx, size_hint), tfft_rx)
     }
 }
 
@@ -91,13 +83,7 @@ impl hyper::body::Body for BodyReader {
                     }
                 }
 
-                if self.append_newlines {
-                    let mut new_bytes = BytesMut::from(bytes);
-                    new_bytes.put("\n".as_bytes());
-                    Poll::Ready(Some(Ok(Frame::data(new_bytes.freeze()))))
-                } else {
-                    Poll::Ready(Some(Ok(Frame::data(bytes))))
-                }
+                Poll::Ready(Some(Ok(Frame::data(bytes))))
             }
             Poll::Ready(None) => {
                 self.is_end_stream = true;
