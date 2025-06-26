@@ -156,21 +156,8 @@ helicone: # Include your HELICONE_API_KEY in your .env file
   observability: true
   authentication: true
 
-cache-story:
+cache-store:
   in-memory: {}
-
-providers: # Include their PROVIDER_API_KEY in .env file
-  openai:
-    models:
-      - gpt-4
-      - gpt-4o
-      - gpt-4o-mini
-
-  anthropic:
-    version: "2023-06-01"
-    models:
-      - claude-3-opus
-      - claude-3-sonnet
 
 global: # Global settings for all routers
   cache:
