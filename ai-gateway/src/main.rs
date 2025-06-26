@@ -2,8 +2,9 @@ use std::path::PathBuf;
 
 use ai_gateway::{
     app::App,
-    config::Config,
+    config::{Config, DeploymentTarget},
     control_plane::websocket::ControlPlaneClient,
+    db_listener::DatabaseListener,
     discover::monitor::{
         health::provider::HealthMonitor, rate_limit::RateLimitMonitor,
     },
@@ -100,6 +101,14 @@ async fn main() -> Result<(), RuntimeError> {
                 .await?,
         ));
         tasks.push("control-plane-client");
+    }
+
+    if app.state.0.config.deployment_target == DeploymentTarget::Cloud {
+        meltdown = meltdown.register(TaggedService::new(
+            "database-listener",
+            DatabaseListener::new(app.state.0.config.database.clone()).await?,
+        ));
+        tasks.push("database-listener");
     }
 
     meltdown = meltdown

@@ -119,6 +119,7 @@ serde_yml = "0.0.12"
 serial_test = "3.2.0"
 strum = "0.27.1"
 stubr = { git = "https://github.com/Helicone/stubr" }
+sqlx = { version = "0.8.6", features = ["runtime-tokio", "postgres"] }
 thiserror = "2.0.12"
 tokio = { version = "1.44.2", features = ['full'] }
 tokio-stream = "0.1.17"
