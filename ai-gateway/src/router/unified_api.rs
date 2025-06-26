@@ -175,13 +175,6 @@ impl Future for ResponseFuture {
                             parts.extensions.insert(ApiEndpoint::OpenAI(
                                 OpenAI::chat_completions(),
                             ));
-
-                            // THIS IS A TEMPORARY FIX TO GET THE PATH AND QUERY
-                            // TODO: make the path map from the api endpoint
-                            // instead of using the PathAndQuery
-                            parts.extensions.insert(PathAndQuery::from_static(
-                                "/v1/chat/completions",
-                            ));
                         }
                     }
 

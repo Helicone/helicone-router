@@ -166,8 +166,7 @@ impl tower::Service<crate::types::request::Request> for Router {
             };
         };
 
-        let api_endpoint =
-            ApiEndpoint::new(extracted_path_and_query.path(), SDK);
+        let api_endpoint = ApiEndpoint::new(extracted_path_and_query.path());
         match api_endpoint {
             Some(api_endpoint) => {
                 let endpoint_type = api_endpoint.endpoint_type();
