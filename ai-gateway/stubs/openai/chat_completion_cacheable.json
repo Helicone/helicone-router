@@ -2,7 +2,7 @@
   "id": "success:openai:chat_completion_cacheable",
   "request": {
     "method": "POST",
-    "url": "/chat/completions"
+    "url": "/v1/chat/completions"
   },
   "response": {
     "status": 200,

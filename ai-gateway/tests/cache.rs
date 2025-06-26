@@ -358,7 +358,7 @@ async fn cache_enabled_per_router() {
 
     // Second request to same router - should be a cache hit
     let request = make_request(
-        "http://router.helicone.com/router/cached/v1/chat/completions",
+        "http://router.helicone.com/router/cached/chat/completions",
         Some(("cache-control", "max-age=3600")),
     );
     let response = harness.call(request).await.unwrap();
@@ -372,7 +372,7 @@ async fn cache_enabled_per_router() {
     // Test 2: Router without cache
     // Both requests should not have cache headers
     let request = make_request(
-        "http://router.helicone.com/router/uncached/v1/chat/completions",
+        "http://router.helicone.com/router/uncached/chat/completions",
         Some(("cache-control", "max-age=3600")),
     );
     let response = harness.call(request).await.unwrap();
@@ -384,7 +384,7 @@ async fn cache_enabled_per_router() {
 
     // Second request to uncached router
     let request = make_request(
-        "http://router.helicone.com/router/uncached/v1/chat/completions",
+        "http://router.helicone.com/router/uncached/chat/completions",
         Some(("cache-control", "max-age=3600")),
     );
     let response = harness.call(request).await.unwrap();
