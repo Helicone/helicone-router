@@ -253,7 +253,7 @@ async fn check_cache<C: CacheManager>(
                 InternalError::CollectBodyError,
             );
             let (user_resp_body, body_reader, tfft_rx) =
-                BodyReader::wrap_stream(stream);
+                BodyReader::wrap_stream(stream, false);
             let response = Response::from_parts(resp_parts, user_resp_body);
 
             if app_state.config().helicone.observability {

@@ -3,6 +3,7 @@ use std::{
     task::{Context, Poll},
 };
 
+use bytes::{BufMut, BytesMut};
 use futures::{TryStreamExt, future::BoxFuture};
 use http::uri::PathAndQuery;
 use tracing::{Instrument, info_span};
@@ -79,75 +80,43 @@ where
                 )))?;
             let source_endpoint =
                 req.extensions().get::<ApiEndpoint>().copied();
-            if target_provider == InferenceProvider::OpenAI {
-                let req = if let Some(source_endpoint) = source_endpoint {
-                    // Since we support the OpenAI API only, then we can
-                    // special case when our target provider is OpenAI.
-                    // Even though we don't need to map the request body, we
-                    // still need to deserialize the body in
-                    // order to extract the `stream` param
-                    map_request_no_op(
-                        converter_registry,
-                        &source_endpoint,
-                        &source_endpoint,
-                        extracted_path_and_query,
-                        req,
-                    )
-                    .await?
-                } else {
-                    // For endpoints without first class support (where we don't
-                    // have concrete types) then we must assume the request is
-                    // not streaming.
-                    let mapper_ctx = MapperContext {
-                        is_stream: false,
-                        model: None,
-                    };
-                    req.extensions_mut().insert(mapper_ctx);
-                    req.extensions_mut().insert(extracted_path_and_query);
-                    req
-                };
-                inner.call(req).await
-            } else {
-                let source_endpoint =
-                    source_endpoint.ok_or(ApiError::Internal(
-                        InternalError::ExtensionNotFound("ApiEndpoint"),
-                    ))?;
-                let target_endpoint =
-                    ApiEndpoint::mapped(source_endpoint, target_provider)?;
-                // serialization/deserialization should be done on a dedicated
-                // thread
-                let converter_registry_cloned = converter_registry.clone();
-                let req = tokio::task::spawn_blocking(move || async move {
-                    map_request(
-                        converter_registry_cloned,
-                        &source_endpoint,
-                        &target_endpoint,
-                        &extracted_path_and_query,
-                        req,
-                    )
-                    .instrument(info_span!("map_request"))
-                    .await
-                })
+            let source_endpoint = source_endpoint.ok_or(ApiError::Internal(
+                InternalError::ExtensionNotFound("ApiEndpoint"),
+            ))?;
+            let target_endpoint =
+                ApiEndpoint::mapped(source_endpoint, target_provider)?;
+            // serialization/deserialization should be done on a dedicated
+            // thread
+            let converter_registry_cloned = converter_registry.clone();
+            let req = tokio::task::spawn_blocking(move || async move {
+                map_request(
+                    converter_registry_cloned,
+                    &source_endpoint,
+                    &target_endpoint,
+                    &extracted_path_and_query,
+                    req,
+                )
+                .instrument(info_span!("map_request"))
                 .await
-                .map_err(InternalError::MappingTaskError)?
-                .await?;
-                let response = inner.call(req).await?;
-                let response =
-                    tokio::task::spawn_blocking(move || async move {
-                        map_response(
-                            converter_registry,
-                            target_endpoint,
-                            source_endpoint,
-                            response,
-                        )
-                        .await
-                    })
-                    .instrument(info_span!("map_response"))
-                    .await
-                    .map_err(InternalError::MappingTaskError)?
-                    .await?;
-                Ok(response)
-            }
+            })
+            .await
+            .map_err(InternalError::MappingTaskError)?
+            .await?;
+            let response = inner.call(req).await?;
+            let response = tokio::task::spawn_blocking(move || async move {
+                map_response(
+                    converter_registry,
+                    target_endpoint,
+                    source_endpoint,
+                    response,
+                )
+                .await
+            })
+            .instrument(info_span!("map_response"))
+            .await
+            .map_err(InternalError::MappingTaskError)?
+            .await?;
+            Ok(response)
         })
     }
 }
@@ -205,56 +174,6 @@ async fn map_request(
     Ok(req)
 }
 
-async fn map_request_no_op(
-    converter_registry: EndpointConverterRegistry,
-    source_endpoint: &ApiEndpoint,
-    target_endpoint: &ApiEndpoint,
-    target_path_and_query: PathAndQuery,
-    req: Request,
-) -> Result<Request, ApiError> {
-    use http_body_util::BodyExt;
-    let (parts, body) = req.into_parts();
-    let body = body
-        .collect()
-        .await
-        .map_err(InternalError::CollectBodyError)?
-        .to_bytes();
-    // we still collect the body and call the converter in order to map the
-    // model name. eg if they send `model:
-    // anthropic/claude-3-5-sonnet-20240620` from the OpenAI sdk,
-    // and the only configured provider is OpenAI, we need to map the model name
-    // but not change the structure of the request body.
-    let converter = converter_registry
-        .get_converter(source_endpoint, target_endpoint)
-        .ok_or_else(|| {
-            InternalError::InvalidConverter(*source_endpoint, *target_endpoint)
-        })?;
-
-    let (body, mapper_ctx) = converter.convert_req_body(body)?;
-    let mut req = Request::from_parts(parts, axum_core::body::Body::from(body));
-
-    let base_path = source_endpoint
-        .path(mapper_ctx.model.as_ref(), mapper_ctx.is_stream)?;
-    let target_path_and_query =
-        if let Some(query_params) = target_path_and_query.query() {
-            format!("{base_path}?{query_params}")
-        } else {
-            base_path
-        };
-    let target_path_and_query = PathAndQuery::from_str(&target_path_and_query)
-        .map_err(InternalError::InvalidUri)?;
-    tracing::trace!(
-        endpoint = ?source_endpoint,
-        target_path_and_query = ?target_path_and_query,
-        mapper_ctx = ?mapper_ctx,
-        "no-op request mapping"
-    );
-    req.extensions_mut().insert(target_path_and_query);
-    req.extensions_mut().insert(mapper_ctx);
-    req.extensions_mut().insert(*target_endpoint);
-    Ok(req)
-}
-
 async fn map_response(
     converter_registry: EndpointConverterRegistry,
     source_endpoint: ApiEndpoint,
@@ -295,9 +214,21 @@ async fn map_response(
                                     source_endpoint,
                                 )
                             })?;
+
                         let converted_data =
                             converter.convert_resp_body(bytes, is_stream)?;
-                        Ok(converted_data)
+
+                        // add the `data: ` prefix expected by the OpenAI SDK
+                        if let Some(converted_data) = converted_data {
+                            let mut new_bytes = BytesMut::new();
+                            new_bytes.put("data: ".as_bytes());
+                            new_bytes.put(converted_data);
+                            new_bytes.put("\n\n".as_bytes());
+                            let data = new_bytes.freeze();
+                            Ok(Some(data))
+                        } else {
+                            Ok(converted_data)
+                        }
                     }
                 }
             });

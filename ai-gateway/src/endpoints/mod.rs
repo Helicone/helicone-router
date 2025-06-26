@@ -85,6 +85,9 @@ impl ApiEndpoint {
             (Self::OpenAI(source), InferenceProvider::Anthropic) => {
                 Ok(Self::Anthropic(Anthropic::from(source)))
             }
+            (Self::OpenAI(source), InferenceProvider::OpenAI) => {
+                Ok(Self::OpenAI(source))
+            }
             (Self::OpenAI(source), InferenceProvider::GoogleGemini) => {
                 Ok(Self::Google(Google::from(source)))
             }

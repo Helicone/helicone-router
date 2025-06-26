@@ -23,6 +23,9 @@ async function main() {
     max_tokens: 400,
   });
 
+  // for await (const chunk of response) {
+  //   console.log(chunk.choices[0].delta.content);
+  // }
   console.log(response.choices[0].message.content);
 }
 

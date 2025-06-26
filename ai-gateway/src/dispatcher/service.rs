@@ -261,7 +261,7 @@ impl Dispatcher {
             endpoint_metrics.incr_req_count();
         }
 
-        let (mut response, body_reader, tfft_rx): (
+        let (mut client_response, response_body_for_logger, tfft_rx): (
             http::Response<crate::types::body::Body>,
             crate::types::body::BodyReader,
             oneshot::Receiver<()>,
@@ -280,11 +280,11 @@ impl Dispatcher {
                 .await?
         };
         let provider_request_id = {
-            let headers = response.headers_mut();
+            let headers = client_response.headers_mut();
             headers.remove(http::header::CONTENT_LENGTH);
             headers.remove("x-request-id")
         };
-        tracing::debug!(provider_req_id = ?provider_request_id, status = %response.status(), "received response");
+        tracing::debug!(provider_req_id = ?provider_request_id, status = %client_response.status(), "received response");
         let extensions_copier = ExtensionsCopier::builder()
             .inference_provider(inference_provider)
             .router_id(router_id)
@@ -292,10 +292,12 @@ impl Dispatcher {
             .provider_request_id(provider_request_id)
             .mapper_ctx(mapper_ctx.clone())
             .build();
-        extensions_copier.copy_extensions(response.extensions_mut());
-        response.extensions_mut().insert(mapper_ctx.clone());
-        response.extensions_mut().insert(api_endpoint);
-        response.extensions_mut().insert(extracted_path_and_query);
+        extensions_copier.copy_extensions(client_response.extensions_mut());
+        client_response.extensions_mut().insert(mapper_ctx.clone());
+        client_response.extensions_mut().insert(api_endpoint);
+        client_response
+            .extensions_mut()
+            .insert(extracted_path_and_query);
 
         if self.app_state.config().helicone.observability {
             if self.app_state.config().helicone.authentication {
@@ -313,8 +315,8 @@ impl Dispatcher {
                     .target_url(target_url)
                     .request_headers(headers)
                     .request_body(req_body_bytes)
-                    .response_status(response.status())
-                    .response_body(body_reader)
+                    .response_status(client_response.status())
+                    .response_body(response_body_for_logger)
                     .provider(target_provider)
                     .tfft_rx(tfft_rx)
                     .mapper_ctx(mapper_ctx)
@@ -349,7 +351,7 @@ impl Dispatcher {
             tokio::spawn(
                 async move {
                     let tfft_future = TFFTFuture::new(start_instant, tfft_rx);
-                    let collect_future = body_reader.collect();
+                    let collect_future = response_body_for_logger.collect();
                     let (_response_body, tfft_duration) = tokio::join!(collect_future, tfft_future);
                     if let Ok(tfft_duration) = tfft_duration {
                         tracing::trace!(tfft_duration = ?tfft_duration, "tfft_duration");
@@ -366,7 +368,7 @@ impl Dispatcher {
             );
         }
 
-        if response.status().is_server_error() {
+        if client_response.status().is_server_error() {
             if let Some(api_endpoint) = api_endpoint {
                 let endpoint_metrics = self
                     .app_state
@@ -375,9 +377,10 @@ impl Dispatcher {
                     .health_metrics(api_endpoint)?;
                 endpoint_metrics.incr_remote_internal_error_count();
             }
-        } else if response.status() == StatusCode::TOO_MANY_REQUESTS {
+        } else if client_response.status() == StatusCode::TOO_MANY_REQUESTS {
             if let Some(api_endpoint) = api_endpoint {
-                let retry_after = extract_retry_after(response.headers());
+                let retry_after =
+                    extract_retry_after(client_response.headers());
                 tracing::info!(
                     provider = ?self.provider,
                     api_endpoint = ?api_endpoint,
@@ -396,7 +399,7 @@ impl Dispatcher {
             }
         }
 
-        Ok(response)
+        Ok(client_response)
     }
 
     fn dispatch_stream(
@@ -527,10 +530,6 @@ fn stream_response_headers() -> HeaderMap {
         (
             http::header::CONTENT_TYPE,
             HeaderValue::from_str("text/event-stream; charset=utf-8").unwrap(),
-        ),
-        (
-            http::header::CACHE_CONTROL,
-            HeaderValue::from_str("no-cache").unwrap(),
         ),
         (
             http::header::CONNECTION,

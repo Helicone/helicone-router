@@ -65,14 +65,14 @@ where
             .extensions_mut()
             .remove::<DateTime<Utc>>()
             .unwrap_or_else(|| {
-                tracing::error!(
+                tracing::warn!(
                     "did not find expected DateTime<Utc> in req extensions"
                 );
                 Utc::now()
             });
         let req_start_instant =
             req.extensions_mut().remove::<Instant>().unwrap_or_else(|| {
-                tracing::error!(
+                tracing::warn!(
                     "did not find expected Instant in req extensions"
                 );
                 Instant::now()
