@@ -63,8 +63,7 @@ response = client.chat.completions.create(
 
 ## Why Helicone AI Gateway?
 
-https://marketing-assets-helicone.s3.us-west-2.amazonaws.com/Launch+Final.mp4
-
+https://github.com/user-attachments/assets/ed3a9bbe-1c4a-47c8-98ec-2bb4ff16be1f
 
 #### 🌐 **Unified interface**
 Request **any LLM provider** using familiar OpenAI syntax. Stop rewriting integrations—use one API for OpenAI, Anthropic, Google, AWS Bedrock, and [20+ more providers](https://docs.helicone.ai/ai-gateway/providers).
@@ -88,7 +87,7 @@ Deploy in seconds to your own infrastructure by using our **Docker** or **binary
 
 ## 🎥 Demo
 
-https://marketing-assets-helicone.s3.us-west-2.amazonaws.com/AI+Gateway+Demo+v0+(3).mp4
+https://github.com/user-attachments/assets/b53c9b7c-2108-462e-be15-dd4c2687d3b9
 
 ---
 
