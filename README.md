@@ -85,12 +85,6 @@ https://github.com/user-attachments/assets/ed3a9bbe-1c4a-47c8-98ec-2bb4ff16be1f
 
 ---
 
-## 🎥 Demo
-
-https://github.com/user-attachments/assets/b53c9b7c-2108-462e-be15-dd4c2687d3b9
-
----
-
 ## ⚡ Scalable for production
 
 | Metric | Helicone AI Gateway | Typical Setup |
@@ -102,6 +96,12 @@ https://github.com/user-attachments/assets/b53c9b7c-2108-462e-be15-dd4c2687d3b9
 | **Cold Start** | ~100ms | ~2s |
 
 *Note: These are preliminary performance metrics. See [benchmarks/README.md](benchmarks/README.md) for detailed benchmarking methodology and results.*
+
+---
+
+## 🎥 Demo
+
+https://github.com/user-attachments/assets/b53c9b7c-2108-462e-be15-dd4c2687d3b9
 
 ---
 
