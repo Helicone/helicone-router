@@ -10,8 +10,8 @@ client = OpenAI(
 def main():
     print("Hello, World!")
 
-    completion = client.chat.completions.create(
-        model="openai/gpt-4o-mini",  # 100+ models available
+    response = client.chat.completions.create(
+        model="anthropic/claude-sonnet-4-0",  # 100+ models available
         messages=[
             {
                 "role": "system",
@@ -23,12 +23,9 @@ def main():
             }
         ],
         max_tokens=400,
-        stream=True,
     )
 
-    # print(response.choices[0].message.content)
-    for chunk in completion:
-        print(chunk)
+    print(response.choices[0].message.content)
 
 
 if __name__ == "__main__":
