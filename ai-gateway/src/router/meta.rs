@@ -61,21 +61,6 @@ pub struct MetaRouter {
     url_regex: Regex,
 }
 
-pub fn extend_with_v1(path: PathAndQuery) -> PathAndQuery {
-    if path.path().starts_with("/v1") {
-        path
-    } else {
-        let new_path = format!("/v1{}", path.path());
-        if let Some(query_params) = path.query() {
-            PathAndQuery::try_from(format!("{new_path}?{query_params}"))
-                .expect("todo remove this code. temp hack")
-        } else {
-            PathAndQuery::try_from(new_path)
-                .expect("always valid if tests pass")
-        }
-    }
-}
-
 impl MetaRouter {
     pub async fn new(app_state: AppState) -> Result<Self, InitError> {
         let meta_router = match app_state.0.config.deployment_target {
@@ -158,8 +143,7 @@ impl MetaRouter {
             };
         };
         if let Some(router) = self.inner.get_mut(&router_id) {
-            req.extensions_mut()
-                .insert(extend_with_v1(extracted_path_and_query));
+            req.extensions_mut().insert(extracted_path_and_query);
             ResponseFuture::RouterRequest {
                 future: router.call(req),
             }
