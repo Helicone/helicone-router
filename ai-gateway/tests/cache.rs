@@ -345,7 +345,7 @@ async fn cache_enabled_per_router() {
     // Test 1: Router with cache enabled
     // First request - should be a cache miss
     let request = make_request(
-        "http://router.helicone.com/router/cached/v1/chat/completions",
+        "http://router.helicone.com/router/cached/chat/completions",
         Some(("cache-control", "max-age=3600")),
     );
     let response = harness.call(request).await.unwrap();
