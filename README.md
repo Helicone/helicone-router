@@ -9,7 +9,7 @@
 
 **The fastest, lightest, and easiest-to-integrate AI Gateway on the market.**
 
-*Built by the team at [Helicone](https://helicone.ai), open-sourced for the community.*
+_Built by the team at [Helicone](https://helicone.ai), open-sourced for the community._
 
 [🚀 Quick Start](https://docs.helicone.ai/ai-gateway/quickstart) • [📖 Docs](https://docs.helicone.ai/ai-gateway/introduction) • [💬 Discord](https://discord.gg/7aSCGCGUeu) • [🌐 Website](https://helicone.ai)
 
@@ -35,6 +35,7 @@ ANTHROPIC_API_KEY=your_anthropic_key
 ```
 
 2. Run locally in your terminal
+
 ```bash
 npx @helicone/ai-gateway@latest
 ```
@@ -45,7 +46,8 @@ npx @helicone/ai-gateway@latest
 from openai import OpenAI
 
 client = OpenAI(
-    base_url="http://localhost:8080/ai"
+    base_url="http://localhost:8080/ai",
+    api_key="placeholder-api-key" # Gateway handles API keys
 )
 
 # Route to any LLM provider through the same interface, we handle the rest.
@@ -57,28 +59,34 @@ response = client.chat.completions.create(
 
 **That's it.** No new SDKs to learn, no integrations to maintain. Fully-featured and open-sourced.
 
-*-- For advanced config, check out our [configuration guide](https://docs.helicone.ai/ai-gateway/config) and the [providers we support](https://github.com/Helicone/ai-gateway/blob/main/ai-gateway/config/embedded/providers.yaml).*
+_-- For advanced config, check out our [configuration guide](https://docs.helicone.ai/ai-gateway/config) and the [providers we support](https://github.com/Helicone/ai-gateway/blob/main/ai-gateway/config/embedded/providers.yaml)._
 
 ---
 
 ## Why Helicone AI Gateway?
 
 #### 🌐 **Unified interface**
+
 Request **any LLM provider** using familiar OpenAI syntax. Stop rewriting integrations—use one API for OpenAI, Anthropic, Google, AWS Bedrock, and [20+ more providers](https://docs.helicone.ai/ai-gateway/providers).
 
 #### ⚡ **Smart provider selection**
+
 **Load balance** to always hit the fastest, cheapest, or most reliable option. Built-in strategies include latency-based P2C + PeakEWMA, weighted distribution, and cost optimization. Always aware of provider uptime and rate limits.
 
 #### 💰 **Control your spending**
+
 **Rate limit** to prevent runaway costs and usage abuse. Set limits per user, team, or globally with support for request counts, token usage, and dollar amounts.
 
 #### 🚀 **Improve performance**
+
 **Cache responses** to reduce costs and latency by up to 95%. Supports Redis and S3 backends with intelligent cache invalidation.
 
 #### 📊 **Simplified tracing**
+
 Monitor performance and debug issues with built-in Helicone integration, plus OpenTelemetry support for **logs, metrics, and traces**.
 
 #### ☁️ **One-click deployment**
+
 Deploy in seconds to your own infrastructure by using our **Docker** or **binary** download following our [deployment guides](https://docs.helicone.ai/ai-gateway/deployment/overview).
 
 https://github.com/user-attachments/assets/ed3a9bbe-1c4a-47c8-98ec-2bb4ff16be1f
@@ -87,15 +95,15 @@ https://github.com/user-attachments/assets/ed3a9bbe-1c4a-47c8-98ec-2bb4ff16be1f
 
 ## ⚡ Scalable for production
 
-| Metric | Helicone AI Gateway | Typical Setup |
-|--------|-------|---------------|
-| **P95 Latency** | <10ms | ~60-100ms |
-| **Memory Usage** | ~64MB | ~512MB |
-| **Requests/sec** | ~2,000 | ~500 |
-| **Binary Size** | ~15MB | ~200MB |
-| **Cold Start** | ~100ms | ~2s |
+| Metric           | Helicone AI Gateway | Typical Setup |
+| ---------------- | ------------------- | ------------- |
+| **P95 Latency**  | <10ms               | ~60-100ms     |
+| **Memory Usage** | ~64MB               | ~512MB        |
+| **Requests/sec** | ~2,000              | ~500          |
+| **Binary Size**  | ~15MB               | ~200MB        |
+| **Cold Start**   | ~100ms              | ~2s           |
 
-*Note: These are preliminary performance metrics. See [benchmarks/README.md](benchmarks/README.md) for detailed benchmarking methodology and results.*
+_Note: These are preliminary performance metrics. See [benchmarks/README.md](benchmarks/README.md) for detailed benchmarking methodology and results._
 
 ---
 
@@ -143,13 +151,12 @@ Include your `PROVIDER_API_KEY`s in your `.env` file.
 OPENAI_API_KEY=sk-...
 ANTHROPIC_API_KEY=sk-ant-...
 HELICONE_API_KEY=sk-...
-REDIS_URL=redis://localhost:6379
 ```
 
 ### 2. Customize your config file
 
-*Note: This is a sample `config.yaml` file. Please refer to our [configuration guide](https://docs.helicone.ai/ai-gateway/config) for the full list of options, examples, and defaults.*
-*See our [full provider list here.](https://github.com/Helicone/ai-gateway/blob/main/ai-gateway/config/embedded/providers.yaml)*
+_Note: This is a sample `config.yaml` file. Please refer to our [configuration guide](https://docs.helicone.ai/ai-gateway/config) for the full list of options, examples, and defaults._
+_See our [full provider list here.](https://github.com/Helicone/ai-gateway/blob/main/ai-gateway/config/embedded/providers.yaml)_
 
 ```yaml
 helicone: # Include your HELICONE_API_KEY in your .env file
@@ -171,19 +178,12 @@ routers:
         targets:
           - openai
           - anthropic
-    retries:
-      enabled: true
-        max-retries: 3
-        strategy: exponential
-        base: 1s
-        max: 30s
     rate-limit:
       per-api-key:
         capacity: 1000
         refill-frequency: 1m # 1000 requests per minute
-    telemetry:
-      level: "info,ai_gateway=trace"
 ```
+
 ### 3. Run with your custom configuration
 
 ```bash
@@ -196,7 +196,8 @@ npx @helicone/ai-gateway@latest --config config.yaml
 from openai import OpenAI
 
 client = OpenAI(
-    base_url="http://localhost:8080/your-router-name"
+    base_url="http://localhost:8080/router/your-router-name",
+    api_key="placeholder-api-key" # Gateway handles API keys
 )
 
 # Route to any LLM provider through the same interface, we handle the rest.
@@ -210,65 +211,61 @@ response = client.chat.completions.create(
 
 ## 📚 Migration guide
 
-### From OpenAI
+### From OpenAI (Python)
+
 ```diff
 from openai import OpenAI
 
 client = OpenAI(
 -   api_key=os.getenv("OPENAI_API_KEY")
-+   base_url="http://localhost:8080/your-router-name"
++   api_key="placeholder-api-key" # Gateway handles API keys
++   base_url="http://localhost:8080/router/your-router-name"
 )
 
 # No other changes needed!
 response = client.chat.completions.create(
-    model="gpt-4o",
+    model="openai/gpt-4o",
     messages=[{"role": "user", "content": "Hello!"}]
 )
 ```
 
-### From LangChain
-```diff
-from langchain_openai import ChatOpenAI
+### From OpenAI (TypeScript)
 
-llm = ChatOpenAI(
-    model="gpt-4o",
--   api_key=os.getenv("OPENAI_API_KEY")
-+   base_url="http://localhost:8080/your-router-name"
-)
+```diff typescript
+import { OpenAI } from "openai";
+
+const client = new OpenAI({
+-   apiKey: os.getenv("OPENAI_API_KEY")
++   apiKey: "placeholder-api-key", // Gateway handles API keys
++   baseURL: "http://localhost:8080/router/your-router-name",
+});
+
+const response = await client.chat.completions.create({
+  model: "openai/gpt-4o",
+  messages: [{ role: "user", content: "Hello from Helicone AI Gateway!" }],
+});
 ```
 
-### From multiple providers
-```python
-# Before: Managing multiple clients
-openai_client = OpenAI(api_key=openai_key)
-anthropic_client = Anthropic(api_key=anthropic_key)
-
-# After: One client for everything
-client = OpenAI(
-    base_url="http://localhost:8080/your-router-name"
-)
-
-# Use any model through the same interface
-gpt_response = client.chat.completions.create(model="gpt-4o", ...)
-claude_response = client.chat.completions.create(model="claude-3-5-sonnet", ...)
-```
 
 ---
 
 ## 📚 Resources
 
 ### Documentation
-- 📖 **[Full Documentation](https://docs.helicone.ai/ai-gateway/overview)** - Complete guides and API reference
+
+- 📖 **[Full Documentation](https://docs.helicone.ai/ai-gateway/introduction)** - Complete guides and API reference
 - 🚀 **[Quickstart Guide](https://docs.helicone.ai/ai-gateway/quickstart)** - Get up and running in 1 minute
 - 🔬 **[Advanced Configurations](https://docs.helicone.ai/ai-gateway/config)** - Configuration reference & examples
 
 ### Community
+
 - 💬 **[Discord Server](https://discord.gg/7aSCGCGUeu)** - Our community of passionate AI engineers
 - 🐙 **[GitHub Discussions](https://github.com/helicone/ai-gateway/discussions)** - Q&A and feature requests
 - 🐦 **[Twitter](https://twitter.com/helicone_ai)** - Latest updates and announcements
 - 📧 **[Newsletter](https://helicone.ai/email-signup)** - Tips and tricks to deploying AI applications
 
 ### Support
+
 - 🎫 **[Report bugs](https://github.com/helicone/ai-gateway/issues)**: Github issues
 - 💼 **[Enterprise Support](https://cal.com/team/helicone/helicone-discovery)**: Book a discovery call with our team
 
@@ -282,4 +279,4 @@ The Helicone AI Gateway is licensed under the [Apache License](LICENSE) - see th
 
 **Made with ❤️ by [Helicone](https://helicone.ai).**
 
-[Website](https://helicone.ai) • [Docs](https://docs.helicone.ai/ai-gateway/overview) • [Twitter](https://twitter.com/helicone_ai) • [Discord](https://discord.gg/7aSCGCGUeu)
+[Website](https://helicone.ai) • [Docs](https://docs.helicone.ai/ai-gateway/introduction) • [Twitter](https://twitter.com/helicone_ai) • [Discord](https://discord.gg/7aSCGCGUeu)
