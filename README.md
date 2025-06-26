@@ -110,7 +110,7 @@ _Note: These are preliminary performance metrics. See [benchmarks/README.md](ben
 
 ## 🎥 Demo
 
-https://github.com/user-attachments/assets/b53c9b7c-2108-462e-be15-dd4c2687d3b9
+https://github.com/user-attachments/assets/dd6b6df1-0f5c-43d4-93b6-3cc751efb5e1
 
 ---
 
