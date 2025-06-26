@@ -9,8 +9,18 @@ async function main() {
 
   const response = await client.chat.completions.create({
     // 100+ models available
-    model: "openai/gpt-4o-mini",
-    messages: [{ role: "user", content: "Hello, world!" }],
+    model: "anthropic/claude-sonnet-4-0",
+    messages: [
+      {
+          role: "system",
+          content: "You are a helpful assistant that can answer questions and help with tasks."
+      },
+      {
+          role: "user",
+          content: "Hello, world!"
+      }
+    ],
+    max_tokens: 400,
   });
 
   console.log(response.choices[0].message.content);

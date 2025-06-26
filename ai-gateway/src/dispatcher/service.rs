@@ -205,6 +205,12 @@ impl Dispatcher {
             h.remove(http::header::AUTHORIZATION);
             h.remove(http::header::CONTENT_LENGTH);
             h.remove(HeaderName::from_str("helicone-api-key").unwrap());
+            // TODO: properly support accept encoding
+            h.remove(http::header::ACCEPT_ENCODING);
+            h.insert(
+                http::header::ACCEPT_ENCODING,
+                HeaderValue::from_static("identity"),
+            );
         }
         let method = req.method().clone();
         let headers = req.headers().clone();

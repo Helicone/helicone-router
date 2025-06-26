@@ -120,6 +120,10 @@ async fn test(
                 "role": "system",
                 "content": "You are a helpful assistant that can answer
     questions and help with tasks."
+            },
+            {
+                "role": "user",
+                "content": "Hello, world!"
             }
         ],
         "max_tokens": 400,
