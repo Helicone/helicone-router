@@ -135,7 +135,8 @@ impl DatabaseListener {
     }
 
     /// Runs the database listener service.
-    /// This includes listening for notifications and handling connection health.
+    /// This includes listening for notifications and handling
+    /// connection health.
     async fn run_service(&mut self) -> Result<(), RuntimeError> {
         info!("starting database listener service");
 
@@ -157,7 +158,8 @@ impl DatabaseListener {
         })?;
 
         info!(
-            "listening for database notifications on 'connected_cloud_gateways' channel"
+            "listening for database notifications on \
+             'connected_cloud_gateways' channel"
         );
 
         // Process notifications
@@ -195,7 +197,8 @@ impl DatabaseListener {
             "processing notification"
         );
 
-        // Example: You could dispatch to different handlers based on the channel
+        // Example: You could dispatch to different handlers based on the
+        // channel
         let channel = notification.channel();
         match channel.as_ref() {
             "ai_gateway_notifications" => {
