@@ -43,69 +43,18 @@ variable "ai_gateway_env_vars" {
   default     = {}
 }
 
-# Infrastructure Applications Configuration
+# Infrastructure Applications - App Names Only
+# Machine configuration is handled by deploy.sh using fly.toml files
 variable "infrastructure_apps" {
-  description = "Configuration for infrastructure applications (grafana, loki, tempo, otel-collector)"
-  type = map(object({
-    image = string
-    services = optional(list(object({
-      protocol      = string
-      internal_port = number
-      ports = list(object({
-        port     = number
-        handlers = list(string)
-      }))
-    })))
-    volumes = optional(list(object({
-      path    = string
-      size_gb = optional(number)
-    })))
-    env = optional(map(string))
-  }))
-  default = {
-    grafana = {
-      image = "grafana/grafana:11.2.0"
-      services = [
-        {
-          protocol      = "tcp"
-          internal_port = 3010
-          ports = [
-            {
-              port     = 443
-              handlers = ["tls", "http"]
-            }
-          ]
-        }
-      ]
-      volumes = [
-        {
-          path    = "/var/lib/grafana"
-          size_gb = 10
-        }
-      ]
-    }
-    loki = {
-      image = "grafana/loki:3.0.0"
-      volumes = [
-        {
-          path    = "/var/lib/loki"
-          size_gb = 10
-        }
-      ]
-    }
-    tempo = {
-      image = "grafana/tempo:2.5.0"
-      volumes = [
-        {
-          path    = "/var/lib/tempo"
-          size_gb = 10
-        }
-      ]
-    }
-    otel-collector = {
-      image = "otel/opentelemetry-collector:0.108.0"
-    }
-  }
+  description = "List of infrastructure application names to create (machines deployed via deploy.sh)"
+  type        = set(string)
+  default = [
+    "grafana",
+    "loki", 
+    "tempo",
+    "otel-collector",
+    "prometheus"
+  ]
 }
 
 

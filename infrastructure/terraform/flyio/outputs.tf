@@ -14,30 +14,6 @@ output "ai_gateway_hostname" {
   value       = "${fly_app.ai_gateway.name}.fly.dev"
 }
 
-output "ai_gateway_machines" {
-  description = "AI Gateway machine information"
-  value = merge(
-    {
-      for idx, machine in fly_machine.ai_gateway : idx => {
-        id     = machine.id
-        name   = machine.name
-        region = machine.region
-        type   = "standard"
-      }
-    },
-    {
-      performance = {
-        id     = fly_machine.ai_gateway_performance.id
-        name   = fly_machine.ai_gateway_performance.name
-        region = fly_machine.ai_gateway_performance.region
-        type   = "performance-4x"
-        cpus   = fly_machine.ai_gateway_performance.cpus
-        memory = "${fly_machine.ai_gateway_performance.memorymb}MB"
-      }
-    }
-  )
-}
-
 # Infrastructure applications outputs
 output "infrastructure_apps" {
   description = "Infrastructure application information"
@@ -50,21 +26,11 @@ output "infrastructure_apps" {
   }
 }
 
-output "infrastructure_machines" {
-  description = "Infrastructure machine information"
-  value = {
-    for app_name, machine in fly_machine.infrastructure_machines : app_name => {
-      id     = machine.id
-      name   = machine.name
-      region = machine.region
-    }
-  }
-}
+# Infrastructure machines are managed by deploy.sh using fly.toml files
+# Machine information can be retrieved using: flyctl machines list --app <app-name>
 
 # Volumes output removed - volumes need to be managed manually
 # due to deprecated GraphQL API in Terraform provider
-
-
 
 # Summary outputs
 output "all_applications" {
@@ -88,6 +54,7 @@ output "all_applications" {
         id       = app.id
         hostname = "${app.name}.fly.dev"
         type     = "infrastructure"
+        note     = "Machines managed by deploy.sh"
       }
     }
   )
