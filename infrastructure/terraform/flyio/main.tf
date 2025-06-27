@@ -54,6 +54,36 @@ resource "fly_machine" "ai_gateway" {
   env = var.ai_gateway_env_vars
 }
 
+# High-performance AI Gateway machine with Performance 4x and 8GB memory
+resource "fly_machine" "ai_gateway_performance" {
+  app      = fly_app.ai_gateway.name
+  region   = var.primary_region
+  name     = "${var.ai_gateway_app_name}-performance"
+  image    = var.ai_gateway_image
+  cpus     = 4
+  memorymb = 8192
+  cputype  = "performance"
+
+  services = [
+    {
+      ports = [
+        {
+          port     = 443
+          handlers = ["tls", "http"]
+        },
+        {
+          port     = 80
+          handlers = ["http"]
+        }
+      ]
+      protocol      = "tcp"
+      internal_port = 8080
+    }
+  ]
+
+  env = var.ai_gateway_env_vars
+}
+
 # Infrastructure Applications
 resource "fly_app" "infrastructure_apps" {
   for_each = var.infrastructure_apps
@@ -82,38 +112,4 @@ resource "fly_machine" "infrastructure_machines" {
   env = try(each.value.env, {})
 }
 
-# Application-specific apps (API, Web, Web Admin)
-resource "fly_app" "application_apps" {
-  for_each = var.application_apps
-  
-  name = "helicone-${each.key}"
-  org  = var.fly_org
-}
-
-resource "fly_machine" "application_machines" {
-  for_each = var.application_apps
-  
-  app    = fly_app.application_apps[each.key].name
-  region = var.primary_region
-  name   = "${fly_app.application_apps[each.key].name}-1"
-  image  = each.value.image
-
-  services = [
-    {
-      ports = [
-        {
-          port     = 443
-          handlers = ["tls", "http"]
-        },
-        {
-          port     = 80
-          handlers = ["http"]
-        }
-      ]
-      protocol      = "tcp"
-      internal_port = each.value.internal_port
-    }
-  ]
-
-  env = try(each.value.env, {})
-} 
+ 

@@ -16,13 +16,26 @@ output "ai_gateway_hostname" {
 
 output "ai_gateway_machines" {
   description = "AI Gateway machine information"
-  value = {
-    for idx, machine in fly_machine.ai_gateway : idx => {
-      id     = machine.id
-      name   = machine.name
-      region = machine.region
+  value = merge(
+    {
+      for idx, machine in fly_machine.ai_gateway : idx => {
+        id     = machine.id
+        name   = machine.name
+        region = machine.region
+        type   = "standard"
+      }
+    },
+    {
+      performance = {
+        id     = fly_machine.ai_gateway_performance.id
+        name   = fly_machine.ai_gateway_performance.name
+        region = fly_machine.ai_gateway_performance.region
+        type   = "performance-4x"
+        cpus   = fly_machine.ai_gateway_performance.cpus
+        memory = "${fly_machine.ai_gateway_performance.memorymb}MB"
+      }
     }
-  }
+  )
 }
 
 # Infrastructure applications outputs
@@ -51,28 +64,7 @@ output "infrastructure_machines" {
 # Volumes output removed - volumes need to be managed manually
 # due to deprecated GraphQL API in Terraform provider
 
-# Application apps outputs
-output "application_apps" {
-  description = "Application service information"
-  value = {
-    for app_name, app in fly_app.application_apps : app_name => {
-      name     = app.name
-      id       = app.id
-      hostname = "${app.name}.fly.dev"
-    }
-  }
-}
 
-output "application_machines" {
-  description = "Application machine information"
-  value = {
-    for app_name, machine in fly_machine.application_machines : app_name => {
-      id     = machine.id
-      name   = machine.name
-      region = machine.region
-    }
-  }
-}
 
 # Summary outputs
 output "all_applications" {
@@ -84,6 +76,10 @@ output "all_applications" {
         id       = fly_app.ai_gateway.id
         hostname = "${fly_app.ai_gateway.name}.fly.dev"
         type     = "main"
+        machines = {
+          standard = var.ai_gateway_instances
+          performance = 1
+        }
       }
     },
     {
@@ -92,14 +88,6 @@ output "all_applications" {
         id       = app.id
         hostname = "${app.name}.fly.dev"
         type     = "infrastructure"
-      }
-    },
-    {
-      for app_name, app in fly_app.application_apps : app_name => {
-        name     = app.name
-        id       = app.id
-        hostname = "${app.name}.fly.dev"
-        type     = "application"
       }
     }
   )
@@ -110,8 +98,5 @@ output "application_urls" {
   value = {
     ai_gateway = "https://${fly_app.ai_gateway.name}.fly.dev"
     grafana    = "https://helicone-grafana.fly.dev"
-    applications = {
-      for app_name, app in fly_app.application_apps : app_name => "https://${app.name}.fly.dev"
-    }
   }
 } 

@@ -117,39 +117,7 @@ variable "infrastructure_apps" {
   }
 }
 
-# Application Applications Configuration (API, Web, Web Admin)
-variable "application_apps" {
-  description = "Configuration for application-specific services (api, web, web-admin)"
-  type = map(object({
-    image         = string
-    internal_port = number
-    env           = optional(map(string))
-  }))
-  default = {
-    api = {
-      image         = "helicone/helicone-api:latest"
-      internal_port = 3000
-      env = {
-        NODE_ENV = "production"
-      }
-    }
-    web = {
-      image         = "helicone/helicone-web:latest"
-      internal_port = 3000
-      env = {
-        NODE_ENV = "production"
-      }
-    }
-    web-admin = {
-      image         = "helicone/helicone-web-admin:latest"
-      internal_port = 3000
-      env = {
-        NODE_ENV   = "production"
-        ADMIN_MODE = "true"
-      }
-    }
-  }
-}
+
 
 # Common tags
 variable "common_tags" {
