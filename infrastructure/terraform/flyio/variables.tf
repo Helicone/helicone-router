@@ -45,7 +45,7 @@ variable "ai_gateway_env_vars" {
 
 # Infrastructure Applications Configuration
 variable "infrastructure_apps" {
-  description = "Configuration for infrastructure applications (grafana, loki, tempo, redis, otel-collector)"
+  description = "Configuration for infrastructure applications (grafana, loki, tempo, otel-collector)"
   type = map(object({
     image = string
     services = optional(list(object({
@@ -98,15 +98,6 @@ variable "infrastructure_apps" {
       volumes = [
         {
           path    = "/var/lib/tempo"
-          size_gb = 10
-        }
-      ]
-    }
-    redis = {
-      image = "flyio/redis:6.2.6"
-      volumes = [
-        {
-          path    = "/data"
           size_gb = 10
         }
       ]
