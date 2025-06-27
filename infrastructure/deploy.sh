@@ -2,25 +2,25 @@
 
 build_backend() {
   cd backend/
-  docker build -t "rockstar-api:release" .
+  docker build -t "helicone-api:release" .
   cd ..
 }
 
 build_frontend() {
   cd frontend/
-  docker build -f Dockerfile.web -t "rockstar-web:release" .
+  docker build -f Dockerfile.web -t "helicone-web:release" .
   cd ..
 }
 
 build_frontend_admin() {
   cd frontend/
-  docker build -f Dockerfile.admin -t "rockstar-web-admin:release" .
+  docker build -f Dockerfile.admin -t "helicone-web-admin:release" .
   cd ..
 }
 
 build_redis() {
   cd infrastructure/redis/
-  docker build -t "rockstar-redis:release" .
+  docker build -t "helicone-redis:release" .
   cd ../../
 }
 
@@ -29,9 +29,9 @@ help() {
   echo
   echo "Run from the root of the repo."
   echo "Available apps:"
-  echo " - rockstar-api"
-  echo " - rockstar-web"
-  echo " - rockstar-web-admin"
+  echo " - helicone-api"
+  echo " - helicone-web"
+  echo " - helicone-web-admin"
   echo " - otel-collector"
   echo " - tempo"
   echo " - loki"
@@ -58,14 +58,14 @@ if [ "$1" = "--force" ]; then
 fi
 
 case "${1:-}" in
-  rockstar-api)
+  helicone-api)
     APP_DIR="backend"
     ;;
-  rockstar-web)
+  helicone-web)
     FLY_CONFIG_FILE="fly.toml.web"
     APP_DIR="frontend"
     ;;
-  rockstar-web-admin)
+  helicone-web-admin)
     FLY_CONFIG_FILE="fly.toml.admin"
     APP_DIR="frontend"
     ;;
@@ -90,17 +90,17 @@ case "${1:-}" in
 esac
 
 case "${1:-}" in
-  rockstar-api)
+  helicone-api)
     echo "building backend"
     build_backend
     image_label=$(docker images --quiet | head -n 1)
     ;;
-  rockstar-web)
+  helicone-web)
     echo "building frontend"
     build_frontend
     image_label=$(docker images --quiet | head -n 1)
     ;;
-  rockstar-web-admin)
+  helicone-web-admin)
     echo "building frontend admin"
     build_frontend_admin
     image_label=$(docker images --quiet | head -n 1)

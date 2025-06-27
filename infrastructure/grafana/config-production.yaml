@@ -21,7 +21,7 @@ plugins = "/var/lib/grafana/plugins"
 admin_email = "tom@harmon.tech"
 
 [server]
-root_url = "https://rockstar-grafana.fly.dev/"
+root_url = "https://helicone-grafana.fly.dev/"
 
 [snapshots]
 external_enabled = false

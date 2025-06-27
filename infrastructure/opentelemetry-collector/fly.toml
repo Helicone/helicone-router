@@ -1,9 +1,9 @@
-# fly.toml app configuration file generated for rockstar-otel-collector on 2024-09-06T18:30:42-07:00
+# fly.toml app configuration file generated for helicone-otel-collector on 2024-09-06T18:30:42-07:00
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = 'rockstar-otel-collector'
+app = 'helicone-otel-collector'
 primary_region = 'sjc'
 
 [experimental]

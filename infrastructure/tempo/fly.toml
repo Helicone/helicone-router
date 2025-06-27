@@ -1,9 +1,9 @@
-# fly.toml app configuration file generated for rockstar-tempo on 2024-09-06T16:47:29-07:00
+# fly.toml app configuration file generated for helicone-tempo on 2024-09-06T16:47:29-07:00
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = 'rockstar-tempo'
+app = 'helicone-tempo'
 primary_region = 'sjc'
 
 [experimental]

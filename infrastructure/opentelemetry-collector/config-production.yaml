@@ -6,11 +6,11 @@ receivers:
 
 exporters:
   otlp:
-    endpoint: rockstar-tempo.internal:4317
+    endpoint: helicone-tempo.internal:4317
     tls:
       insecure: true
   otlphttp:
-    endpoint: http://rockstar-loki.internal:3100/otlp
+    endpoint: http://helicone-loki.internal:3100/otlp
     tls:
       insecure: true
   otlphttp/prom:

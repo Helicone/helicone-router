@@ -20,7 +20,7 @@ datasources:
     type: tempo
     access: proxy
     orgId: 1
-    url: http://rockstar-tempo.internal:3200
+    url: http://helicone-tempo.internal:3200
     basicAuth: false
     isDefault: false
     version: 1
@@ -35,7 +35,7 @@ datasources:
     type: loki
     access: proxy
     orgId: 1
-    url: http://rockstar-loki.internal:3100
+    url: http://helicone-loki.internal:3100
     basicAuth: false
     isDefault: false
     version: 1

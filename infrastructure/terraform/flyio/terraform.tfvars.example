@@ -1,0 +1,59 @@
+# Fly.io Configuration
+fly_api_token = "your-fly-api-token-here"
+fly_org       = "your-org-name"       # optional, defaults to "personal"
+primary_region = "sjc"                # optional, defaults to "sjc" (San Jose)
+
+# AI Gateway Configuration
+ai_gateway_app_name = "helicone-ai-gateway"
+ai_gateway_instances = 1
+ai_gateway_image = "helicone/ai-gateway:main"
+
+ai_gateway_vm = {
+  cpus     = 1
+  memory   = "512mb"
+  cpu_kind = "shared"
+}
+
+ai_gateway_env_vars = {
+  NODE_ENV = "production"
+  # Add other environment variables as needed
+}
+
+# Override infrastructure app configurations if needed
+# infrastructure_apps = {
+#   grafana = {
+#     image = "grafana/grafana:11.2.0"
+#     vm = {
+#       cpus     = 2
+#       memory   = "1024mb"
+#       cpu_kind = "shared"
+#     }
+#     # ... other configurations
+#   }
+# }
+
+# Override application app configurations if needed
+# application_apps = {
+#   api = {
+#     image             = "your-registry/helicone-api:v1.0.0"
+#     internal_port     = 3000
+#     health_check_path = "/health"
+#     vm = {
+#       cpus     = 2
+#       memory   = "1024mb"
+#       cpu_kind = "shared"
+#     }
+#     env = {
+#       NODE_ENV = "production"
+#       # Add other environment variables
+#     }
+#   }
+# }
+
+# Common tags
+common_tags = {
+  Project     = "helicone-ai-gateway"
+  Environment = "production"
+  ManagedBy   = "terraform"
+  Owner       = "your-team"
+} 

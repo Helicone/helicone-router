@@ -1,9 +1,9 @@
-# fly.toml app configuration file generated for rockstar-loki on 2024-09-06T17:20:31-07:00
+# fly.toml app configuration file generated for helicone-loki on 2024-09-06T17:20:31-07:00
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = 'rockstar-loki'
+app = 'helicone-loki'
 primary_region = 'sjc'
 
 [experimental]

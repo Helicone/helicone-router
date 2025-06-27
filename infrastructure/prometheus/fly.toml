@@ -2,7 +2,7 @@
 # since they still offer free metrics
 
 
-app = 'rockstar-prometheus'
+app = 'helicone-prometheus'
 primary_region = 'sjc'
 
 [experimental]
