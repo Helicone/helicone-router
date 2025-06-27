@@ -144,7 +144,7 @@ https://github.com/user-attachments/assets/dd6b6df1-0f5c-43d4-93b6-3cc751efb5e1
 
 ## ⚙️ Custom configuration
 
-### 1. Set up you environment variables
+### 1. Set up your environment variables
 
 Include your `PROVIDER_API_KEY`s in your `.env` file.
 
