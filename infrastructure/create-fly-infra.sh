@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# deploy.sh - Deploy all infrastructure services to Fly.io
-# Usage: ./deploy.sh [service_name] or ./deploy.sh all
+# create-fly-infra.sh - Apply Terraform configuration and deploy all infrastructure services to Fly.io
+# Usage: ./create-fly-infra.sh [service_name] or ./create-fly-infra.sh all
 
 set -e  # Exit on any error
 
@@ -37,11 +37,72 @@ check_flyctl() {
     fi
 }
 
+# Check if terraform is installed
+check_terraform() {
+    if ! command -v terraform &> /dev/null; then
+        log_error "terraform is not installed. Please install it first: https://developer.hashicorp.com/terraform/downloads"
+        exit 1
+    fi
+}
+
 # Check if we're authenticated with Fly.io
 check_auth() {
     if ! flyctl auth whoami &> /dev/null; then
         log_error "Not authenticated with Fly.io. Please run 'flyctl auth login' first."
         exit 1
+    fi
+}
+
+# Apply Terraform configuration
+apply_terraform() {
+    local terraform_dir="./terraform/flyio"
+    
+    log_info "Applying Terraform configuration..."
+    
+    if [ ! -d "$terraform_dir" ]; then
+        log_error "Terraform directory $terraform_dir does not exist"
+        return 1
+    fi
+    
+    # Change to terraform directory
+    cd "$terraform_dir"
+    
+    # Check if main.tf exists
+    if [ ! -f "main.tf" ]; then
+        log_error "No main.tf found in $terraform_dir"
+        cd - > /dev/null
+        return 1
+    fi
+    
+    # Initialize terraform if .terraform directory doesn't exist
+    if [ ! -d ".terraform" ]; then
+        log_info "Initializing Terraform..."
+        if ! terraform init; then
+            log_error "Failed to initialize Terraform"
+            cd - > /dev/null
+            return 1
+        fi
+    fi
+    
+    # Plan and apply terraform
+    log_info "Planning Terraform changes..."
+    if ! terraform plan -out=tfplan; then
+        log_error "Terraform plan failed"
+        cd - > /dev/null
+        return 1
+    fi
+    
+    log_info "Applying Terraform configuration..."
+    if terraform apply tfplan; then
+        log_success "Terraform configuration applied successfully"
+        # Clean up plan file
+        rm -f tfplan
+        cd - > /dev/null
+        return 0
+    else
+        log_error "Failed to apply Terraform configuration"
+        cd - > /dev/null
+        return 1
     fi
 }
 
@@ -111,7 +172,16 @@ deploy_all() {
     local temp_dir
     temp_dir=$(mktemp -d)
     
-    log_info "Starting parallel deployment of all infrastructure services..."
+    log_info "Starting infrastructure deployment..."
+    
+    # First apply Terraform configuration
+    log_info "Step 1: Applying Terraform configuration..."
+    if ! apply_terraform; then
+        log_error "Terraform apply failed. Aborting deployment."
+        return 1
+    fi
+    
+    log_info "Step 2: Starting parallel deployment of all infrastructure services..."
     
     # Start all deployments in parallel
     for i in "${!SERVICES[@]}"; do
@@ -202,7 +272,9 @@ deploy_all() {
         log_error "Failed deployments: ${failed_services[*]}"
         return 1
     else
-        log_success "All services deployed successfully in parallel! 🚀"
+        log_success "Infrastructure deployment completed successfully! 🚀"
+        log_success "✅ Terraform configuration applied"
+        log_success "✅ All $deployed_count services deployed in parallel"
         return 0
     fi
 }
@@ -243,17 +315,23 @@ show_usage() {
     done
     echo ""
     echo "Examples:"
-    echo "  $0 all           # Deploy all services in parallel"
-    echo "  $0 grafana       # Deploy only grafana"
-    echo "  $0 prometheus    # Deploy only prometheus"
-    echo "  $0 otel-collector # Deploy only otel-collector"
+    echo "  $0 all           # Apply Terraform config, then deploy all services in parallel"
+    echo "  $0 grafana       # Deploy only grafana (skips Terraform)"
+    echo "  $0 prometheus    # Deploy only prometheus (skips Terraform)"
+    echo "  $0 otel-collector # Deploy only otel-collector (skips Terraform)"
     echo ""
     echo "Features:"
+    echo "  - Terraform integration: Automatically applies Terraform configuration before service deployment"
     echo "  - Parallel deployment: All services deploy simultaneously for faster execution"
     echo "  - Progress tracking: Real-time updates on deployment status"
     echo "  - Error handling: Individual service failures won't stop other deployments"
     echo ""
-    echo "Note: All services deploy to Fly.io with their respective configurations"
+    echo "Prerequisites:"
+    echo "  - terraform: Required for infrastructure provisioning"
+    echo "  - flyctl: Required for service deployment"
+    echo "  - Authenticated with Fly.io (flyctl auth login)"
+    echo ""
+    echo "Note: When deploying 'all', Terraform configuration is applied first from terraform/flyio/"
 }
 
 # Main script execution
@@ -266,6 +344,7 @@ main() {
     
     # Pre-flight checks
     check_flyctl
+    check_terraform
     check_auth
     
     local current_user
