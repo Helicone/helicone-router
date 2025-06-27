@@ -644,7 +644,7 @@ impl
 impl
     TryConvertError<
         crate::endpoints::bedrock::converse::ConverseError,
-        async_openai::error::ApiError,
+        async_openai::error::WrappedError,
     > for BedrockConverter
 {
     type Error = MapperError;
@@ -653,14 +653,16 @@ impl
         &self,
         resp_parts: &Parts,
         _value: crate::endpoints::bedrock::converse::ConverseError,
-    ) -> Result<async_openai::error::ApiError, Self::Error> {
+    ) -> Result<async_openai::error::WrappedError, Self::Error> {
         let kind = super::openai::get_error_type(resp_parts);
         let code = super::openai::get_error_code(resp_parts);
-        let error = async_openai::error::ApiError {
-            message: kind.clone(),
-            code,
-            param: None,
-            r#type: Some(kind),
+        let error = async_openai::error::WrappedError {
+            error: async_openai::error::ApiError {
+                message: kind.clone(),
+                code,
+                param: None,
+                r#type: Some(kind),
+            },
         };
         Ok(error)
     }

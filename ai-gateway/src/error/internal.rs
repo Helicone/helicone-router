@@ -8,7 +8,10 @@ use tracing::error;
 use super::ErrorMetric;
 use crate::{
     endpoints::ApiEndpoint,
-    error::{api::ErrorResponse, mapper::MapperErrorMetric},
+    error::{
+        api::{ErrorDetails, ErrorResponse},
+        mapper::MapperErrorMetric,
+    },
     types::{json::Json, provider::InferenceProvider},
 };
 
@@ -75,10 +78,12 @@ impl IntoResponse for InternalError {
         (
             StatusCode::INTERNAL_SERVER_ERROR,
             Json(ErrorResponse {
-                message: self.to_string(),
-                r#type: Some("server_error".to_string()),
-                param: None,
-                code: None,
+                error: ErrorDetails {
+                    message: self.to_string(),
+                    r#type: Some("server_error".to_string()),
+                    param: None,
+                    code: None,
+                },
             }),
         )
             .into_response()

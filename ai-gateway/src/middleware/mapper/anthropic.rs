@@ -749,7 +749,7 @@ impl
 impl
     TryConvertError<
         crate::endpoints::anthropic::messages::AnthropicApiError,
-        async_openai::error::ApiError,
+        async_openai::error::WrappedError,
     > for AnthropicConverter
 {
     type Error = MapperError;
@@ -757,15 +757,17 @@ impl
         &self,
         resp_parts: &Parts,
         value: crate::endpoints::anthropic::messages::AnthropicApiError,
-    ) -> Result<async_openai::error::ApiError, Self::Error> {
+    ) -> Result<async_openai::error::WrappedError, Self::Error> {
         tracing::info!("converting anthropic error");
         let r#type = super::openai::get_error_type(resp_parts);
         let code = super::openai::get_error_code(resp_parts);
-        let error = async_openai::error::ApiError {
-            message: value.error.message,
-            code,
-            param: None,
-            r#type: Some(r#type.to_string()),
+        let error = async_openai::error::WrappedError {
+            error: async_openai::error::ApiError {
+                message: value.error.message,
+                code,
+                param: None,
+                r#type: Some(r#type.to_string()),
+            },
         };
         Ok(error)
     }

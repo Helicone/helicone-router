@@ -5,6 +5,7 @@ use thiserror::Error;
 
 use super::api::ErrorResponse;
 use crate::{
+    error::api::ErrorDetails,
     middleware::mapper::openai::INVALID_REQUEST_ERROR_TYPE, types::json::Json,
 };
 
@@ -22,20 +23,24 @@ impl IntoResponse for AuthError {
             Self::MissingAuthorizationHeader => (
                 StatusCode::UNAUTHORIZED,
                 Json(ErrorResponse {
-                    message: Self::MissingAuthorizationHeader.to_string(),
-                    r#type: Some(INVALID_REQUEST_ERROR_TYPE.to_string()),
-                    param: None,
-                    code: Some("invalid_api_key".to_string()),
+                    error: ErrorDetails {
+                        message: Self::MissingAuthorizationHeader.to_string(),
+                        r#type: Some(INVALID_REQUEST_ERROR_TYPE.to_string()),
+                        param: None,
+                        code: Some("invalid_api_key".to_string()),
+                    },
                 }),
             )
                 .into_response(),
             Self::InvalidCredentials => (
                 StatusCode::UNAUTHORIZED,
                 Json(ErrorResponse {
-                    message: Self::InvalidCredentials.to_string(),
-                    r#type: Some(INVALID_REQUEST_ERROR_TYPE.to_string()),
-                    param: None,
-                    code: Some("invalid_api_key".to_string()),
+                    error: ErrorDetails {
+                        message: Self::InvalidCredentials.to_string(),
+                        r#type: Some(INVALID_REQUEST_ERROR_TYPE.to_string()),
+                        param: None,
+                        code: Some("invalid_api_key".to_string()),
+                    },
                 }),
             )
                 .into_response(),

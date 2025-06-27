@@ -37,19 +37,22 @@ async fn unauthorized() {
     let response = harness.call(request).await.unwrap();
     assert_eq!(response.status(), StatusCode::UNAUTHORIZED);
     let response_body = response.into_body().collect().await.unwrap();
-    let response_body = serde_json::from_slice::<async_openai::error::ApiError>(
-        &response_body.to_bytes(),
-    );
+    let response_body = serde_json::from_slice::<
+        async_openai::error::WrappedError,
+    >(&response_body.to_bytes());
     assert!(
         response_body.is_ok(),
         "should be able to deserialize error json into openai error format"
     );
     let response_body = response_body.unwrap();
     assert_eq!(
-        response_body.r#type,
+        response_body.error.r#type,
         Some("invalid_request_error".to_string())
     );
-    assert_eq!(response_body.code, Some("invalid_api_key".to_string()));
+    assert_eq!(
+        response_body.error.code,
+        Some("invalid_api_key".to_string())
+    );
 }
 
 #[tokio::test]
@@ -81,17 +84,17 @@ async fn invalid_request_body() {
     let response = harness.call(request).await.unwrap();
     assert_eq!(response.status(), StatusCode::BAD_REQUEST);
     let response_body = response.into_body().collect().await.unwrap();
-    let response_body = serde_json::from_slice::<async_openai::error::ApiError>(
-        &response_body.to_bytes(),
-    );
+    let response_body = serde_json::from_slice::<
+        async_openai::error::WrappedError,
+    >(&response_body.to_bytes());
     assert!(
         response_body.is_ok(),
         "should be able to deserialize error json into openai error format"
     );
     let response_body = response_body.unwrap();
     assert_eq!(
-        response_body.r#type,
+        response_body.error.r#type,
         Some("invalid_request_error".to_string())
     );
-    assert_eq!(response_body.code, None);
+    assert_eq!(response_body.error.code, None);
 }

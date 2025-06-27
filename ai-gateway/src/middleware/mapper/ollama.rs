@@ -80,8 +80,8 @@ impl
 
 impl
     TryConvertError<
-        async_openai::error::ApiError,
-        async_openai::error::ApiError,
+        async_openai::error::WrappedError,
+        async_openai::error::WrappedError,
     > for OllamaConverter
 {
     type Error = MapperError;
@@ -89,8 +89,8 @@ impl
     fn try_convert_error(
         &self,
         _resp_parts: &Parts,
-        value: async_openai::error::ApiError,
-    ) -> Result<async_openai::error::ApiError, Self::Error> {
+        value: async_openai::error::WrappedError,
+    ) -> Result<async_openai::error::WrappedError, Self::Error> {
         Ok(value)
     }
 }

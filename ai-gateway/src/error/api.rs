@@ -1,7 +1,7 @@
 use axum_core::response::IntoResponse;
 use displaydoc::Display;
 use http::StatusCode;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use utoipa::ToSchema;
 
@@ -26,9 +26,14 @@ pub enum ApiError {
     Box(#[from] Box<dyn std::error::Error + Send + Sync>),
 }
 
-/// This type is intended to mirror the error type returned by the `OpenAI` API.
-#[derive(Debug, Serialize, ToSchema)]
+#[derive(Debug, Deserialize, Serialize, ToSchema)]
 pub struct ErrorResponse {
+    pub error: ErrorDetails,
+}
+
+/// This type is intended to mirror the error type returned by the `OpenAI` API.
+#[derive(Debug, Deserialize, Serialize, ToSchema)]
+pub struct ErrorDetails {
     pub message: String,
     pub r#type: Option<String>,
     pub param: Option<String>,
@@ -46,10 +51,12 @@ impl IntoResponse for ApiError {
                 (
                     StatusCode::INTERNAL_SERVER_ERROR,
                     Json(ErrorResponse {
-                        message: "Internal server error".to_string(),
-                        r#type: Some(SERVER_ERROR_TYPE.to_string()),
-                        param: None,
-                        code: None,
+                        error: ErrorDetails {
+                            message: "Internal server error".to_string(),
+                            r#type: Some(SERVER_ERROR_TYPE.to_string()),
+                            param: None,
+                            code: None,
+                        },
                     }),
                 )
                     .into_response()

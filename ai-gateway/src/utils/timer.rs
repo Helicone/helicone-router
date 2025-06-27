@@ -90,9 +90,6 @@ where
         let req_start_dt = Utc::now();
         req.extensions_mut().insert(start_time);
         req.extensions_mut().insert(req_start_dt);
-        tracing::info!(
-            "adding start time and request start time to req extensions"
-        );
         self.inner.call(req)
     }
 }

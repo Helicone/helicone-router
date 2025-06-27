@@ -19,7 +19,7 @@ impl crate::endpoints::Endpoint for GenerateContents {
     type RequestBody = CreateChatCompletionRequestGemini;
     type ResponseBody = CreateChatCompletionResponse;
     type StreamResponseBody = CreateChatCompletionStreamResponse;
-    type ErrorResponseBody = async_openai::error::ApiError;
+    type ErrorResponseBody = async_openai::error::WrappedError;
 }
 
 #[derive(Clone, Serialize, Default, Debug, Deserialize, PartialEq)]

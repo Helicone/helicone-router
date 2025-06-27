@@ -5,7 +5,7 @@ use thiserror::Error;
 use tracing::debug;
 
 use crate::{
-    error::api::ErrorResponse,
+    error::api::{ErrorDetails, ErrorResponse},
     middleware::mapper::openai::INVALID_REQUEST_ERROR_TYPE,
     types::{json::Json, provider::InferenceProvider},
 };
@@ -43,30 +43,36 @@ impl IntoResponse for InvalidRequestError {
             Self::NotFound(_) | Self::RouterIdNotFound(_) => (
                 StatusCode::NOT_FOUND,
                 Json(ErrorResponse {
-                    message,
-                    r#type: Some(INVALID_REQUEST_ERROR_TYPE.to_string()),
-                    param: None,
-                    code: None,
+                    error: ErrorDetails {
+                        message,
+                        r#type: Some(INVALID_REQUEST_ERROR_TYPE.to_string()),
+                        param: None,
+                        code: None,
+                    },
                 }),
             )
                 .into_response(),
             Self::Provider4xxError(status) => (
                 status,
                 Json(ErrorResponse {
-                    message: self.to_string(),
-                    r#type: Some(INVALID_REQUEST_ERROR_TYPE.to_string()),
-                    param: None,
-                    code: None,
+                    error: ErrorDetails {
+                        message,
+                        r#type: Some(INVALID_REQUEST_ERROR_TYPE.to_string()),
+                        param: None,
+                        code: None,
+                    },
                 }),
             )
                 .into_response(),
             _ => (
                 StatusCode::BAD_REQUEST,
                 Json(ErrorResponse {
-                    message,
-                    r#type: Some(INVALID_REQUEST_ERROR_TYPE.to_string()),
-                    param: None,
-                    code: None,
+                    error: ErrorDetails {
+                        message,
+                        r#type: Some(INVALID_REQUEST_ERROR_TYPE.to_string()),
+                        param: None,
+                        code: None,
+                    },
                 }),
             )
                 .into_response(),
