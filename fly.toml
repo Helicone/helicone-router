@@ -2,7 +2,7 @@ app = "helicone-ai-gateway"
 primary_region = "iad"
 
 [build]
-  image = "helicone/ai-gateway:main"
+  image = "helicone/ai-gateway:latest"
 
 [http_service]
   internal_port = 8080
@@ -12,9 +12,9 @@ primary_region = "iad"
   min_machines_running = 1
 
 [[vm]]
-  cpu_kind = "shared"
-  cpus = 1
-  memory = "512mb"
+  cpu_kind = "performance"
+  cpus = 4
+  memory = "8gb"
 
 [[http_service.checks]]
   grace_period = "5s"
@@ -39,8 +39,8 @@ routers:
           - openai
           - anthropic
 
-helicone-observability:
-  enable-auth: true
+helicone:
+  authentication: true
 '''
 
 # [[files]]
