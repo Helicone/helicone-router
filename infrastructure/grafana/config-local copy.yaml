@@ -6,7 +6,7 @@ data = "/var/lib/grafana"
 plugins = "/var/lib/grafana/plugins"
 
 [server]
-root_url = "https://helicone-grafana.fly.dev"
+root_url = "https://localhost"
 http_port = 3010
 
 [snapshots]

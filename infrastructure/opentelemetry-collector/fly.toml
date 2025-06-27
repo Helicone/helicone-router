@@ -10,7 +10,7 @@ primary_region = 'sjc'
   cmd = ['--config=/etc/config.yaml']
 
 [build]
-  image = 'otel/opentelemetry-collector:0.108.0'
+  image = 'otel/opentelemetry-collector:0.127.0'
 
 [[services]]
   protocol = 'tcp'

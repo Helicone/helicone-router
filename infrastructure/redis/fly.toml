@@ -7,7 +7,7 @@ app = 'helicone-redis'
 primary_region = 'sjc'
 
 [build]
-  image = "flyio/redis:6.2.6"
+  image = "flyio/redis:8.0.2-alpine"
 
 [mounts]
   source = 'redis_storage_1'

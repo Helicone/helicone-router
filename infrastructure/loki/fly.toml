@@ -10,7 +10,7 @@ primary_region = 'sjc'
   cmd = ['-config.file=/etc/loki.yaml']
 
 [build]
-  image = 'grafana/loki:3.0.0'
+  image = 'grafana/loki:3.5.0'
 
 [[mounts]]
   source = 'loki_storage_1'

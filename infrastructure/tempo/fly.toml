@@ -10,7 +10,7 @@ primary_region = 'sjc'
   cmd = ['-config.file=/etc/tempo.yaml']
 
 [build]
-  image = 'grafana/tempo:2.5.0'
+  image = 'grafana/tempo:2.7.2'
 
 [[mounts]]
   source = 'tempo_storage_1'

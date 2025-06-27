@@ -9,7 +9,7 @@ primary_region = 'sjc'
   cmd = ['--config.file=/etc/config.yaml', '--web.enable-remote-write-receiver', '--enable-feature=exemplar-storage']
 
 [build]
-  image = 'prom/prometheus:v2.54.1'
+  image = 'prom/prometheus:v3.4.1'
 
 [[services]]
   protocol = 'tcp'
