@@ -441,7 +441,7 @@ where
     }
 }
 
-fn setup_moka_cache(capacity: &usize, metrics: Metrics) -> Option<MokaManager> {
+fn setup_moka_cache(capacity: usize, metrics: Metrics) -> MokaManager {
     let listener = move |_k, _v, cause| {
         use moka::notification::RemovalCause;
         // RemovalCause::Size means that the cache reached its maximum
@@ -455,15 +455,14 @@ fn setup_moka_cache(capacity: &usize, metrics: Metrics) -> Option<MokaManager> {
     };
 
     let cache = Cache::builder()
-        .max_capacity(u64::try_from(*capacity).unwrap_or(u64::MAX))
+        .max_capacity(u64::try_from(capacity).unwrap_or(u64::MAX))
         .eviction_listener(listener)
         .build();
-    Some(MokaManager::new(cache))
+    MokaManager::new(cache)
 }
 
-fn setup_redis_cache(host_url: &String) -> Option<RedisCacheManager> {
-    let cache = RedisCacheManager::new(host_url.clone());
-    Some(cache)
+fn setup_redis_cache(host_url: String) -> RedisCacheManager {
+    RedisCacheManager::new(host_url)
 }
 
 fn setup_cache(
@@ -485,18 +484,18 @@ fn setup_cache(
         return None;
     }
 
-    let manager: Option<InternalCacheManager> = match &config.cache_store {
+    let manager: InternalCacheManager = match &config.cache_store {
         CacheStore::InMemory { max_size } => {
             tracing::info!("Using in-memory cache");
-            let moka_manager = setup_moka_cache(&max_size, metrics);
-            moka_manager.map(InternalCacheManager::Moka)
+            let moka_manager = setup_moka_cache(*max_size, metrics);
+            InternalCacheManager::Moka(moka_manager)
         }
         CacheStore::Redis { host_url } => {
             tracing::info!("Using redis cache");
-            let redis_manager = setup_redis_cache(&host_url);
-            redis_manager.map(InternalCacheManager::Redis)
+            let redis_manager = setup_redis_cache(host_url.clone());
+            InternalCacheManager::Redis(redis_manager)
         }
     };
 
-    manager
+    Some(manager)
 }

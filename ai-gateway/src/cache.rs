@@ -22,6 +22,7 @@ struct Store {
 }
 
 impl RedisCacheManager {
+    #[must_use]
     pub fn new(url: String) -> Self {
         let client = Client::open(url).unwrap();
         let pool = Pool::builder().build(client).unwrap();
