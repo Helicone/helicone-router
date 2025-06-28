@@ -9,10 +9,7 @@ use sqlx::{
 };
 use tracing::{debug, error, info, warn};
 
-use crate::{
-    error::{init::InitError, runtime::RuntimeError},
-    types::secret::Secret,
-};
+use crate::error::{init::InitError, runtime::RuntimeError};
 
 const DEFAULT_DATABASE_URL: &str =
     "postgres://postgres:postgres@localhost:54322/postgres";
@@ -111,13 +108,10 @@ impl crate::tests::TestDefault for DatabaseConfig {
 /// This service runs in the background and can be registered with meltdown.
 #[derive(Debug, Clone)]
 pub struct DatabaseListener {
-    config: DatabaseConfig,
     pool: PgPool,
 }
 
 impl DatabaseListener {
-    /// Creates a new database listener service.
-    #[must_use]
     pub async fn new(config: DatabaseConfig) -> Result<Self, InitError> {
         let pool = PgPoolOptions::new()
             .max_connections(config.max_connections)
@@ -131,7 +125,7 @@ impl DatabaseListener {
                 error!(error = %e, "failed to create database pool");
                 InitError::DatabaseConnection(e)
             })?;
-        Ok(Self { config, pool })
+        Ok(Self { pool })
     }
 
     /// Runs the database listener service.
@@ -173,7 +167,7 @@ impl DatabaseListener {
                     );
 
                     // Handle the notification here
-                    self.handle_notification(notification).await;
+                    Self::handle_notification(&notification);
                 }
                 Err(e) => {
                     error!(error = %e, "error receiving database notification");
@@ -186,10 +180,7 @@ impl DatabaseListener {
     }
 
     /// Handles incoming database notifications.
-    async fn handle_notification(
-        &self,
-        notification: sqlx::postgres::PgNotification,
-    ) {
+    fn handle_notification(notification: &sqlx::postgres::PgNotification) {
         // Customize this method to handle different types of notifications
         info!(
             channel = notification.channel(),
@@ -200,7 +191,7 @@ impl DatabaseListener {
         // Example: You could dispatch to different handlers based on the
         // channel
         let channel = notification.channel();
-        match channel.as_ref() {
+        match channel {
             "ai_gateway_notifications" => {
                 // Handle general notifications
                 debug!(
