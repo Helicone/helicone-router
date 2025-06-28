@@ -19,7 +19,7 @@ use tower::{ServiceBuilder, buffer::BufferLayer, util::BoxCloneService};
 use tower_http::{
     ServiceBuilderExt, add_extension::AddExtension,
     auth::AsyncRequireAuthorizationLayer, catch_panic::CatchPanicLayer,
-    normalize_path::NormalizePathLayer,
+    compression::CompressionLayer, normalize_path::NormalizePathLayer,
     sensitive_headers::SetSensitiveHeadersLayer, trace::TraceLayer,
 };
 use tracing::{Level, info};
@@ -45,7 +45,7 @@ use crate::{
     types::provider::ProviderKeys,
     utils::{
         catch_panic::PanicResponder, handle_error::ErrorHandlerLayer,
-        health_check::HealthCheckLayer,
+        health_check::HealthCheckLayer, timer::TimerLayer,
     },
 };
 
@@ -238,6 +238,12 @@ impl App {
 
         let router = MetaRouter::new(app_state.clone()).await?;
 
+        let compression_layer = CompressionLayer::new()
+            .gzip(true)
+            .br(true)
+            .deflate(true)
+            .zstd(true);
+
         // global middleware is applied here
         let service_stack = ServiceBuilder::new()
             .layer(CatchPanicLayer::custom(PanicResponder))
@@ -258,7 +264,9 @@ impl App {
             .propagate_x_request_id()
             .layer(NormalizePathLayer::trim_trailing_slash())
             .layer(metrics::request_count::Layer::new(app_state.clone()))
+            .layer(compression_layer)
             .layer(HealthCheckLayer::new())
+            .layer(TimerLayer::new())
             .layer(ErrorHandlerLayer::new(app_state.clone()))
             // NOTE: not sure if there is perf impact from Auth layer coming
             // before buffer layer, but required due to Clone bound.

@@ -1,4 +1,4 @@
-use bytes::{BufMut, Bytes, BytesMut};
+use bytes::Bytes;
 use futures::StreamExt;
 use http_body_util::BodyExt;
 use reqwest::RequestBuilder;
@@ -193,11 +193,7 @@ pub(super) fn sse_stream(mut event_source: EventSource) -> SSEStream {
                                 break;
                             }
 
-                            let mut new_bytes = BytesMut::new();
-                            new_bytes.put("data: ".as_bytes());
-                            new_bytes.put(message.data.as_bytes());
-                            new_bytes.put("\n\n".as_bytes());
-                            let data = new_bytes.freeze();
+                            let data = Bytes::from(message.data);
 
                             if let Err(_e) = tx.send(Ok(data)) {
                                 // rx dropped

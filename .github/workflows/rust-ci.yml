@@ -14,7 +14,7 @@ env:
 
 jobs:
   format:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: Use nightly rustfmt
@@ -24,7 +24,7 @@ jobs:
       - name: Format
         run: cargo +nightly fmt --check
   clippy:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: print version
@@ -32,7 +32,7 @@ jobs:
       - name: Clippy
         run: cargo +stable ci-clippy
   test:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     env:
       HELICONE_API_KEY: "sk-helicone-..."
     services:
@@ -40,10 +40,6 @@ jobs:
         image: redis:8.0.2-alpine
         ports:
           - 6379:6379
-    # remove if reverting self hosted
-    concurrency:
-      group: rust-ci-test-global
-      cancel-in-progress: false
     steps:
       - uses: actions/checkout@v4
       - name: Test

@@ -4,7 +4,7 @@ use crate::utils::default_true;
 
 /// Response headers useful for additional observability.
 #[derive(Debug, Clone, Copy, Deserialize, Serialize)]
-#[serde(deny_unknown_fields, rename_all = "kebab-case")]
+#[serde(rename_all = "kebab-case")]
 pub struct ResponseHeadersConfig {
     #[serde(default = "default_true")]
     pub provider: bool,

@@ -97,9 +97,7 @@ async fn rate_limit_removes_provider_from_lb_pool() {
         let request = Request::builder()
             .method(Method::POST)
             .header("authorization", "Bearer sk-helicone-test-key")
-            .uri(
-                "http://router.helicone.com/router/default/v1/chat/completions",
-            )
+            .uri("http://router.helicone.com/router/default/chat/completions")
             .body(request_body)
             .unwrap();
         let response = harness.call(request).await.unwrap();
@@ -128,9 +126,7 @@ async fn rate_limit_removes_provider_from_lb_pool() {
         let request = Request::builder()
             .method(Method::POST)
             .header("authorization", "Bearer sk-helicone-test-key")
-            .uri(
-                "http://router.helicone.com/router/default/v1/chat/completions",
-            )
+            .uri("http://router.helicone.com/router/default/chat/completions")
             .body(request_body)
             .unwrap();
         let response = harness.call(request).await.unwrap();

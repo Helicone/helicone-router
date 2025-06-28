@@ -23,9 +23,38 @@ pub trait Endpoint {
     const PATH: &'static str;
     type RequestBody;
     type ResponseBody;
+    type ErrorResponseBody;
     /// To support streaming response body types with different
     /// concrete type than the regular response body type.
     type StreamResponseBody;
+}
+
+macro_rules! define_endpoints {
+    ($(($variant:ident, $path:literal)),* $(,)?) => {
+        #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+        pub enum EndpointRoute {
+            $($variant,)*
+        }
+
+        impl EndpointRoute {
+            #[must_use] pub const fn path(&self) -> &'static str {
+                match self {
+                    $(Self::$variant => $path,)*
+                }
+            }
+
+            #[must_use] pub fn from_path(path: &str) -> Option<Self> {
+                match path {
+                    $($path => Some(Self::$variant),)*
+                    _ => None,
+                }
+            }
+        }
+    };
+}
+
+define_endpoints! {
+    (ChatCompletions, "/chat/completions"),
 }
 
 pub trait AiRequest {
@@ -44,24 +73,9 @@ pub enum ApiEndpoint {
 
 impl ApiEndpoint {
     #[must_use]
-    pub fn new(path: &str, request_style: InferenceProvider) -> Option<Self> {
-        match request_style {
-            InferenceProvider::OpenAI => {
-                Some(Self::OpenAI(OpenAI::try_from(path).ok()?))
-            }
-            InferenceProvider::Anthropic => {
-                Some(Self::Anthropic(Anthropic::try_from(path).ok()?))
-            }
-            InferenceProvider::GoogleGemini => {
-                Some(Self::Google(Google::try_from(path).ok()?))
-            }
-            InferenceProvider::Ollama => {
-                Some(Self::Ollama(Ollama::try_from(path).ok()?))
-            }
-            InferenceProvider::Bedrock => {
-                Some(Self::Bedrock(Bedrock::try_from(path).ok()?))
-            }
-        }
+    pub fn new(path: &str) -> Option<Self> {
+        let endpoint_route = EndpointRoute::from_path(path)?;
+        Some(Self::OpenAI(OpenAI::try_from(&endpoint_route).ok()?))
     }
 
     pub fn mapped(
@@ -71,6 +85,9 @@ impl ApiEndpoint {
         match (source_endpoint, target_provider) {
             (Self::OpenAI(source), InferenceProvider::Anthropic) => {
                 Ok(Self::Anthropic(Anthropic::from(source)))
+            }
+            (Self::OpenAI(source), InferenceProvider::OpenAI) => {
+                Ok(Self::OpenAI(source))
             }
             (Self::OpenAI(source), InferenceProvider::GoogleGemini) => {
                 Ok(Self::Google(Google::from(source)))

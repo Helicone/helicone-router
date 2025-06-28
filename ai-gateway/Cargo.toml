@@ -3,7 +3,7 @@ name = "ai-gateway"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
-repository = "https://github.com/Helicone/helicone-router"
+repository = "https://github.com/Helicone/ai-gateway"
 default-run = "ai-gateway"
 description = "A high-performance LLM proxy router."
 homepage = "https://docs.helicone.ai/ai-gateway"
@@ -79,7 +79,7 @@ tokio-tungstenite = { workspace = true }
 tokio-util = { workspace = true }
 tower = { workspace = true, features = ['full'] }
 tower_governor = { workspace = true, features = [] }
-tower-http = { workspace = true, features = ['default', 'auth', 'catch-panic', 'add-extension', 'normalize-path', 'request-id', 'trace', 'util', 'sensitive-headers'] }
+tower-http = { workspace = true, features = [ 'default', 'auth', 'catch-panic', 'add-extension', 'normalize-path', 'request-id', 'trace', 'util', 'sensitive-headers', 'compression-br', 'compression-deflate', 'compression-gzip', 'compression-zstd', 'decompression-br', 'decompression-deflate', 'decompression-gzip', 'decompression-zstd' ] }
 tower-otel-http-metrics = { workspace = true }
 tracing = { workspace = true }
 tracing-opentelemetry.workspace = true
@@ -130,10 +130,6 @@ required-features = ["testing"]
 
 [[test]]
 name = "rate_limit"
-required-features = ["testing"]
-
-[[test]]
-name = "passthrough"
 required-features = ["testing"]
 
 [[test]]

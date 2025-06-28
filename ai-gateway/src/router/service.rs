@@ -95,9 +95,6 @@ impl Router {
                 .layer(buffer::BufferLayer::new(BUFFER_SIZE))
                 .layer(rl_layer.clone())
                 .layer(request_context_layer.clone())
-                // other middleware: caching, etc, etc
-                // will be added here as well from the router config
-                // .map_err(|e| crate::error::api::Error::Box(e))
                 .service(balancer);
 
             inner.insert(*endpoint_type, BoxCloneService::new(service_stack));
@@ -109,9 +106,6 @@ impl Router {
             .layer(rl_layer)
             .layer(cache_layer)
             .layer(request_context_layer)
-            // other middleware: caching, etc, etc
-            // will be added here as well from the router config
-            // .map_err(|e| crate::error::api::Error::Box(e))
             .service(direct_proxy_dispatcher);
 
         tracing::info!(id = %id, "router created");
@@ -166,8 +160,7 @@ impl tower::Service<crate::types::request::Request> for Router {
             };
         };
 
-        let api_endpoint =
-            ApiEndpoint::new(extracted_path_and_query.path(), SDK);
+        let api_endpoint = ApiEndpoint::new(extracted_path_and_query.path());
         match api_endpoint {
             Some(api_endpoint) => {
                 let endpoint_type = api_endpoint.endpoint_type();

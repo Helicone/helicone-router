@@ -65,13 +65,11 @@ impl BodyReader {
             }
             b
         });
-        let inner = axum_core::body::Body::from_stream(s);
-        let size_hint = inner.size_hint();
-        (
-            inner,
-            BodyReader::new(rx, tfft_tx, size_hint, append_newlines),
-            tfft_rx,
-        )
+        let client_response = axum_core::body::Body::from_stream(s);
+        let size_hint = client_response.size_hint();
+        let response_body_for_logger =
+            BodyReader::new(rx, tfft_tx, size_hint, append_newlines);
+        (client_response, response_body_for_logger, tfft_rx)
     }
 }
 
@@ -92,8 +90,10 @@ impl hyper::body::Body for BodyReader {
                 }
 
                 if self.append_newlines {
-                    let mut new_bytes = BytesMut::from(bytes);
-                    new_bytes.put("\n".as_bytes());
+                    let mut new_bytes = BytesMut::new();
+                    new_bytes.put("data: ".as_bytes());
+                    new_bytes.put(bytes);
+                    new_bytes.put("\n\n".as_bytes());
                     Poll::Ready(Some(Ok(Frame::data(new_bytes.freeze()))))
                 } else {
                     Poll::Ready(Some(Ok(Frame::data(bytes))))

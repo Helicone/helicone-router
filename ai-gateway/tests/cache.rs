@@ -1,10 +1,11 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, time::Duration};
 
 use ai_gateway::{
     config::Config,
     tests::{TestDefault, harness::Harness, mock::MockArgs},
 };
 use http::{Method, Request, StatusCode};
+use http_body_util::BodyExt;
 use serde_json::json;
 use tower::Service;
 
@@ -27,7 +28,8 @@ fn make_request(
     let mut builder = Request::builder()
         .method(Method::POST)
         .uri(url)
-        .header("content-type", "application/json");
+        .header("content-type", "application/json")
+        .header("authorization", "Bearer sk-helicone-test-key");
 
     if let Some((name, value)) = cache_control {
         builder = builder.header(name, value);
@@ -40,8 +42,8 @@ fn make_request(
 
 /// Test that requests are cached when enabled globally via config.
 /// This should check that requests on any of the three possible URLs
-/// (`/ai/v1/chat/completions`, `/openai/v1/chat/completions`,
-/// `/router/default/v1/chat/completions`) are cached. Start with the default
+/// (`/ai/chat/completions`, `/openai/v1/chat/completions`,
+/// `/router/default/chat/completions`) are cached. Start with the default
 /// router and then expand the test cases.
 ///
 /// In order to assert that the request is cached, we need to make sure that
@@ -51,26 +53,27 @@ fn make_request(
 #[tokio::test]
 #[serial_test::serial(default_mock)]
 async fn cache_enabled_globally() {
-    let mut config = Config::test_default();
-    config.helicone.authentication = false;
+    let config = Config::test_default();
 
     let mock_args = MockArgs::builder()
         .stubs(HashMap::from([
             ("success:openai:chat_completion_cacheable", 3.into()),
-            ("success:minio:upload_request", 0.into()),
-            ("success:jawn:log_request", 0.into()),
+            ("success:minio:upload_request", 6.into()),
+            ("success:jawn:sign_s3_url", 6.into()),
+            ("success:jawn:log_request", 6.into()),
         ]))
         .build();
 
     let mut harness = Harness::builder()
         .with_config(config)
         .with_mock_args(mock_args)
+        .with_mock_auth()
         .build()
         .await;
 
     // First request - should be a cache miss
     let request = make_request(
-        "http://router.helicone.com/router/default/v1/chat/completions",
+        "http://router.helicone.com/router/default/chat/completions",
         Some(("cache-control", "max-age=3600")),
     );
     let response = harness.call(request).await.unwrap();
@@ -80,10 +83,11 @@ async fn cache_enabled_globally() {
         "MISS",
         "First request should be a cache miss"
     );
+    let _response_body = response.into_body().collect().await.unwrap();
 
     // Second request - should be a cache hit
     let request = make_request(
-        "http://router.helicone.com/router/default/v1/chat/completions",
+        "http://router.helicone.com/router/default/chat/completions",
         Some(("cache-control", "max-age=3600")),
     );
     let response = harness.call(request).await.unwrap();
@@ -93,6 +97,7 @@ async fn cache_enabled_globally() {
         "HIT",
         "Second request should be a cache hit"
     );
+    let _response_body = response.into_body().collect().await.unwrap();
 
     // Test passthrough endpoints
     // Test /openai/v1/chat/completions - first request should be a cache miss
@@ -108,6 +113,7 @@ async fn cache_enabled_globally() {
         "MISS",
         "First request to /openai endpoint should be a cache miss"
     );
+    let _response_body = response.into_body().collect().await.unwrap();
 
     let request = make_request(
         "http://router.helicone.com/openai/v1/chat/completions",
@@ -120,9 +126,10 @@ async fn cache_enabled_globally() {
         "HIT",
         "Second request to /openai endpoint should be a cache hit"
     );
+    let _response_body = response.into_body().collect().await.unwrap();
 
     // test unified api
-    // Test /ai/v1/chat/completions
+    // Test /ai/chat/completions
     let request = make_request(
         "http://router.helicone.com/ai/chat/completions",
         Some(("cache-control", "max-age=3600")),
@@ -134,6 +141,7 @@ async fn cache_enabled_globally() {
         "MISS",
         "First request to /ai endpoint should be a cache miss"
     );
+    let _response_body = response.into_body().collect().await.unwrap();
 
     let request = make_request(
         "http://router.helicone.com/ai/chat/completions",
@@ -146,12 +154,15 @@ async fn cache_enabled_globally() {
         "HIT",
         "Second request to /ai endpoint should be a cache hit"
     );
+    let _response_body = response.into_body().collect().await.unwrap();
+
+    tokio::time::sleep(Duration::from_millis(100)).await;
 }
 
 /// Test that requests are not cached when disabled globally via config.
 /// This should check that requests on any of the three possible URLs
-/// (`/ai/v1/chat/completions`, `/openai/v1/chat/completions`,
-/// `/router/default/v1/chat/completions`) are NOT cached. Start with the
+/// (`/ai/chat/completions`, `/openai/v1/chat/completions`,
+/// `/router/default/chat/completions`) are NOT cached. Start with the
 /// default router and then expand the test cases.
 ///
 /// In order to assert that the request is not cached, we need to
@@ -183,7 +194,7 @@ async fn cache_disabled_globally() {
     // Test default router endpoint
     // First request - should not have cache header
     let request = make_request(
-        "http://router.helicone.com/router/default/v1/chat/completions",
+        "http://router.helicone.com/router/default/chat/completions",
         Some(("cache-control", "max-age=3600")),
     );
     let response = harness.call(request).await.unwrap();
@@ -195,7 +206,7 @@ async fn cache_disabled_globally() {
 
     // Second request - should still not have cache header
     let request = make_request(
-        "http://router.helicone.com/router/default/v1/chat/completions",
+        "http://router.helicone.com/router/default/chat/completions",
         Some(("cache-control", "max-age=3600")),
     );
     let response = harness.call(request).await.unwrap();
@@ -233,7 +244,7 @@ async fn cache_disabled_globally() {
     );
 
     // Test unified api
-    // Test /ai/v1/chat/completions
+    // Test /ai/chat/completions
     let request = make_request(
         "http://router.helicone.com/ai/chat/completions",
         Some(("cache-control", "max-age=3600")),
@@ -261,8 +272,8 @@ async fn cache_disabled_globally() {
 
 /// Test that requests are cached when enabled per router via config.
 /// This should check that requests on any of the three possible URLs
-/// (`/ai/v1/chat/completions`, `/openai/v1/chat/completions`,
-/// `/router/default/v1/chat/completions`) are cached. Start with the default
+/// (`/ai/chat/completions`, `/openai/v1/chat/completions`,
+/// `/router/default/chat/completions`) are cached. Start with the default
 /// router and then expand the test cases.
 ///
 /// In order to assert that the request is cached, we need to
@@ -345,7 +356,7 @@ async fn cache_enabled_per_router() {
     // Test 1: Router with cache enabled
     // First request - should be a cache miss
     let request = make_request(
-        "http://router.helicone.com/router/cached/v1/chat/completions",
+        "http://router.helicone.com/router/cached/chat/completions",
         Some(("cache-control", "max-age=3600")),
     );
     let response = harness.call(request).await.unwrap();
@@ -358,7 +369,7 @@ async fn cache_enabled_per_router() {
 
     // Second request to same router - should be a cache hit
     let request = make_request(
-        "http://router.helicone.com/router/cached/v1/chat/completions",
+        "http://router.helicone.com/router/cached/chat/completions",
         Some(("cache-control", "max-age=3600")),
     );
     let response = harness.call(request).await.unwrap();
@@ -372,7 +383,7 @@ async fn cache_enabled_per_router() {
     // Test 2: Router without cache
     // Both requests should not have cache headers
     let request = make_request(
-        "http://router.helicone.com/router/uncached/v1/chat/completions",
+        "http://router.helicone.com/router/uncached/chat/completions",
         Some(("cache-control", "max-age=3600")),
     );
     let response = harness.call(request).await.unwrap();
@@ -384,7 +395,7 @@ async fn cache_enabled_per_router() {
 
     // Second request to uncached router
     let request = make_request(
-        "http://router.helicone.com/router/uncached/v1/chat/completions",
+        "http://router.helicone.com/router/uncached/chat/completions",
         Some(("cache-control", "max-age=3600")),
     );
     let response = harness.call(request).await.unwrap();
@@ -397,7 +408,7 @@ async fn cache_enabled_per_router() {
 
     // Test 3: Default router (no cache)
     let request = make_request(
-        "http://router.helicone.com/router/default/v1/chat/completions",
+        "http://router.helicone.com/router/default/chat/completions",
         Some(("cache-control", "max-age=3600")),
     );
     let response = harness.call(request).await.unwrap();
@@ -409,7 +420,7 @@ async fn cache_enabled_per_router() {
     );
 
     let request = make_request(
-        "http://router.helicone.com/router/default/v1/chat/completions",
+        "http://router.helicone.com/router/default/chat/completions",
         Some(("cache-control", "max-age=3600")),
     );
     let response = harness.call(request).await.unwrap();

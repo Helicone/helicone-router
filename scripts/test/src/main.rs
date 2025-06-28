@@ -120,6 +120,10 @@ async fn test(
                 "role": "system",
                 "content": "You are a helpful assistant that can answer
     questions and help with tasks."
+            },
+            {
+                "role": "user",
+                "content": "Hello, world!"
             }
         ],
         "max_tokens": 400,
@@ -144,11 +148,10 @@ async fn test(
             format!("http://localhost:8080/{}/v1/chat/completions", provider)
         }
         RequestType::UnifiedApi => {
-            "http://localhost:8080/ai/v1/chat/completions".to_string()
+            "http://localhost:8080/ai/chat/completions".to_string()
         }
         RequestType::LoadBalanced => {
-            "http://localhost:8080/router/default/v1/chat/completions"
-                .to_string()
+            "http://localhost:8080/router/default/chat/completions".to_string()
         }
     };
 

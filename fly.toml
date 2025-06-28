@@ -29,9 +29,6 @@ cmd = ["/usr/local/bin/ai-gateway", "-c", "/app/config/config.yaml"]
 [[files]]
   guest_path = "/app/config/config.yaml"
   raw_value = '''
-server:
-  address: 0.0.0.0
-  port: 8080
 
 routers:
   default:

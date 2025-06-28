@@ -58,7 +58,7 @@ async fn make_chat_request(
     let request = Request::builder()
         .method(Method::POST)
         .header("authorization", auth_header)
-        .uri("http://router.helicone.com/router/default/v1/chat/completions")
+        .uri("http://router.helicone.com/router/default/chat/completions")
         .body(request_body)
         .unwrap();
 
@@ -90,11 +90,11 @@ async fn make_chat_request_for_router(
     }))
     .unwrap();
     let uri = match router_id {
-        RouterId::Named(name) => format!(
-            "http://router.helicone.com/router/{name}/v1/chat/completions"
-        ),
+        RouterId::Named(name) => {
+            format!("http://router.helicone.com/router/{name}/chat/completions")
+        }
         RouterId::Default => {
-            "http://router.helicone.com/router/default/v1/chat/completions"
+            "http://router.helicone.com/router/default/chat/completions"
                 .to_string()
         }
     };
@@ -461,11 +461,11 @@ async fn make_chat_request_to_router(
 
     let request_body = axum_core::body::Body::from(body_bytes);
     let uri = match router_id {
-        RouterId::Named(name) => format!(
-            "http://router.helicone.com/router/{name}/v1/chat/completions"
-        ),
+        RouterId::Named(name) => {
+            format!("http://router.helicone.com/router/{name}/chat/completions")
+        }
         RouterId::Default => {
-            "http://router.helicone.com/router/default/v1/chat/completions"
+            "http://router.helicone.com/router/default/chat/completions"
                 .to_string()
         }
     };

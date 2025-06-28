@@ -101,9 +101,6 @@ services:
       redis:
         condition: service_healthy
     env_file: "../.env"
-    environment:
-      # Configure server to bind to all interfaces (0.0.0.0) instead of localhost (127.0.0.1)
-      - AI_GATEWAY__SERVER__ADDRESS=0.0.0.0
     networks:
       - traces
       - default

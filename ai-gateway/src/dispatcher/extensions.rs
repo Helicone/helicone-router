@@ -2,7 +2,7 @@ use http::Extensions;
 use typed_builder::TypedBuilder;
 
 use crate::types::{
-    extensions::{AuthContext, ProviderRequestId},
+    extensions::{AuthContext, MapperContext, ProviderRequestId},
     provider::InferenceProvider,
     router::RouterId,
 };
@@ -13,6 +13,7 @@ pub struct ExtensionsCopier {
     router_id: Option<RouterId>,
     auth_context: Option<AuthContext>,
     provider_request_id: Option<http::HeaderValue>,
+    mapper_ctx: MapperContext,
 }
 
 impl ExtensionsCopier {
@@ -31,5 +32,6 @@ impl ExtensionsCopier {
         if let Some(provider_request_id) = self.provider_request_id {
             resp_extensions.insert(ProviderRequestId(provider_request_id));
         }
+        resp_extensions.insert(self.mapper_ctx);
     }
 }

@@ -180,6 +180,18 @@ impl ModelId {
             }
         }
     }
+
+    #[must_use]
+    pub fn inference_provider(&self) -> Option<InferenceProvider> {
+        match self {
+            ModelId::OpenAI(_) => Some(InferenceProvider::OpenAI),
+            ModelId::Anthropic(_) => Some(InferenceProvider::Anthropic),
+            ModelId::GoogleGemini(_) => Some(InferenceProvider::GoogleGemini),
+            ModelId::Bedrock(_) => Some(InferenceProvider::Bedrock),
+            ModelId::Ollama(_) => Some(InferenceProvider::Ollama),
+            ModelId::Unknown(_) => None,
+        }
+    }
 }
 
 impl<'de> Deserialize<'de> for ModelId {

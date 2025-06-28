@@ -205,6 +205,12 @@ impl Dispatcher {
             h.remove(http::header::AUTHORIZATION);
             h.remove(http::header::CONTENT_LENGTH);
             h.remove(HeaderName::from_str("helicone-api-key").unwrap());
+            // TODO: properly support accept encoding
+            h.remove(http::header::ACCEPT_ENCODING);
+            h.insert(
+                http::header::ACCEPT_ENCODING,
+                HeaderValue::from_static("identity"),
+            );
         }
         let method = req.method().clone();
         let headers = req.headers().clone();
@@ -220,6 +226,7 @@ impl Dispatcher {
             .copied()
             .ok_or(InternalError::ExtensionNotFound("InferenceProvider"))?;
         let router_id = req.extensions().get::<RouterId>().cloned();
+        let start_instant = req_ctx.start_instant;
 
         let target_url = base_url
             .join(extracted_path_and_query.as_str())
@@ -254,8 +261,7 @@ impl Dispatcher {
             endpoint_metrics.incr_req_count();
         }
 
-        let request_start = tokio::time::Instant::now();
-        let (mut response, body_reader, tfft_rx): (
+        let (mut client_response, response_body_for_logger, tfft_rx): (
             http::Response<crate::types::body::Body>,
             crate::types::body::BodyReader,
             oneshot::Receiver<()>,
@@ -274,51 +280,67 @@ impl Dispatcher {
                 .await?
         };
         let provider_request_id = {
-            let headers = response.headers_mut();
+            let headers = client_response.headers_mut();
             headers.remove(http::header::CONTENT_LENGTH);
             headers.remove("x-request-id")
         };
-        tracing::debug!(provider_req_id = ?provider_request_id, status = %response.status(), "received response");
+        tracing::debug!(provider_req_id = ?provider_request_id, status = %client_response.status(), "received response");
         let extensions_copier = ExtensionsCopier::builder()
             .inference_provider(inference_provider)
             .router_id(router_id)
             .auth_context(auth_ctx.cloned())
             .provider_request_id(provider_request_id)
+            .mapper_ctx(mapper_ctx.clone())
             .build();
-        extensions_copier.copy_extensions(response.extensions_mut());
-        response.extensions_mut().insert(mapper_ctx.clone());
-        response.extensions_mut().insert(api_endpoint);
-        response.extensions_mut().insert(extracted_path_and_query);
+        extensions_copier.copy_extensions(client_response.extensions_mut());
+        client_response.extensions_mut().insert(mapper_ctx.clone());
+        client_response.extensions_mut().insert(api_endpoint);
+        client_response
+            .extensions_mut()
+            .insert(extracted_path_and_query);
 
         if self.app_state.config().helicone.observability {
-            let response_logger = LoggerService::builder()
-                .app_state(self.app_state.clone())
-                .req_ctx(req_ctx)
-                .target_url(target_url)
-                .request_headers(headers)
-                .request_body(req_body_bytes)
-                .response_status(response.status())
-                .response_body(body_reader)
-                .provider(target_provider)
-                .tfft_rx(tfft_rx)
-                .request_start(request_start)
-                .mapper_ctx(mapper_ctx)
-                .build();
+            if self.app_state.config().helicone.authentication {
+                let auth_ctx = req_ctx
+                    .auth_context
+                    .clone()
+                    .ok_or(InternalError::ExtensionNotFound("AuthContext"))?;
+                let start_time = req_ctx.start_time;
 
-            let app_state = self.app_state.clone();
-            tokio::spawn(
-                async move {
-                    if let Err(e) = response_logger.log().await {
-                        let error_str = e.as_ref().to_string();
-                        app_state
-                            .0
-                            .metrics
-                            .error_count
-                            .add(1, &[KeyValue::new("type", error_str)]);
+                let response_logger = LoggerService::builder()
+                    .app_state(self.app_state.clone())
+                    .auth_ctx(auth_ctx)
+                    .start_time(start_time)
+                    .start_instant(start_instant)
+                    .target_url(target_url)
+                    .request_headers(headers)
+                    .request_body(req_body_bytes)
+                    .response_status(client_response.status())
+                    .response_body(response_body_for_logger)
+                    .provider(target_provider)
+                    .tfft_rx(tfft_rx)
+                    .mapper_ctx(mapper_ctx)
+                    .build();
+
+                let app_state = self.app_state.clone();
+                tokio::spawn(
+                    async move {
+                        if let Err(e) = response_logger.log().await {
+                            let error_str = e.as_ref().to_string();
+                            app_state
+                                .0
+                                .metrics
+                                .error_count
+                                .add(1, &[KeyValue::new("type", error_str)]);
+                        }
                     }
-                }
-                .instrument(tracing::Span::current()),
-            );
+                    .instrument(tracing::Span::current()),
+                );
+            } else {
+                tracing::warn!(
+                    "Authentication is disabled, skipping response logging"
+                );
+            }
         } else {
             let app_state = self.app_state.clone();
             let model = mapper_ctx.model.as_ref().map_or_else(
@@ -328,8 +350,8 @@ impl Dispatcher {
             let path = target_url.path().to_string();
             tokio::spawn(
                 async move {
-                    let tfft_future = TFFTFuture::new(request_start, tfft_rx);
-                    let collect_future = body_reader.collect();
+                    let tfft_future = TFFTFuture::new(start_instant, tfft_rx);
+                    let collect_future = response_body_for_logger.collect();
                     let (_response_body, tfft_duration) = tokio::join!(collect_future, tfft_future);
                     if let Ok(tfft_duration) = tfft_duration {
                         tracing::trace!(tfft_duration = ?tfft_duration, "tfft_duration");
@@ -346,7 +368,7 @@ impl Dispatcher {
             );
         }
 
-        if response.status().is_server_error() {
+        if client_response.status().is_server_error() {
             if let Some(api_endpoint) = api_endpoint {
                 let endpoint_metrics = self
                     .app_state
@@ -355,9 +377,10 @@ impl Dispatcher {
                     .health_metrics(api_endpoint)?;
                 endpoint_metrics.incr_remote_internal_error_count();
             }
-        } else if response.status() == StatusCode::TOO_MANY_REQUESTS {
+        } else if client_response.status() == StatusCode::TOO_MANY_REQUESTS {
             if let Some(api_endpoint) = api_endpoint {
-                let retry_after = extract_retry_after(response.headers());
+                let retry_after =
+                    extract_retry_after(client_response.headers());
                 tracing::info!(
                     provider = ?self.provider,
                     api_endpoint = ?api_endpoint,
@@ -376,7 +399,7 @@ impl Dispatcher {
             }
         }
 
-        Ok(response)
+        Ok(client_response)
     }
 
     fn dispatch_stream(
@@ -507,10 +530,6 @@ fn stream_response_headers() -> HeaderMap {
         (
             http::header::CONTENT_TYPE,
             HeaderValue::from_str("text/event-stream; charset=utf-8").unwrap(),
-        ),
-        (
-            http::header::CACHE_CONTROL,
-            HeaderValue::from_str("no-cache").unwrap(),
         ),
         (
             http::header::CONNECTION,

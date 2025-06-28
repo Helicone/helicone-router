@@ -1,7 +1,7 @@
 use axum_core::response::IntoResponse;
 use displaydoc::Display;
 use http::StatusCode;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use utoipa::ToSchema;
 
@@ -11,7 +11,7 @@ use super::{
     internal::{InternalError, InternalErrorMetric},
     invalid_req::{InvalidRequestError, InvalidRequestErrorMetric},
 };
-use crate::types::json::Json;
+use crate::{middleware::mapper::openai::SERVER_ERROR_TYPE, types::json::Json};
 
 /// Common API errors
 #[derive(Debug, Error, Display, strum::AsRefStr)]
@@ -26,12 +26,18 @@ pub enum ApiError {
     Box(#[from] Box<dyn std::error::Error + Send + Sync>),
 }
 
-/// The struct returned to the user in the case of an internal error.
-/// When the remote backend API providers return an error, the error
-/// struct is returned transparently to the user.
-#[derive(Debug, Serialize, ToSchema)]
+#[derive(Debug, Deserialize, Serialize, ToSchema)]
 pub struct ErrorResponse {
-    pub error: String,
+    pub error: ErrorDetails,
+}
+
+/// This type is intended to mirror the error type returned by the `OpenAI` API.
+#[derive(Debug, Deserialize, Serialize, ToSchema)]
+pub struct ErrorDetails {
+    pub message: String,
+    pub r#type: Option<String>,
+    pub param: Option<String>,
+    pub code: Option<String>,
 }
 
 impl IntoResponse for ApiError {
@@ -45,7 +51,12 @@ impl IntoResponse for ApiError {
                 (
                     StatusCode::INTERNAL_SERVER_ERROR,
                     Json(ErrorResponse {
-                        error: "Internal server error".to_string(),
+                        error: ErrorDetails {
+                            message: "Internal server error".to_string(),
+                            r#type: Some(SERVER_ERROR_TYPE.to_string()),
+                            param: None,
+                            code: None,
+                        },
                     }),
                 )
                     .into_response()

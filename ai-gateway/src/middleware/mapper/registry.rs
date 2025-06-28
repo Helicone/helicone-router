@@ -126,21 +126,6 @@ impl EndpointConverterRegistryInner {
             >::new(OllamaConverter::new(model_mapper.clone()));
         registry.register_converter(key, converter);
 
-        // technically unused since we are focusing on supporting an OpenAI
-        // compatible API, but in the future if we wanted to support other
-        // APIs, we would need to add them similar to this.
-        let key = RegistryKey::new(
-            ApiEndpoint::Anthropic(Anthropic::messages()),
-            ApiEndpoint::OpenAI(OpenAI::chat_completions()),
-        );
-        let converter =
-            TypedEndpointConverter::<
-                endpoints::anthropic::Messages,
-                endpoints::openai::ChatCompletions,
-                OpenAIConverter,
-            >::new(OpenAIConverter::new(model_mapper.clone()));
-        registry.register_converter(key, converter);
-
         let key = RegistryKey::new(
             ApiEndpoint::OpenAI(OpenAI::chat_completions()),
             ApiEndpoint::Bedrock(Bedrock::converse()),

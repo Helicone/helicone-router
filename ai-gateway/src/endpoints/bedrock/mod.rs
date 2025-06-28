@@ -1,6 +1,6 @@
 pub(crate) mod converse;
 
-use super::{Endpoint, EndpointType};
+use super::EndpointType;
 pub(crate) use crate::endpoints::bedrock::converse::Converse;
 use crate::types::model_id::ModelId;
 
@@ -32,22 +32,6 @@ impl Bedrock {
     pub fn endpoint_type(self) -> EndpointType {
         match self {
             Self::Converse(_) => EndpointType::Chat,
-        }
-    }
-}
-
-impl TryFrom<&str> for Bedrock {
-    type Error = crate::error::invalid_req::InvalidRequestError;
-
-    fn try_from(path: &str) -> Result<Self, Self::Error> {
-        match path {
-            Converse::PATH => Ok(Self::Converse(Converse)),
-            path => {
-                tracing::warn!(path = %path, "unsupported Bedrock path");
-                Err(crate::error::invalid_req::InvalidRequestError::NotFound(
-                    path.to_string(),
-                ))
-            }
         }
     }
 }

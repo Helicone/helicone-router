@@ -48,7 +48,7 @@ async fn openai_unified_api() {
     let request = Request::builder()
         .method(Method::POST)
         // Route to the fake endpoint through the default router
-        .uri("http://router.helicone.com/ai/v1/chat/completions")
+        .uri("http://router.helicone.com/ai/chat/completions")
         .header("content-type", "application/json")
         .body(request_body)
         .unwrap();
@@ -98,7 +98,7 @@ async fn anthropic_unified_api() {
     let request = Request::builder()
         .method(Method::POST)
         // Route to the fake endpoint through the default router
-        .uri("http://router.helicone.com/ai/v1/chat/completions")
+        .uri("http://router.helicone.com/ai/chat/completions")
         .header("content-type", "application/json")
         .body(request_body)
         .unwrap();

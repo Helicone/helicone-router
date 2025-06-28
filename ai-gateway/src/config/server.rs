@@ -32,7 +32,7 @@ impl Default for ServerConfig {
 }
 
 fn default_address() -> IpAddr {
-    Ipv4Addr::LOCALHOST.into()
+    Ipv4Addr::UNSPECIFIED.into()
 }
 
 fn default_port() -> u16 {
