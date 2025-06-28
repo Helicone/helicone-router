@@ -12,7 +12,7 @@ use chrono::{DateTime, Utc};
 use futures::{StreamExt, future::BoxFuture, stream::FuturesUnordered};
 use http::{HeaderMap, HeaderName, HeaderValue, StatusCode, request::Parts};
 use http_body_util::BodyExt;
-use http_cache::{CacheManager, HttpResponse, MokaManager};
+use http_cache::{CacheManager, HttpResponse};
 use http_cache_semantics::{
     BeforeRequest, CacheOptions, CachePolicy, ResponseLike,
 };
@@ -23,6 +23,7 @@ use url::Url;
 
 use crate::{
     app_state::AppState,
+    cache::InternalCacheManager,
     config::{
         cache::{CacheConfig, DEFAULT_BUCKETS, MAX_BUCKET_SIZE},
         router::RouterConfig,
@@ -63,6 +64,9 @@ impl CacheContext {
     /// Merge two cache configs. `Other` takes precedence over `Self`.
     #[must_use]
     pub fn merge(&self, other: &Self) -> Self {
+        println!("in service");
+        println!("self: {:?}", self);
+        println!("other: {:?}", other);
         let enabled = if let Some(other_explicitly_set) = other.enabled {
             // if other is set, just use that value (so req headers can disable
             // whether caching is enabled or not per request)
@@ -88,7 +92,7 @@ impl CacheContext {
 #[derive(Debug, Clone)]
 pub struct CacheLayer {
     app_state: AppState,
-    backend: MokaManager,
+    backend: InternalCacheManager,
     context: Arc<CacheContext>,
 }
 
@@ -99,7 +103,7 @@ impl CacheLayer {
     ) -> Result<Self, InitError> {
         let backend = app_state
             .0
-            .moka_manager
+            .cache_manager
             .clone()
             .ok_or(InitError::CacheNotConfigured)?;
         let context = CacheContext {
@@ -157,7 +161,7 @@ impl<S> tower::Layer<S> for CacheLayer {
 pub struct CacheService<S> {
     inner: S,
     app_state: AppState,
-    backend: MokaManager,
+    backend: InternalCacheManager,
     context: Arc<CacheContext>,
 }
 
@@ -204,9 +208,9 @@ where
 }
 
 #[allow(clippy::too_many_lines)]
-async fn check_cache<C: CacheManager>(
+async fn check_cache(
     app_state: AppState,
-    cache: &C,
+    cache: &InternalCacheManager,
     key: &str,
     req: Request,
     bucket: u8,
@@ -345,8 +349,8 @@ fn bucket_header_value(bucket: u8) -> HeaderValue {
         .unwrap_or_else(|_| HeaderValue::from_static("0"))
 }
 
-async fn handle_response_for_cache_miss<C: CacheManager>(
-    cache: &C,
+async fn handle_response_for_cache_miss(
+    cache: &InternalCacheManager,
     ctx: &CacheContext,
     key: String,
     req: Request,
@@ -406,7 +410,7 @@ async fn make_request<S>(
     inner: &mut S,
     app_state: &AppState,
     mut req: Request,
-    cache: &MokaManager,
+    cache: &InternalCacheManager,
     ctx: CacheContext,
 ) -> Result<Response, ApiError>
 where
