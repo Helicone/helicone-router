@@ -64,9 +64,6 @@ impl CacheContext {
     /// Merge two cache configs. `Other` takes precedence over `Self`.
     #[must_use]
     pub fn merge(&self, other: &Self) -> Self {
-        println!("in service");
-        println!("self: {:?}", self);
-        println!("other: {:?}", other);
         let enabled = if let Some(other_explicitly_set) = other.enabled {
             // if other is set, just use that value (so req headers can disable
             // whether caching is enabled or not per request)
