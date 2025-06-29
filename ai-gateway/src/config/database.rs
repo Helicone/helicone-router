@@ -7,7 +7,7 @@ use sqlx::{
     PgPool,
     postgres::{PgListener, PgPoolOptions},
 };
-use tracing::{debug, error, info, warn};
+use tracing::{debug, error, info};
 
 use crate::error::{init::InitError, runtime::RuntimeError};
 
@@ -190,27 +190,7 @@ impl DatabaseListener {
 
         // Example: You could dispatch to different handlers based on the
         // channel
-        let channel = notification.channel();
-        match channel {
-            "ai_gateway_notifications" => {
-                // Handle general notifications
-                debug!(
-                    "handling general notification: {}",
-                    notification.payload()
-                );
-            }
-            "config_updates" => {
-                // Handle configuration updates
-                debug!("handling config update: {}", notification.payload());
-            }
-            "health_checks" => {
-                // Handle health check notifications
-                debug!("handling health check: {}", notification.payload());
-            }
-            _ => {
-                warn!(channel = channel, "unknown notification channel");
-            }
-        }
+        // TODO: Implement handle db listener
     }
 }
 
