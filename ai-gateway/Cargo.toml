@@ -100,6 +100,7 @@ pretty_assertions = { workspace = true }
 [features]
 default = []
 testing = ["dep:stubr", "dep:serial_test", "dep:workspace_root"]
+redis-testing = []
 
 [lints]
 workspace = true
@@ -151,6 +152,10 @@ required-features = ["testing"]
 [[test]]
 name = "cache"
 required-features = ["testing"]
+
+[[test]]
+name = "redis_cache"
+required-features = ["testing", "redis-testing"]
 
 [[test]]
 name = "health_check"

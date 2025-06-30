@@ -62,5 +62,5 @@ fn default_buckets() -> u8 {
 }
 
 fn default_host_url() -> url::Url {
-    "redis://localhost:6379".parse().unwrap()
+    "redis://localhost:6340".parse().unwrap()
 }
