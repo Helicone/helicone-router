@@ -4,6 +4,8 @@ use r2d2::Pool;
 use redis::{Client, Commands};
 use serde::{Deserialize, Serialize};
 
+use crate::error::init::InitError;
+
 #[derive(Debug, Clone)]
 pub enum CacheClient {
     Redis(RedisCacheManager),
@@ -22,11 +24,10 @@ struct Store {
 }
 
 impl RedisCacheManager {
-    #[must_use]
-    pub fn new(url: String) -> Self {
-        let client = Client::open(url).unwrap();
-        let pool = Pool::builder().build(client).unwrap();
-        Self { pool }
+    pub fn new(url: url::Url) -> std::result::Result<Self, InitError> {
+        let client = Client::open(url)?;
+        let pool = Pool::builder().build(client)?;
+        Ok(Self { pool })
     }
 }
 
@@ -36,7 +37,7 @@ impl CacheManager for RedisCacheManager {
         &self,
         cache_key: &str,
     ) -> Result<Option<(HttpResponse, CachePolicy)>> {
-        let mut conn = self.pool.get().unwrap();
+        let mut conn = self.pool.get()?;
         let value: String = conn.get(cache_key)?;
         let store: Store = serde_json::from_str(&value)?;
         Ok(Some((store.response, store.policy)))
@@ -48,18 +49,18 @@ impl CacheManager for RedisCacheManager {
         response: HttpResponse,
         policy: CachePolicy,
     ) -> Result<HttpResponse> {
-        let mut conn = self.pool.get().unwrap();
+        let mut conn = self.pool.get()?;
         let store = Store {
             response: response.clone(),
             policy,
         };
-        let serialized = serde_json::to_string(&store).unwrap();
+        let serialized = serde_json::to_string(&store)?;
         let _: () = conn.set(cache_key, serialized)?;
         Ok(response)
     }
 
     async fn delete(&self, cache_key: &str) -> Result<()> {
-        let mut conn = self.pool.get().unwrap();
+        let mut conn = self.pool.get()?;
         let _: () = conn.del(cache_key)?;
         Ok(())
     }

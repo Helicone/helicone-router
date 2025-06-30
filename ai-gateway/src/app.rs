@@ -226,7 +226,7 @@ impl App {
             rate_limit_monitors: rate_limit_monitor,
             rate_limit_senders: RwLock::new(HashMap::default()),
             rate_limit_receivers: RwLock::new(HashMap::default()),
-            cache_manager,
+            cache_manager: cache_manager?,
         }));
 
         let otel_metrics_layer =
@@ -461,11 +461,16 @@ fn setup_moka_cache(capacity: usize, metrics: Metrics) -> MokaManager {
     MokaManager::new(cache)
 }
 
-fn setup_redis_cache(host_url: String) -> RedisCacheManager {
+fn setup_redis_cache(
+    host_url: url::Url,
+) -> std::result::Result<RedisCacheManager, InitError> {
     RedisCacheManager::new(host_url)
 }
 
-fn setup_cache(config: &Config, metrics: Metrics) -> Option<CacheClient> {
+fn setup_cache(
+    config: &Config,
+    metrics: Metrics,
+) -> std::result::Result<Option<CacheClient>, InitError> {
     // Check if global caching is enabled
     let global_cache_config = config.global.cache.as_ref();
 
@@ -478,7 +483,7 @@ fn setup_cache(config: &Config, metrics: Metrics) -> Option<CacheClient> {
 
     // If neither global nor any router config has caching enabled, return None
     if global_cache_config.is_none() && !any_router_has_cache {
-        return None;
+        return Ok(None);
     }
 
     let manager: CacheClient = match &config.cache_store {
@@ -489,10 +494,10 @@ fn setup_cache(config: &Config, metrics: Metrics) -> Option<CacheClient> {
         }
         CacheStore::Redis { host_url } => {
             tracing::debug!("Using redis cache");
-            let redis_manager = setup_redis_cache(host_url.clone());
+            let redis_manager = setup_redis_cache(host_url.clone())?;
             CacheClient::Redis(redis_manager)
         }
     };
 
-    Some(manager)
+    Ok(Some(manager))
 }

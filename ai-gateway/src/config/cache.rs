@@ -33,7 +33,7 @@ impl crate::tests::TestDefault for CacheConfig {
 pub enum CacheStore {
     Redis {
         #[serde(rename = "host-url", default = "default_host_url")]
-        host_url: String,
+        host_url: url::Url,
     },
     InMemory {
         // apparently container-level `rename_all` for enums doesn't
@@ -61,6 +61,6 @@ fn default_buckets() -> u8 {
     1
 }
 
-fn default_host_url() -> String {
-    "redis://localhost:6379".to_string()
+fn default_host_url() -> url::Url {
+    "redis://localhost:6379".parse().unwrap()
 }
