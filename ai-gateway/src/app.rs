@@ -207,7 +207,7 @@ impl App {
                     );
                 })?;
 
-        let cache_manager = setup_cache(&config, metrics.clone());
+        let cache_manager = setup_cache(&config, metrics.clone())?;
 
         let app_state = AppState(Arc::new(InnerAppState {
             config,
@@ -226,7 +226,7 @@ impl App {
             rate_limit_monitors: rate_limit_monitor,
             rate_limit_senders: RwLock::new(HashMap::default()),
             rate_limit_receivers: RwLock::new(HashMap::default()),
-            cache_manager: cache_manager?,
+            cache_manager,
         }));
 
         let otel_metrics_layer =
