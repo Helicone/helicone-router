@@ -23,7 +23,7 @@ use url::Url;
 
 use crate::{
     app_state::AppState,
-    cache::InternalCacheManager,
+    cache::CacheClient,
     config::{
         cache::{CacheConfig, DEFAULT_BUCKETS, MAX_BUCKET_SIZE},
         router::RouterConfig,
@@ -89,7 +89,7 @@ impl CacheContext {
 #[derive(Debug, Clone)]
 pub struct CacheLayer {
     app_state: AppState,
-    backend: InternalCacheManager,
+    backend: CacheClient,
     context: Arc<CacheContext>,
 }
 
@@ -158,7 +158,7 @@ impl<S> tower::Layer<S> for CacheLayer {
 pub struct CacheService<S> {
     inner: S,
     app_state: AppState,
-    backend: InternalCacheManager,
+    backend: CacheClient,
     context: Arc<CacheContext>,
 }
 
@@ -207,7 +207,7 @@ where
 #[allow(clippy::too_many_lines)]
 async fn check_cache(
     app_state: AppState,
-    cache: &InternalCacheManager,
+    cache: &CacheClient,
     key: &str,
     req: Request,
     bucket: u8,
@@ -347,7 +347,7 @@ fn bucket_header_value(bucket: u8) -> HeaderValue {
 }
 
 async fn handle_response_for_cache_miss(
-    cache: &InternalCacheManager,
+    cache: &CacheClient,
     ctx: &CacheContext,
     key: String,
     req: Request,
@@ -407,7 +407,7 @@ async fn make_request<S>(
     inner: &mut S,
     app_state: &AppState,
     mut req: Request,
-    cache: &InternalCacheManager,
+    cache: &CacheClient,
     ctx: CacheContext,
 ) -> Result<Response, ApiError>
 where

@@ -5,7 +5,7 @@ use redis::{Client, Commands};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone)]
-pub enum InternalCacheManager {
+pub enum CacheClient {
     Redis(RedisCacheManager),
     Moka(MokaManager),
 }
@@ -66,14 +66,14 @@ impl CacheManager for RedisCacheManager {
 }
 
 #[async_trait::async_trait]
-impl CacheManager for InternalCacheManager {
+impl CacheManager for CacheClient {
     async fn get(
         &self,
         cache_key: &str,
     ) -> Result<Option<(HttpResponse, CachePolicy)>> {
         match self {
-            InternalCacheManager::Redis(redis) => redis.get(cache_key).await,
-            InternalCacheManager::Moka(moka) => moka.get(cache_key).await,
+            CacheClient::Redis(redis) => redis.get(cache_key).await,
+            CacheClient::Moka(moka) => moka.get(cache_key).await,
         }
     }
 
@@ -84,10 +84,10 @@ impl CacheManager for InternalCacheManager {
         policy: CachePolicy,
     ) -> Result<HttpResponse> {
         match self {
-            InternalCacheManager::Redis(redis) => {
+            CacheClient::Redis(redis) => {
                 redis.put(cache_key, response, policy).await
             }
-            InternalCacheManager::Moka(moka) => {
+            CacheClient::Moka(moka) => {
                 moka.put(cache_key, response, policy).await
             }
         }
@@ -95,8 +95,8 @@ impl CacheManager for InternalCacheManager {
 
     async fn delete(&self, cache_key: &str) -> Result<()> {
         match self {
-            InternalCacheManager::Redis(redis) => redis.delete(cache_key).await,
-            InternalCacheManager::Moka(moka) => moka.delete(cache_key).await,
+            CacheClient::Redis(redis) => redis.delete(cache_key).await,
+            CacheClient::Moka(moka) => moka.delete(cache_key).await,
         }
     }
 }

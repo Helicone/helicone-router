@@ -26,7 +26,7 @@ use tracing::{Level, info};
 
 use crate::{
     app_state::{AppState, InnerAppState},
-    cache::{InternalCacheManager, RedisCacheManager},
+    cache::{CacheClient, RedisCacheManager},
     cli,
     config::{Config, cache::CacheStore, minio::Minio, server::TlsConfig},
     control_plane::control_plane_state::ControlPlaneState,
@@ -465,10 +465,7 @@ fn setup_redis_cache(host_url: String) -> RedisCacheManager {
     RedisCacheManager::new(host_url)
 }
 
-fn setup_cache(
-    config: &Config,
-    metrics: Metrics,
-) -> Option<InternalCacheManager> {
+fn setup_cache(config: &Config, metrics: Metrics) -> Option<CacheClient> {
     // Check if global caching is enabled
     let global_cache_config = config.global.cache.as_ref();
 
@@ -484,16 +481,16 @@ fn setup_cache(
         return None;
     }
 
-    let manager: InternalCacheManager = match &config.cache_store {
+    let manager: CacheClient = match &config.cache_store {
         CacheStore::InMemory { max_size } => {
-            tracing::info!("Using in-memory cache");
+            tracing::debug!("Using in-memory cache");
             let moka_manager = setup_moka_cache(*max_size, metrics);
-            InternalCacheManager::Moka(moka_manager)
+            CacheClient::Moka(moka_manager)
         }
         CacheStore::Redis { host_url } => {
-            tracing::info!("Using redis cache");
+            tracing::debug!("Using redis cache");
             let redis_manager = setup_redis_cache(host_url.clone());
-            InternalCacheManager::Redis(redis_manager)
+            CacheClient::Redis(redis_manager)
         }
     };
 
