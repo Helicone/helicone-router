@@ -39,7 +39,7 @@ jobs:
       redis:
         image: redis:8.0.2-alpine
         ports:
-          - 6340:6340
+          - 6340:6379
     steps:
       - uses: actions/checkout@v4
       - name: Test
