@@ -19,7 +19,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
-  "id": 1,
+  "id": 2,
   "links": [],
   "panels": [
     {
@@ -154,11 +154,11 @@
               },
               {
                 "color": "yellow",
-                "value": 50
+                "value": 100
               },
               {
                 "color": "red",
-                "value": 100
+                "value": 200
               }
             ]
           },
@@ -197,8 +197,12 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum({\"http.server.active_requests\"})",
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "sum({\"http.server.active_requests\"}) or vector(0)",
+          "instant": false,
           "legendFormat": "Active Requests",
+          "range": true,
           "refId": "A"
         }
       ],
@@ -593,7 +597,8 @@
             "lineWidth": 2,
             "pointSize": 5,
             "scaleDistribution": {
-              "type": "linear"
+              "log": 2,
+              "type": "log"
             },
             "showPoints": "never",
             "spanNulls": false,
@@ -605,6 +610,7 @@
               "mode": "off"
             }
           },
+          "fieldMinMax": false,
           "mappings": [],
           "min": 0,
           "thresholds": {
@@ -653,9 +659,35 @@
           "legendFormat": "{{provider}} - P95",
           "range": true,
           "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.99, sum(rate({\"http.server.request.duration_seconds_bucket\", provider=~\"$provider\", model=~\"$model\"}[$__rate_interval])) by (provider, le))",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "{{provider}} - P99",
+          "range": true,
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.999, sum(rate({\"http.server.request.duration_seconds_bucket\", provider=~\"$provider\", model=~\"$model\"}[$__rate_interval])) by (provider, le))",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "{{provider}} - P99.9",
+          "range": true,
+          "refId": "C"
         }
       ],
-      "title": "P95/P99 Latency Trends",
+      "title": "Latency (P95, P99, etc)",
       "type": "timeseries"
     },
     {
@@ -1029,7 +1061,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "sum(increase(response_count_total{provider=~\"$provider\"}[$__range])) by (provider)",
+          "expr": "sum(rate(response_count_total{provider=~\"$provider\"}[$__rate_interval])) by (provider)",
           "legendFormat": "{{provider_path}}",
           "range": true,
           "refId": "A"
@@ -1716,7 +1748,7 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 8,
+        "w": 12,
         "x": 0,
         "y": 80
       },
@@ -1825,8 +1857,8 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 8,
-        "x": 8,
+        "w": 12,
+        "x": 12,
         "y": 80
       },
       "id": 23,
@@ -1923,9 +1955,9 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 8,
-        "x": 16,
-        "y": 80
+        "w": 11,
+        "x": 0,
+        "y": 88
       },
       "id": 24,
       "options": {
@@ -2051,12 +2083,12 @@
     ]
   },
   "time": {
-    "from": "now-15m",
-    "to": "now"
+    "from": "2025-07-01T01:13:35.323Z",
+    "to": "2025-07-01T01:20:54.390Z"
   },
   "timepicker": {},
   "timezone": "",
   "title": "Helicone AI Gateway Monitoring",
   "uid": "ai-gateway",
-  "version": 4
+  "version": 10
 }

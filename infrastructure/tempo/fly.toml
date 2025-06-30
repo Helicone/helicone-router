@@ -40,7 +40,7 @@ primary_region = 'sjc'
   local_path = './config-production.yaml'
 
 [[vm]]
-  memory = '512mb'
+  memory = '1gb'
   cpu_kind = 'shared'
   cpus = 1
 

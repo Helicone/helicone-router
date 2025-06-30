@@ -44,8 +44,9 @@ weighted-balance = { path = "./crates/weighted-balance" }
 
 anthropic-ai-sdk = { version = "0.2.25" }
 anyhow = "1.0.98"
-async-openai = { version = "0.28.4", git = "https://github.com/tomharmon/async-openai.git", branch = "task/add-serialize-for-api-error" }
+async-openai = { version = "0.29.0" }
 async-trait = "0.1.88"
+axum = "0.8.4"
 axum-core = "0.5.2"
 aws-sdk-bedrockruntime = { version = "1.92.0", git = "https://github.com/hcharlie1201/aws-sdk-rust.git" }
 aws-smithy-types = { version = "1.3.2", features = ["serde-serialize", "serde-deserialize"] }

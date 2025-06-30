@@ -95,7 +95,7 @@ impl Mock {
             .base_url = Url::parse(&anthropic_mock.uri()).unwrap();
 
         let google_mock = start_mock_for_test(
-            &get_stubs_path("google"),
+            &get_stubs_path("gemini"),
             args.global_google_latency,
             args.stubs.as_ref(),
             args.verify,
@@ -195,7 +195,7 @@ impl Mock {
         .await;
 
         let google_mock = start_mock(
-            &get_stubs_path("google"),
+            &get_stubs_path("gemini"),
             args.global_google_latency,
             args.stubs.as_ref(),
             false,
@@ -297,7 +297,7 @@ impl Mock {
 
         register_stubs_for_mock(
             &self.google_mock,
-            &get_stubs_path("google"),
+            &get_stubs_path("gemini"),
             self.args.global_google_latency,
             &stubs,
             self.args.verify,

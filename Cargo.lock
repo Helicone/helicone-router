@@ -362,8 +362,9 @@ dependencies = [
 
 [[package]]
 name = "async-openai"
-version = "0.28.4"
-source = "git+https://github.com/tomharmon/async-openai.git?branch=task%2Fadd-serialize-for-api-error#0a9e1318938ae284820284ed5d3115fedc6b1861"
+version = "0.29.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "31acf814d6b499e33ec894bb0fd7ddaf2665b44fbdd42b858d736449271fde0c"
 dependencies = [
  "async-openai-macros",
  "backoff",
@@ -388,7 +389,8 @@ dependencies = [
 [[package]]
 name = "async-openai-macros"
 version = "0.1.0"
-source = "git+https://github.com/tomharmon/async-openai.git?branch=task%2Fadd-serialize-for-api-error#0a9e1318938ae284820284ed5d3115fedc6b1861"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0289cba6d5143bfe8251d57b4a8cac036adf158525a76533a7082ba65ec76398"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -847,6 +849,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "021e862c184ae977658b36c4500f7feac3221ca5da43e3f25bd04ab6c79a29b5"
 dependencies = [
  "axum-core",
+ "base64 0.22.1",
  "bytes",
  "form_urlencoded",
  "futures-util",
@@ -866,8 +869,10 @@ dependencies = [
  "serde_json",
  "serde_path_to_error",
  "serde_urlencoded",
+ "sha1",
  "sync_wrapper",
  "tokio",
+ "tokio-tungstenite",
  "tower 0.5.2",
  "tower-layer",
  "tower-service",
@@ -3084,8 +3089,13 @@ name = "mock-server"
 version = "0.2.0-beta.16"
 dependencies = [
  "ai-gateway",
+ "axum",
+ "clap",
+ "futures",
+ "rand 0.9.1",
+ "serde",
  "serde_json",
- "stubr",
+ "serde_yml",
  "tokio",
  "tracing",
  "tracing-subscriber",

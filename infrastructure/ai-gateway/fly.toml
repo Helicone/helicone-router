@@ -1,0 +1,58 @@
+# fly.toml app configuration file generated for helicone-ai-gateway on 2025-06-30T11:50:14-07:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'helicone-ai-gateway'
+primary_region = 'sjc'
+
+[experimental]
+  cmd = ['/usr/local/bin/ai-gateway', '-c', '/app/config/config.yaml']
+
+[build]
+  image = 'helicone/ai-gateway:latest'
+
+[http_service]
+  internal_port = 8080
+  force_https = false
+  auto_stop_machines = 'off'
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [[http_service.checks]]
+    interval = '30s'
+    timeout = '5s'
+    grace_period = '5s'
+    method = 'GET'
+    path = '/health'
+
+
+[[vm]]
+  memory = '2gb'
+  cpu_kind = 'shared'
+  cpus = 2
+
+[env]
+OTEL_METRIC_EXPORT_INTERVAL = 10000
+
+
+[[files]]
+  guest_path = "/app/config/config.yaml"
+  raw_value = '''
+
+routers:
+  default:
+    load-balance:
+      chat:
+        strategy: latency
+        providers:
+          - openai
+          - anthropic
+
+helicone:
+  authentication: true
+'''
+
+# [[files]]
+#   guest_path = "/app/config/config.yaml"
+#   local_path = "ai-gateway/config/sidecar.yaml"

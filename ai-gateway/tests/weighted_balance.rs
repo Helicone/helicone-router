@@ -331,7 +331,7 @@ async fn weighted_balancer_equal_four_providers() {
             ),
             ("success:anthropic:messages", expected_range.clone().into()),
             (
-                "success:google:generate_content",
+                "success:gemini:generate_content",
                 expected_range.clone().into(),
             ),
             (

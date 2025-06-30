@@ -54,7 +54,7 @@ async fn errors_remove_provider_from_lb_pool() {
         .stubs(HashMap::from([
             ("success:openai:chat_completion", (70..).into()),
             ("error:anthropic:messages", (..12).into()),
-            ("error:google:generate_content", (..12).into()),
+            ("error:gemini:generate_content", (..12).into()),
             ("success:minio:upload_request", 100.into()),
             ("success:jawn:log_request", 100.into()),
             ("success:jawn:sign_s3_url", 100.into()),

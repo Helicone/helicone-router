@@ -1,20 +1,23 @@
 providers:
   openai:
-    base-url: "http://localhost:8100"
+    base-url: "http://helicone-mock-server.internal:5150"
   anthropic:
-    base-url: "http://localhost:8101"
+    base-url: "http://helicone-mock-server.internal:5150"
   gemini:
-    base-url: "http://localhost:8102"
+    base-url: "http://helicone-mock-server.internal:5150"
+  bedrock:
+    base-url: "http://helicone-mock-server.internal:5150"
 
 minio:
-  host: "http://localhost:8103"
+  host: "http://helicone-mock-server.internal:5150"
 
 helicone:
-  base-url: "http://localhost:8104"
-  websocket-url: "ws://localhost:8585/ws/v1/router/control-plane"
+  base-url: "http://helicone-mock-server.internal:5150"
+  websocket-url: "ws://helicone-mock-server.internal:5150/ws/v1/router/control-plane"
   authentication: true
-  observability: true
+  observability: false
 
 telemetry:
-  level: info,ai_gateway=debug
+  level: info
   exporter: both
+  otlp-endpoint: "http://helicone-otel-collector.internal:4317/v1/metrics"

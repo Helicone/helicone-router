@@ -32,3 +32,6 @@ primary_region = 'sjc'
 [[metrics]]
   port = 8888
   path = '/metrics'
+
+[env]
+OTEL_METRIC_EXPORT_INTERVAL = 10000

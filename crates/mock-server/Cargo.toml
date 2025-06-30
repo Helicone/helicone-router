@@ -3,17 +3,22 @@ name = "mock-server"
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
-publish = false
 version.workspace = true
-description = "A standalone binary for running a mock server for the Helicone AI Gateway 3rd party apis in order to enable load testing"
+publish = false
 
 [dependencies]
 ai-gateway = { workspace = true, features = ["testing"] }
+
+axum = { workspace = true, features = ["ws"] }
+clap = { workspace = true }
+futures = { workspace = true }
+rand = { workspace = true }
+serde = { workspace = true, features = ['derive', 'rc'] }
+serde_json = { workspace = true }
+serde_yml = "0.0.12"
 tokio = { workspace = true }
 tracing = { workspace = true }
-tracing-subscriber = { workspace = true }
-stubr = { workspace = true }
-serde_json = { workspace = true }
+tracing-subscriber = { workspace = true, features = ["env-filter"] }
 
 [lints]
 workspace = true

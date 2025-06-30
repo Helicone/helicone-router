@@ -1,5 +1,5 @@
 {
-  "id": "success:google:generate_content",
+  "id": "success:gemini:generate_content",
   "request": {
     "method": "POST",
     "url": "/v1beta/openai/chat/completions"
