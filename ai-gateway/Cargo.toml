@@ -12,6 +12,7 @@ homepage = "https://docs.helicone.ai/ai-gateway"
 anthropic-ai-sdk = { workspace = true }
 sha2 = { workspace = true }
 async-openai = { workspace = true }
+async-trait = { workspace = true }
 axum-core = { workspace = true }
 axum-server = { workspace = true, features = ["tls-rustls"] }
 aws-sdk-bedrockruntime = { workspace = true }
@@ -91,7 +92,6 @@ uuid = { workspace = true, features = ["serde", "v7"] }
 weighted-balance = { workspace = true }
 workspace_root = { workspace = true, optional = true }
 ts-rs = { workspace = true }
-async-trait = "0.1.88"
 
 [dev-dependencies]
 cargo-husky = { workspace = true, features = ["user-hooks"] }
