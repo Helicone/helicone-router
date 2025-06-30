@@ -9,9 +9,6 @@ distributor:
           endpoint: 0.0.0.0:4317
 
 compactor:
-  ring:
-    kvstore:
-      store: inmemory
   compaction:
     # 4 days
     block_retention: 96h

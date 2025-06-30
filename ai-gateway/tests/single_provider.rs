@@ -75,7 +75,7 @@ async fn google_with_openai_request_style() {
     config.routers = router_config;
     let mock_args = MockArgs::builder()
         .stubs(HashMap::from([
-            ("success:google:generate_content", 2.into()),
+            ("success:gemini:generate_content", 2.into()),
             ("success:minio:upload_request", 0.into()),
             ("success:jawn:log_request", 0.into()),
         ]))

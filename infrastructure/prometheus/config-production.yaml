@@ -10,17 +10,17 @@ scrape_configs:
   - job_name: tempo
     static_configs:
       - targets:
-          - ai-gateway-tempo.internal:3200
+          - helicone-tempo.internal:3200
   - job_name: loki
     static_configs:
       - targets:
-          - ai-gateway-loki.internal:3100
+          - helicone-loki.internal:3100
   - job_name: minio
     metrics_path: /minio/v2/metrics/cluster
     scheme: https
     static_configs:
       - targets:
-          - ai-gateway-minio.internal:5532
+          - helicone-minio.internal:5532
 
 storage:
   tsdb:

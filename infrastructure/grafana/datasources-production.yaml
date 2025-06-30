@@ -6,16 +6,13 @@ datasources:
     uid: prometheus
     access: proxy
     orgId: 1
-    url: https://api.fly.io/prometheus/the-simulation
+    url: http://helicone-prometheus.internal:9090
     basicAuth: false
     isDefault: false
     version: 1
     editable: false
     jsonData:
       httpMethod: GET
-      httpHeaderName1: "Authorization"
-    secureJsonData:
-      httpHeaderValue1: "$__env{PROMETHEUS_API_TOKEN}"
   - name: Tempo
     type: tempo
     access: proxy

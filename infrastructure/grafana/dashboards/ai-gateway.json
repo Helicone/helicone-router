@@ -1029,7 +1029,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "sum(increase(response_count_total{provider=~\"$provider\"}[$__range])) by (provider)",
+          "expr": "sum(rate(response_count_total{provider=~\"$provider\"}[$__rate_interval])) by (provider)",
           "legendFormat": "{{provider_path}}",
           "range": true,
           "refId": "A"

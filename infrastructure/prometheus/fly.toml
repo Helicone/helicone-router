@@ -6,14 +6,14 @@ app = 'helicone-prometheus'
 primary_region = 'sjc'
 
 [experimental]
-  cmd = ['--config.file=/etc/config.yaml', '--web.enable-remote-write-receiver', '--enable-feature=exemplar-storage']
+  cmd = ['--config.file=/etc/config.yaml', '--web.enable-remote-write-receiver', '--web.enable-otlp-receiver', '--enable-feature=exemplar-storage']
 
 [build]
   image = 'prom/prometheus:v3.4.1'
 
 [[services]]
   protocol = 'tcp'
-  internal_port = 4317
+  internal_port = 9090
   ports = []
 
 [[files]]
@@ -24,7 +24,3 @@ primary_region = 'sjc'
   memory = '512mb'
   cpu_kind = 'shared'
   cpus = 1
-
-[[metrics]]
-  port = 8888
-  path = '/metrics'

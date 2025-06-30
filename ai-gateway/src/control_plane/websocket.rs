@@ -47,7 +47,7 @@ async fn handle_message(
 ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let bytes = message.into_data();
     let m: MessageTypeRX = serde_json::from_slice(&bytes)?;
-    tracing::trace!(websocket_msg = ?m, "received message");
+    tracing::debug!(websocket_msg = ?m, "received message");
     let mut state_guard = state.write().await;
     state_guard.update(m);
 

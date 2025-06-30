@@ -14,7 +14,7 @@ exporters:
     tls:
       insecure: true
   otlphttp/prom:
-    endpoint: http://ai-gateway-prometheus:9090/api/v1/otlp
+    endpoint: http://helicone-prometheus.internal:9090/api/v1/otlp
     tls:
       insecure: true
 

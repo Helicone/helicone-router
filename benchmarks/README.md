@@ -4,27 +4,40 @@
 
 This document contains performance benchmarks for the Helicone AI Gateway using k6 load testing. These benchmarks measure the gateway's ability to handle high-throughput AI inference requests.
 
-**Test Date**: June 25, 2025  
-**Status**: Public Beta - Preliminary Benchmarks  
-**Note**: Benchmarking infrastructure is still under development
+**Test Date**: June 30, 2025
 
 ## System Specifications
 
-**Load Generator (k6 Client):**
-- **CPU**: Intel Xeon Platinum 8175M @ 2.50GHz
-- **Cores**: 4 physical cores, 8 logical cores (hyperthreading)
-- **Architecture**: x86_64
-- **Cache**: 33MB L3 cache
-- **Environment**: KVM virtualized instance
+**Mock Server:**
 
-**AI Gateway Endpoint:**
-- **URL**: `http://localhost:8080/ai/chat/completions`
-- **Model**: `openai/gpt-4o-mini`
-- **Request**: System message "hi" with max_tokens=2
+- Used to mock the LLM providers to allow for sustained load testing while
+  avoiding costly bills
+- Each provider is configured to have a median latency of `60ms`
+- Hardware: Flyio's `performance-2x w/4GB RAM` server with AMD EYPC CPU
+  - [Flyio app configuration](/infrastructure/mock-server/fly.toml)
+
+**AI Gateway:**
+
+- The service under test
+- Hardware: Flyio's `performance-2x w/4GB RAM` server with AMD EYPC CPU
+  - [Flyio app configuration](/infrastructure/ai-gateway/fly.toml)
+
+**OpenTelemetry Stack:**
+Each of the following were deployed to `shared-1x w/512MB RAM` servers
+in order to view metrics using the provided [Grafana dashboard](/infrastructure/grafana/dashboards/ai-gateway.json):
+- [grafana](/infrastructure/grafana/fly.toml)
+- [loki](/infrastructure/loki/fly.toml)
+- [opentelemetry-collector](/infrastructure/opentelemetry-collector/fly.toml)
+- [prometheus](/infrastructure/prometheus/fly.toml)
+- [tempo](/infrastructure/tempo/fly.toml)
+   - Required `2GB` of memory to avoid OOM errors
 
 ## Running Instructions
 
 ### Prerequisites
+
+Install [k6](https://k6.io):
+
 ```bash
 # Install k6 (macOS)
 brew install k6
@@ -35,24 +48,21 @@ echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.i
 sudo apt-get update && sudo apt-get install k6
 ```
 
-### Test Configuration
-```javascript
-// load/test.js
-export const options = {
-  scenarios: {
-    constant_rate: {
-      executor: 'constant-arrival-rate',
-      rate: 1000, // Target RPS
-      timeUnit: '1s',
-      duration: '60s',
-      preAllocatedVUs: 300,
-      maxVUs: 1000,
-    },
-  },
-};
-```
+### Deploy the Stack
+
+As mentioned in the [reproducibility section](#reproducibility), the system under test should
+be deployed to their own isolated machines. 
+
+You may use the provided flyio app configurations to easily deploy the entire stack using
+the [flyctl](https://fly.io/docs/flyctl/) cli.
+
+After you've deployed, you may want to import the provided [Grafana dashboard](/infrastructure/grafana/dashboards/ai-gateway.json).
 
 ### Execute Tests
+
+**Note:** Make sure the URL for the AI Gateway in `test.js` matches
+where you've deployed the service!
+
 ```bash
 # Run the benchmark
 k6 run suite/test.js
@@ -61,110 +71,201 @@ k6 run suite/test.js
 htop  # During test execution
 ```
 
-## Test Results
+----
 
-### Optimal Performance Test
-**Target**: 1000 RPS | **Duration**: 3s
+## Sustained Load Test
 
-| Metric | Value |
-|--------|-------|
-| **Achieved RPS** | 1,227 |
-| **Total Requests** | 6,317 |
-| **Success Rate** | 100% (0 failures) |
-| **Avg Response Time** | 441ms |
-| **95th Percentile** | 702ms |
-| **Max Response Time** | 2.45s |
-| **Data Received** | 14 MB (2.6 MB/s) |
-| **Dropped Iterations** | 8,684 (1,687/s) |
+Two clients, both running `test.js` with a `rate` of `1500`:
 
-### Sustained Performance Test  
-**Target**: 1000 RPS | **Duration**: 3s (Earlier Run)
+**Target**: 3000 RPS | **Duration**: 2min
 
 | Metric | Value |
 |--------|-------|
-| **Achieved RPS** | 538 |
-| **Total Requests** | 2,870 |
-| **Success Rate** | 100% (0 failures) |
-| **Avg Response Time** | 425ms |
-| **95th Percentile** | 735ms |
-| **Max Response Time** | 3.54s |
-| **Data Received** | 6.2 MB (1.2 MB/s) |
-| **Dropped Iterations** | 130 (24/s) |
+| **Achieved RPS** | `3,000` |
+| **Total Requests** | `539,630` |
+| **Success Rate** | `100%` (`3` failures out of `539,630` requests) |
+| **AI Gateway Overhead** | `<1ms` |
+| **Avg Response Time** | `77.58ms` |
+| **90th Percentile Total Request Time** | `85.49ms` |
+| **95th Percentile Total Request Time** | `89.16ms` |
+| **Max Response Time** | `504.8ms` |
 
-### Stress Test Results
-**Target**: 5000 RPS | **Duration**: 3s
+Full `k6` output is available in [sustained-load-results.md](/benchmarks/0.2.0-beta.14/sustained-load-results.md)
 
-| Metric | Value |
-|--------|-------|
-| **Achieved RPS** | 512 |
-| **Total Requests** | 5,568 |
-| **Success Rate** | 100% (0 failures) |
-| **Avg Response Time** | 550ms |
-| **95th Percentile** | 1.08s |
-| **Max Response Time** | 8.74s |
-| **Data Received** | 12 MB (1.1 MB/s) |
-| **Dropped Iterations** | 9,433 (868/s) |
 
-## Performance Analysis
+### Requests Per Second
 
-### Key Findings
+A chart showing the sustained 3k req/s request rate can be seen here:
 
-1. **Optimal Throughput**: ~1,200 RPS sustained with excellent reliability
+![req-rate](/benchmarks/0.2.0-beta.14/imgs/sustained-load/req-rate.png)
+
+
+### Latency added by AI Gateway
+
+In order to find the latency added by the gatency, we will inspect the timing information
+provided by our traces:
+
+1. Trace 1:
+
+![trace-1](/benchmarks/0.2.0-beta.14/imgs/sustained-load/trace-1.png)
+
+2. Trace 2:
+
+![trace-2](/benchmarks/0.2.0-beta.14/imgs/sustained-load/trace-2.png)
+
+By subtracting the time waiting for the provider from the total request time,
+we can calculate the overhead in latency added by the AI Gateway itself:
+
+
+| trace # | total request time | provider time | gateway overhead |
+|-------|-------|--------|-------|
+| 1 | `64.81ms` | `64.27ms` | `64.81ms - 64.27ms = 0.54ms` |
+| 2 | `75.8ms` | `75.49ms` | `75.8ms - 75.49ms = 0.31ms` |
+
+
+These are not cherry-picked results, just a random sampling. If you have suggestions
+on how to make more robust queries in Tempo, please file an issue!
+
+
+### Total Latency
+
+A graph of the P95, P99, and P99.9 latency can be seen below:
+
+
+![latency](/benchmarks/0.2.0-beta.14/imgs/sustained-load/latency.png)
+
+Note that this is using a mock API server for the LLM provider,
+real world usage will see much higher latency due to provider inference.
+
+
+### CPU Usage
+
+
+You can see that this test was able to nearly saturate the CPU, getting to sustained ~80% usage:
+
+![cpu-usage](/benchmarks/0.2.0-beta.14/imgs/sustained-load/cpu.png)
+
+
+### Memory Usage
+
+Memory usage stayed below 100MB throughout the test despite the heavy traffic load:
+
+![memory-usage](/benchmarks/0.2.0-beta.14/imgs/sustained-load/memory.png)
+
+Combined view:
+
+![cpu-and-mem](/benchmarks/0.2.0-beta.14/imgs/sustained-load/cpu-and-mem.png)
+
+
+### Performance Analysis
+
+1. **Optimal Throughput**: ~3,000 RPS sustained over 2 minutes
 2. **Zero Error Rate**: Gateway handles overload gracefully without failures
-3. **Response Time Consistency**: 95th percentile typically under 750ms
+3. **Stable memory usage**: Memory usage stays under `100MB` during entire sustained load test.
+3. **Response Time Consistency**: 95th percentile typically under 80ms
 4. **Graceful Degradation**: High load results in queuing rather than failures
 
-### Performance Characteristics
+-----
 
-- **Sweet Spot**: 500-1,200 RPS with optimal response times
-- **Maximum Observed**: 1,227 RPS peak throughput
-- **Latency Profile**: 400-700ms typical range for AI inference
-- **Reliability**: 100% success rate across all test scenarios
+## Large Request Body Size Test Results
 
-### Bottleneck Analysis
+This `k6` suite can be found [here](/benchmarks/suite/large-request-body.js), and is 
+designed to measure performance with large request body sizes for a more real world
+environment.
 
-The system appears to be **inference-bound** rather than network or CPU bound:
-- Load generator (k6) has sufficient capacity
-- Gateway handles requests reliably but queues excess load
-- Response times increase under extreme load but remain reasonable
-- No catastrophic failures or timeouts observed
+This test is executed with one client running `large-request-body.js` with a `rate` of `1500`:
+
+**Target**: 1500 RPS | **Duration**: 2min
+
+| Metric | Value |
+|--------|-------|
+| **Achieved RPS** | `1,500` |
+| **Total Requests** | `269,777` |
+| **Success Rate** | `100%` (`0` failures out of `269,777` requests) |
+| **AI Gateway Overhead** | `<1ms` |
+| **Avg Response Time** | `79.68ms` |
+| **90th Percentile Total Request Time** | `87.66ms` |
+| **95th Percentile Total Request Time** | `89.15ms` |
+| **Max Response Time** | `902.44ms` |
+
+Full `k6` output is available in [large-body-results.md](/benchmarks/0.2.0-beta.14/large-body-results.md)
+
+
+### Requests Per Second
+
+A chart showing the sustained 3k req/s request rate can be seen here:
+
+![req-rate](/benchmarks/0.2.0-beta.14/imgs/large-body/req-rate.png)
+
+
+### Latency added by AI Gateway
+
+In order to find the latency added by the gatency, we will inspect the timing information
+provided by our traces:
+
+1. Trace 1:
+
+![trace-1](/benchmarks/0.2.0-beta.14/imgs/large-body/trace-1.png)
+
+2. Trace 2:
+
+![trace-2](/benchmarks/0.2.0-beta.14/imgs/large-body/trace-2.png)
+
+By subtracting the time waiting for the provider from the total request time,
+we can calculate the overhead in latency added by the AI Gateway itself:
+
+
+| trace # | total request time | provider time | gateway overhead |
+|-------|-------|--------|-------|
+| 1 | `73.75ms` | `73.17ms` | `73.75ms - 73.17ms = 0.58ms` |
+| 2 | `66.04ms` | `65.83ms` | `66.04ms - 65.83ms = 0.21ms` |
+
+
+These are not cherry-picked results, just a random sampling. If you have suggestions
+on how to make more robust queries in Tempo, please file an issue!
+
+
+### Total Latency
+
+A graph of the P95, P99, and P99.9 latency can be seen below:
+
+
+![latency](/benchmarks/0.2.0-beta.14/imgs/large-body/latency.png)
+
+Note that this is using a mock API server for the LLM provider,
+real world usage will see much higher latency due to provider inference.
+
+
+### CPU Usage
+
+
+You can see that the AI Gateway had some headroom as it only reached ~60% CPU usage.
+
+![cpu-usage](/benchmarks/0.2.0-beta.14/imgs/large-body/cpu.png)
+
+
+### Memory Usage
+
+Memory usage stayed below 65MB throughout the test despite large request body sizes,
+thanks to the Gateway's intelligent stream processing:
+
+![memory-usage](/benchmarks/0.2.0-beta.14/imgs/large-body/memory.png)
+
+
+### Performance Analysis
+
+1. **Optimal Throughput**: ~1,500 RPS sustained over 2 minutes for large request bodies
+2. **Zero Error Rate**: Gateway handles overload gracefully without failures
+3. **Stable memory usage**: Memory usage stays under `100MB` during entire sustained load test.
+3. **Response Time Consistency**: 95th percentile typically under 80ms
+4. **Graceful Degradation**: High load results in queuing rather than failures
+
 
 ## Methodology Notes
 
-### Test Limitations
-- **Duration**: Short 3-second tests for rapid iteration
-- **Model**: Testing with lightweight gpt-4o-mini model
-- **Payload**: Minimal request payload (max_tokens=2)
-- **Environment**: Single-node testing setup
-
-### Future Improvements
-- [ ] Extended duration tests (60+ seconds)
-- [ ] Multi-model performance comparison
-- [ ] Larger payload testing
-- [ ] Distributed load testing
-- [ ] Resource utilization monitoring
-- [ ] Production environment validation
-
 ### Reproducibility
-All tests use the same:
-- Request payload structure
-- k6 configuration parameters  
-- Target endpoint and model
-- Virtual user allocation strategy
-
-## Recommendations
-
-**For Production Deployment:**
-- Plan for **1,000 RPS** sustained throughput capacity
-- Monitor response times under load (target <500ms p95)
-- Implement proper load balancing for higher throughput needs
-- Consider horizontal scaling for >1,200 RPS requirements
-
-**For Further Testing:**
-- Extend test duration to validate sustained performance
-- Test with production-sized payloads and responses
-- Validate performance across different AI models
-- Implement comprehensive monitoring during load tests
-
-
+All tests are executed using:
+- The provided `k6` test suite: `test.js`
+- The provided `fly.toml` files with the [aforementioned](#system-specifications) machine selection
+- The mock server, AI Gateway, and OpenTelemetry stack should all run on their own isolated machines
 
