@@ -200,7 +200,7 @@ async fn map_response(
         // SSE event in this branch
         let mapped_stream = body
             .into_data_stream()
-            .map_err(|e| ApiError::Internal(InternalError::CollectBodyError(e)))
+            .map_err(|e| ApiError::Box(e.into_inner()))
             .try_filter_map({
                 let captured_registry = converter_registry.clone();
                 let resp_parts = parts.clone();

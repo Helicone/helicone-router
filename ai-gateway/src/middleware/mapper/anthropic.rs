@@ -674,10 +674,7 @@ impl
             }
             anthropic::StreamEvent::Error { error } => {
                 tracing::warn!(error = ?error, "error in stream event");
-                Err(MapperError::StreamError(format!(
-                    "type: {}, message: {}",
-                    error.type_, error.message
-                )))
+                Ok(None)
             }
         }
     }
@@ -758,17 +755,9 @@ impl
         resp_parts: &Parts,
         value: crate::endpoints::anthropic::messages::AnthropicApiError,
     ) -> Result<async_openai::error::WrappedError, Self::Error> {
-        tracing::info!("converting anthropic error");
-        let r#type = super::openai::get_error_type(resp_parts);
-        let code = super::openai::get_error_code(resp_parts);
-        let error = async_openai::error::WrappedError {
-            error: async_openai::error::ApiError {
-                message: value.error.message,
-                code,
-                param: None,
-                r#type: Some(r#type.to_string()),
-            },
-        };
+        let message = value.error.message;
+        let error =
+            super::openai_error_from_status(resp_parts.status, Some(message));
         Ok(error)
     }
 }

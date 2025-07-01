@@ -11,7 +11,12 @@ use super::{
     internal::{InternalError, InternalErrorMetric},
     invalid_req::{InvalidRequestError, InvalidRequestErrorMetric},
 };
-use crate::{middleware::mapper::openai::SERVER_ERROR_TYPE, types::json::Json};
+use crate::{
+    middleware::mapper::openai::{
+        INVALID_REQUEST_ERROR_TYPE, SERVER_ERROR_TYPE,
+    },
+    types::json::Json,
+};
 
 /// Common API errors
 #[derive(Debug, Error, Display, strum::AsRefStr)]
@@ -22,6 +27,8 @@ pub enum ApiError {
     Authentication(#[from] AuthError),
     /// Internal error: {0}
     Internal(#[from] InternalError),
+    /// Stream error: {0}
+    StreamError(#[from] Box<reqwest_eventsource::Error>),
     /// Box: {0}
     Box(#[from] Box<dyn std::error::Error + Send + Sync>),
 }
@@ -46,6 +53,72 @@ impl IntoResponse for ApiError {
             ApiError::InvalidRequest(error) => error.into_response(),
             ApiError::Authentication(error) => error.into_response(),
             ApiError::Internal(error) => error.into_response(),
+            ApiError::StreamError(error) => {
+                if let reqwest_eventsource::Error::InvalidStatusCode(
+                    status_code,
+                    _response,
+                ) = &*error
+                {
+                    if status_code.is_server_error() {
+                        tracing::error!(error = %error, "upstream server error in stream");
+                        (
+                            *status_code,
+                            Json(ErrorResponse {
+                                error: ErrorDetails {
+                                    message: error.to_string(),
+                                    r#type: Some("server_error".to_string()),
+                                    param: None,
+                                    code: None,
+                                },
+                            }),
+                        )
+                            .into_response()
+                    } else if status_code.is_client_error() {
+                        tracing::debug!(error = %error, "invalid request error in stream");
+                        (
+                            *status_code,
+                            Json(ErrorResponse {
+                                error: ErrorDetails {
+                                    message: error.to_string(),
+                                    r#type: Some(
+                                        INVALID_REQUEST_ERROR_TYPE.to_string(),
+                                    ),
+                                    param: None,
+                                    code: None,
+                                },
+                            }),
+                        )
+                            .into_response()
+                    } else {
+                        (
+                            StatusCode::INTERNAL_SERVER_ERROR,
+                            Json(ErrorResponse {
+                                error: ErrorDetails {
+                                    message: error.to_string(),
+                                    r#type: Some("server_error".to_string()),
+                                    param: None,
+                                    code: None,
+                                },
+                            }),
+                        )
+                            .into_response()
+                    }
+                } else {
+                    tracing::error!(error = %error, "internal error in stream");
+                    (
+                        StatusCode::INTERNAL_SERVER_ERROR,
+                        Json(ErrorResponse {
+                            error: ErrorDetails {
+                                message: error.to_string(),
+                                r#type: Some("server_error".to_string()),
+                                param: None,
+                                code: None,
+                            },
+                        }),
+                    )
+                        .into_response()
+                }
+            }
             ApiError::Box(error) => {
                 tracing::error!(error = %error, "Internal server error");
                 (
@@ -93,6 +166,15 @@ impl From<&ApiError> for ApiErrorMetric {
             ApiError::Internal(internal_error) => {
                 Self::Internal(InternalErrorMetric::from(internal_error))
             }
+            ApiError::StreamError(error) => match &**error {
+                reqwest_eventsource::Error::InvalidStatusCode(
+                    status_code,
+                    _response,
+                ) if status_code.is_client_error() => Self::InvalidRequest(
+                    InvalidRequestErrorMetric::InvalidRequest,
+                ),
+                _ => Self::Internal(InternalErrorMetric::Internal),
+            },
             ApiError::Box(_error) => Self::Box,
         }
     }

@@ -654,16 +654,6 @@ impl
         resp_parts: &Parts,
         _value: crate::endpoints::bedrock::converse::ConverseError,
     ) -> Result<async_openai::error::WrappedError, Self::Error> {
-        let kind = super::openai::get_error_type(resp_parts);
-        let code = super::openai::get_error_code(resp_parts);
-        let error = async_openai::error::WrappedError {
-            error: async_openai::error::ApiError {
-                message: kind.clone(),
-                code,
-                param: None,
-                r#type: Some(kind),
-            },
-        };
-        Ok(error)
+        Ok(super::openai_error_from_status(resp_parts.status, None))
     }
 }

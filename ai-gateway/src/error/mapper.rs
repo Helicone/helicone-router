@@ -22,8 +22,6 @@ pub enum MapperError {
     InvalidRequest,
     /// Serde error: {0}
     SerdeError(#[from] serde_json::Error),
-    /// Underlying stream error: {0}
-    StreamError(String),
     /// Empty response body
     EmptyResponseBody,
     /// Provider not supported: {0}
@@ -53,8 +51,6 @@ pub enum MapperErrorMetric {
     InvalidRequest,
     /// Serde error
     SerdeError,
-    /// Underlying stream error
-    StreamError,
     /// Empty response body
     EmptyResponseBody,
     /// Provider not supported
@@ -77,7 +73,6 @@ impl From<&MapperError> for MapperErrorMetric {
             MapperError::ProviderNotEnabled(_) => Self::ProviderNotEnabled,
             MapperError::InvalidRequest => Self::InvalidRequest,
             MapperError::SerdeError(_) => Self::SerdeError,
-            MapperError::StreamError(_) => Self::StreamError,
             MapperError::EmptyResponseBody => Self::EmptyResponseBody,
             MapperError::ProviderNotSupported(_) => Self::ProviderNotSupported,
             MapperError::ToolMappingInvalid(_) => Self::ToolMappingInvalid,

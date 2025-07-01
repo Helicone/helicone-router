@@ -53,18 +53,19 @@ pub enum Client {
 }
 
 impl Client {
-    pub(crate) fn sse_stream<B>(
+    pub(crate) async fn sse_stream<B>(
         request_builder: RequestBuilder,
         body: B,
-    ) -> Result<SSEStream, InternalError>
+    ) -> Result<SSEStream, ApiError>
     where
         B: Into<reqwest::Body>,
     {
         let event_source = request_builder
             .body(body)
             .eventsource()
-            .map_err(|e| InternalError::RequestBodyError(Box::new(e)))?;
-        Ok(sse_stream(event_source))
+            .map_err(|_e| InternalError::Internal)?;
+        let stream = sse_stream(event_source).await?;
+        Ok(stream)
     }
 
     fn new_inner(
@@ -157,8 +158,27 @@ impl AsRef<reqwest::Client> for Client {
 
 /// Request which responds with SSE.
 /// [server-sent events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events#event_stream_format)
-pub(super) fn sse_stream(mut event_source: EventSource) -> SSEStream {
+pub(super) async fn sse_stream(
+    mut event_source: EventSource,
+) -> Result<SSEStream, Box<reqwest_eventsource::Error>> {
     let (tx, rx) = tokio::sync::mpsc::unbounded_channel();
+    // we want to await the first event so that we can propagate errors
+    match event_source.next().await {
+        Some(Ok(event)) => match event {
+            Event::Message(message) if message.data != "[DONE]" => {
+                let data = Bytes::from(message.data);
+
+                if let Err(_e) = tx.send(Ok(data)) {
+                    tracing::trace!("rx dropped before stream ended");
+                }
+            }
+            _ => {}
+        },
+        Some(Err(e)) => {
+            return Err(Box::new(e));
+        }
+        None => {}
+    }
 
     tokio::spawn(
         async move {
@@ -172,20 +192,10 @@ pub(super) fn sse_stream(mut event_source: EventSource) -> SSEStream {
                             break;
                         }
 
-                        cfg_if::cfg_if! {
-                            if #[cfg(debug_assertions)] {
-                                if let Err(e) = debug_stream_error(tx.clone(), e).await {
-                                    tracing::error!(error = %e, "rx dropped before stream ended");
-                                    break;
-                                }
-                            } else {
-                                if let Err(e) = tx.send(Err(InternalError::StreamError(Box::new(e)))) {
-                                    tracing::error!(error = %e, "rx dropped before stream ended");
-                                    break;
-                                }
-                            }
+                        if let Err(e) = handle_stream_error(tx.clone(), e).await {
+                            tracing::error!(error = %e, "failed to handle stream error");
+                            break;
                         }
-
                     }
                     Ok(event) => match event {
                         Event::Message(message) => {
@@ -196,7 +206,6 @@ pub(super) fn sse_stream(mut event_source: EventSource) -> SSEStream {
                             let data = Bytes::from(message.data);
 
                             if let Err(_e) = tx.send(Ok(data)) {
-                                // rx dropped
                                 tracing::trace!(
                                     "rx dropped before stream ended"
                                 );
@@ -213,47 +222,47 @@ pub(super) fn sse_stream(mut event_source: EventSource) -> SSEStream {
         .instrument(info_span!("sse_stream")),
     );
 
-    Box::pin(tokio_stream::wrappers::UnboundedReceiverStream::new(rx))
+    Ok(Box::pin(
+        tokio_stream::wrappers::UnboundedReceiverStream::new(rx),
+    ))
 }
 
-async fn debug_stream_error(
-    tx: tokio::sync::mpsc::UnboundedSender<Result<Bytes, InternalError>>,
+async fn handle_stream_error(
+    tx: tokio::sync::mpsc::UnboundedSender<Result<Bytes, ApiError>>,
     error: reqwest_eventsource::Error,
-) -> Result<(), tokio::sync::mpsc::error::SendError<Result<Bytes, InternalError>>>
-{
+) -> Result<(), InternalError> {
     match error {
         reqwest_eventsource::Error::InvalidStatusCode(
             status_code,
             response,
         ) => {
             let http_resp = http::Response::from(response);
-            let (parts, body) = http_resp.into_parts();
-            let Ok(body) = body.collect().await else {
-                tracing::error!("failed to collect body in stream");
-                // silence the error
-                return Ok(());
-            };
-            let body = body.to_bytes();
-            let text = String::from_utf8_lossy(&body);
-            tracing::debug!(status_code = %status_code, body = %text, "received error response in stream");
-            let stream = futures::stream::once(futures::future::ok::<
-                _,
-                InternalError,
-            >(body));
-            let new_body = reqwest::Body::wrap_stream(stream);
-            let new_response = http::Response::from_parts(parts, new_body);
-            let new_response = reqwest::Response::from(new_response);
+            let (_parts, body) = http_resp.into_parts();
+            let body = body.collect().await?.to_bytes();
 
-            let e = reqwest_eventsource::Error::InvalidStatusCode(
-                status_code,
-                new_response,
-            );
-            tx.send(Err(InternalError::StreamError(Box::new(e))))?;
+            cfg_if::cfg_if! {
+                // this is compiled out in release builds
+                if #[cfg(debug_assertions)] {
+                    let text = String::from_utf8_lossy(&body);
+                    tracing::debug!(status_code = %status_code, body = %text, "received error response in stream");
+                } else {
+                    if status_code.is_server_error() {
+                        tracing::error!(status_code = %status_code, "received server error in stream");
+                    } else if status_code.is_client_error() {
+                        tracing::debug!(status_code = %status_code, "received client error in stream");
+                    }
+                }
+            }
+
+            if let Err(e) = tx.send(Ok(body)) {
+                tracing::error!(error = %e, "rx dropped before stream ended");
+            }
             Ok(())
         }
         e => {
-            // propagate other errors
-            tx.send(Err(InternalError::StreamError(Box::new(e))))?;
+            if let Err(e) = tx.send(Err(ApiError::StreamError(Box::new(e)))) {
+                tracing::error!(error = %e, "rx dropped before stream ended");
+            }
             Ok(())
         }
     }
