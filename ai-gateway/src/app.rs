@@ -180,12 +180,25 @@ impl tower::Service<crate::types::request::Request> for App {
 impl App {
     pub async fn new(config: Config) -> Result<Self, InitError> {
         tracing::debug!("creating app");
-        let minio = Minio::new(config.minio.clone())?;
+        let app_state = Self::build_app_state(&config)?;
+        let service_stack =
+            Self::build_service_stack(app_state.clone()).await?;
 
+        let app = Self {
+            state: app_state,
+            service_stack,
+        };
+
+        Ok(app)
+    }
+
+    /// Initializes all the clients, managers, and other stateful components that
+    /// are shared across the application. This includes setting up metrics,
+    /// monitoring, caching, and API keys.
+    fn build_app_state(config: &Config) -> Result<AppState, InitError> {
+        let minio = Minio::new(config.minio.clone())?;
         let jawn_http_client = JawnClient::new()?;
 
-        // If global meter is not set, opentelemetry defaults to a
-        // NoopMeterProvider
         let meter = global::meter(SERVICE_NAME);
         let metrics = metrics::Metrics::new(&meter);
         let endpoint_metrics = EndpointMetricsRegistry::default();
@@ -207,10 +220,10 @@ impl App {
                     );
                 })?;
 
-        let cache_manager = setup_cache(&config, metrics.clone())?;
+        let cache_manager = setup_cache(config, metrics.clone())?;
 
         let app_state = AppState(Arc::new(InnerAppState {
-            config,
+            config: config.clone(),
             minio,
             jawn_http_client,
             control_plane_state: Arc::new(RwLock::new(
@@ -229,6 +242,15 @@ impl App {
             cache_manager,
         }));
 
+        Ok(app_state)
+    }
+
+    /// Constructs the application's service stack, including all middleware
+    /// layers and the main router.
+    async fn build_service_stack(
+        app_state: AppState,
+    ) -> Result<BoxedServiceStack, InitError> {
+        let meter = global::meter(SERVICE_NAME);
         let otel_metrics_layer =
             tower_otel_http_metrics::HTTPMetricsLayerBuilder::builder()
                 .with_meter(meter)
@@ -286,12 +308,7 @@ impl App {
             .layer(ErrorHandlerLayer::new(app_state.clone()))
             .service(router);
 
-        let app = Self {
-            state: app_state,
-            service_stack: BoxCloneService::new(service_stack),
-        };
-
-        Ok(app)
+        Ok(BoxCloneService::new(service_stack))
     }
 }
 
