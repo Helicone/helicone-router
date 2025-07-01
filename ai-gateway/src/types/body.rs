@@ -13,7 +13,7 @@ use tokio::sync::{
     oneshot,
 };
 
-use crate::error::internal::InternalError;
+use crate::error::api::ApiError;
 
 /// Reads a stream of HTTP data frames as `Bytes` from a channel.
 #[derive(Debug)]
@@ -45,7 +45,7 @@ impl BodyReader {
     /// `append_newlines` is used to support LLM response logging with Helicone
     /// for streaming responses.
     pub fn wrap_stream(
-        stream: impl Stream<Item = Result<Bytes, InternalError>> + Send + 'static,
+        stream: impl Stream<Item = Result<Bytes, ApiError>> + Send + 'static,
         append_newlines: bool,
     ) -> (axum_core::body::Body, BodyReader, oneshot::Receiver<()>) {
         // unbounded channel is okay since we limit memory usage higher in the
@@ -53,14 +53,9 @@ impl BodyReader {
         let (tx, rx) = mpsc::unbounded_channel();
         let (tfft_tx, tfft_rx) = oneshot::channel();
         let s = stream.map(move |b| {
-            match &b {
-                Ok(b) => {
-                    if let Err(e) = tx.send(b.clone()) {
-                        tracing::error!(error = %e, "BodyReader dropped before stream ended");
-                    }
-                }
-                Err(e) => {
-                    tracing::error!(error = %e, "encountered internal error in stream");
+            if let Ok(b) = &b {
+                if let Err(e) = tx.send(b.clone()) {
+                    tracing::error!(error = %e, "BodyReader dropped before stream ended");
                 }
             }
             b

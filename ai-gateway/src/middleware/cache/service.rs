@@ -252,7 +252,7 @@ async fn check_cache(
             let (resp_parts, resp_body) = response.into_parts();
             let stream = futures::TryStreamExt::map_err(
                 resp_body.into_data_stream(),
-                InternalError::CollectBodyError,
+                |e| InternalError::CollectBodyError(e).into(),
             );
 
             let (user_resp_body, body_reader, tfft_rx) =

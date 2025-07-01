@@ -272,7 +272,8 @@ impl Dispatcher {
                 req_body_bytes.clone(),
                 api_endpoint,
                 metrics_for_stream,
-            )?
+            )
+            .await?
         } else {
             tracing::debug!(method = %method, target_url = %target_url, "dispatching sync request");
             self.dispatch_sync(request_builder, req_body_bytes.clone())
@@ -402,7 +403,7 @@ impl Dispatcher {
         Ok(client_response)
     }
 
-    fn dispatch_stream(
+    async fn dispatch_stream(
         request_builder: RequestBuilder,
         req_body_bytes: Bytes,
         api_endpoint: Option<ApiEndpoint>,
@@ -418,9 +419,11 @@ impl Dispatcher {
         let response_stream = Client::sse_stream(
             request_builder,
             req_body_bytes,
-        )?
+        )
+        .await
+        ?
         .map_err(move |e| {
-            if let InternalError::StreamError(error) = &e {
+            if let ApiError::StreamError(error) = &e {
                 if let Some(api_endpoint) = api_endpoint {
                     metrics_registry.health_metrics(api_endpoint).map(|metrics| {
                         metrics.incr_for_stream_error(error);
@@ -475,7 +478,7 @@ impl Dispatcher {
             let bytes = bytes::Bytes::from(body);
             let stream = futures::stream::once(futures::future::ok::<
                 _,
-                InternalError,
+                ApiError,
             >(bytes));
             let (error_body, error_reader, tfft_rx) =
                 BodyReader::wrap_stream(stream, false);
@@ -486,7 +489,9 @@ impl Dispatcher {
         }
 
         let (user_resp_body, body_reader, tfft_rx) = BodyReader::wrap_stream(
-            response.bytes_stream().map_err(InternalError::ReqwestError),
+            response
+                .bytes_stream()
+                .map_err(|e| InternalError::ReqwestError(e).into()),
             false,
         );
         let response = resp_builder

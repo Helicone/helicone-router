@@ -80,8 +80,8 @@ impl EndpointMetrics {
             }
             reqwest_eventsource::Error::InvalidStatusCode(status_code, ..) => {
                 if status_code.is_server_error() {
+                    tracing::error!(status_code = %status_code, "got upstream server error in stream");
                     self.incr_remote_internal_error_count();
-                    tracing::error!(status_code = %status_code, "received error response in stream");
                 } else if status_code.is_client_error() {
                     tracing::debug!(status_code = %status_code, "got upstream client error in stream");
                 }

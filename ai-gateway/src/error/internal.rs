@@ -60,8 +60,6 @@ pub enum InternalError {
     MappingTaskError(tokio::task::JoinError),
     /// Converter not present for {0:?} -> {1:?}
     InvalidConverter(ApiEndpoint, ApiEndpoint),
-    /// Stream error: {0}
-    StreamError(Box<reqwest_eventsource::Error>),
     /// Upstream 5xx error: {0}
     Provider5xxError(StatusCode),
     /// Metrics not configured for: {0:?}
@@ -168,7 +166,6 @@ impl From<&InternalError> for InternalErrorMetric {
             InternalError::InvalidHeader(_) => Self::InvalidHeader,
             InternalError::MappingTaskError(_) => Self::TokioTaskError,
             InternalError::InvalidConverter(_, _) => Self::InvalidConverter,
-            InternalError::StreamError(_) => Self::StreamError,
             InternalError::Provider5xxError(_) => Self::Provider5xxError,
             InternalError::MetricsNotConfigured(_) => {
                 Self::MetricsNotConfigured
