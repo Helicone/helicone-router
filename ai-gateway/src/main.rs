@@ -16,7 +16,8 @@ use ai_gateway::{
 use clap::Parser;
 use meltdown::Meltdown;
 use opentelemetry_sdk::{
-    logs::SdkLoggerProvider, metrics::SdkMeterProvider, trace::SdkTracerProvider,
+    logs::SdkLoggerProvider, metrics::SdkMeterProvider,
+    trace::SdkTracerProvider,
 };
 use tracing::{debug, info};
 

@@ -24,10 +24,7 @@ use serde::{Deserialize, Serialize};
 use strum::IntoStaticStr;
 use thiserror::Error;
 
-use crate::{
-    error::init::InitError,
-    types::provider::InferenceProvider,
-};
+use crate::{error::init::InitError, types::provider::InferenceProvider};
 
 const ROUTER_ID_REGEX: &str = r"^[A-Za-z0-9_-]{1,12}$";
 pub(crate) const SDK: InferenceProvider = InferenceProvider::OpenAI;
