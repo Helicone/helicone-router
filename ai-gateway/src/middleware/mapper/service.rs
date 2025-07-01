@@ -10,7 +10,10 @@ use tracing::{Instrument, info_span};
 
 use crate::{
     endpoints::ApiEndpoint,
-    error::{api::ApiError, internal::InternalError, mapper::MapperError},
+    error::{
+        api::ApiError, internal::InternalError, mapper::MapperError,
+        stream::StreamError,
+    },
     middleware::mapper::registry::EndpointConverterRegistry,
     types::{
         extensions::MapperContext, provider::InferenceProvider,
@@ -200,7 +203,7 @@ async fn map_response(
         // SSE event in this branch
         let mapped_stream = body
             .into_data_stream()
-            .map_err(|e| ApiError::Internal(InternalError::CollectBodyError(e)))
+            .map_err(|e| ApiError::StreamError(StreamError::BodyError(e)))
             .try_filter_map({
                 let captured_registry = converter_registry.clone();
                 let resp_parts = parts.clone();

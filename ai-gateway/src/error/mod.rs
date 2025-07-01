@@ -7,6 +7,7 @@ pub mod logger;
 pub mod mapper;
 pub mod provider;
 pub mod runtime;
+pub mod stream;
 
 pub trait ErrorMetric {
     /// Convert an error type into a low-cardinality string

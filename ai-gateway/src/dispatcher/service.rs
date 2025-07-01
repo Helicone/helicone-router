@@ -24,7 +24,10 @@ use crate::{
         extensions::ExtensionsCopier,
     },
     endpoints::ApiEndpoint,
-    error::{api::ApiError, init::InitError, internal::InternalError},
+    error::{
+        api::ApiError, init::InitError, internal::InternalError,
+        stream::StreamError,
+    },
     logger::service::LoggerService,
     metrics::tfft::TFFTFuture,
     middleware::{
@@ -272,7 +275,8 @@ impl Dispatcher {
                 req_body_bytes.clone(),
                 api_endpoint,
                 metrics_for_stream,
-            )?
+            )
+            .await?
         } else {
             tracing::debug!(method = %method, target_url = %target_url, "dispatching sync request");
             self.dispatch_sync(request_builder, req_body_bytes.clone())
@@ -402,7 +406,7 @@ impl Dispatcher {
         Ok(client_response)
     }
 
-    fn dispatch_stream(
+    async fn dispatch_stream(
         request_builder: RequestBuilder,
         req_body_bytes: Bytes,
         api_endpoint: Option<ApiEndpoint>,
@@ -418,16 +422,17 @@ impl Dispatcher {
         let response_stream = Client::sse_stream(
             request_builder,
             req_body_bytes,
-        )?
+            api_endpoint,
+            &metrics_registry,
+        )
+        .await?
         .map_err(move |e| {
-            if let InternalError::StreamError(error) = &e {
-                if let Some(api_endpoint) = api_endpoint {
-                    metrics_registry.health_metrics(api_endpoint).map(|metrics| {
-                        metrics.incr_for_stream_error(error);
-                    }).inspect_err(|e| {
-                        tracing::error!(error = %e, "failed to increment stream error metrics");
-                    }).ok();
-                }
+            if let ApiError::StreamError(error) = &e {
+                record_stream_err_metrics(
+                    error,
+                    api_endpoint,
+                    &(metrics_registry.clone()),
+                );
             }
             e
         });
@@ -475,7 +480,7 @@ impl Dispatcher {
             let bytes = bytes::Bytes::from(body);
             let stream = futures::stream::once(futures::future::ok::<
                 _,
-                InternalError,
+                ApiError,
             >(bytes));
             let (error_body, error_reader, tfft_rx) =
                 BodyReader::wrap_stream(stream, false);
@@ -486,7 +491,9 @@ impl Dispatcher {
         }
 
         let (user_resp_body, body_reader, tfft_rx) = BodyReader::wrap_stream(
-            response.bytes_stream().map_err(InternalError::ReqwestError),
+            response
+                .bytes_stream()
+                .map_err(|e| InternalError::ReqwestError(e).into()),
             false,
         );
         let response = resp_builder
@@ -540,4 +547,20 @@ fn stream_response_headers() -> HeaderMap {
             HeaderValue::from_str("chunked").unwrap(),
         ),
     ])
+}
+
+pub(super) fn record_stream_err_metrics(
+    error: &StreamError,
+    api_endpoint: Option<ApiEndpoint>,
+    metrics_registry: &EndpointMetricsRegistry,
+) {
+    if let Some(api_endpoint) = api_endpoint {
+        metrics_registry.health_metrics(api_endpoint).map(|metrics| {
+            if let StreamError::StreamError(boxed_error) = error {
+                metrics.incr_for_stream_error(boxed_error);
+            }
+        }).inspect_err(|e| {
+            tracing::error!(error = %e, "failed to increment stream error metrics");
+        }).ok();
+    }
 }

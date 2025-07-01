@@ -11,7 +11,11 @@ use super::{
     internal::{InternalError, InternalErrorMetric},
     invalid_req::{InvalidRequestError, InvalidRequestErrorMetric},
 };
-use crate::{middleware::mapper::openai::SERVER_ERROR_TYPE, types::json::Json};
+use crate::{
+    error::stream::{StreamError, StreamErrorMetric},
+    middleware::mapper::openai::SERVER_ERROR_TYPE,
+    types::json::Json,
+};
 
 /// Common API errors
 #[derive(Debug, Error, Display, strum::AsRefStr)]
@@ -22,6 +26,8 @@ pub enum ApiError {
     Authentication(#[from] AuthError),
     /// Internal error: {0}
     Internal(#[from] InternalError),
+    /// Stream error: {0}
+    StreamError(#[from] StreamError),
     /// Service panicked: {0}
     Panic(String),
 }
@@ -46,6 +52,7 @@ impl IntoResponse for ApiError {
             ApiError::InvalidRequest(error) => error.into_response(),
             ApiError::Authentication(error) => error.into_response(),
             ApiError::Internal(error) => error.into_response(),
+            ApiError::StreamError(error) => error.into_response(),
             ApiError::Panic(error) => {
                 tracing::error!(error = %error, "Internal server error");
                 (
@@ -75,6 +82,8 @@ pub enum ApiErrorMetric {
     Authentication(#[from] AuthErrorMetric),
     /// Internal
     Internal(#[from] InternalErrorMetric),
+    /// Stream error
+    StreamError(#[from] StreamErrorMetric),
     /// Panic
     Panic,
 }
@@ -93,6 +102,14 @@ impl From<&ApiError> for ApiErrorMetric {
             ApiError::Internal(internal_error) => {
                 Self::Internal(InternalErrorMetric::from(internal_error))
             }
+            ApiError::StreamError(error) => match error {
+                StreamError::StreamError(boxed_error) if matches!(**boxed_error, reqwest_eventsource::Error::InvalidStatusCode(status_code, _) if status_code.is_client_error()) => {
+                    Self::InvalidRequest(
+                        InvalidRequestErrorMetric::InvalidRequest,
+                    )
+                }
+                _ => Self::StreamError(StreamErrorMetric::from(error)),
+            },
             ApiError::Panic(_error) => Self::Panic,
         }
     }
@@ -113,6 +130,9 @@ impl ErrorMetric for ApiErrorMetric {
                 } else {
                     format!("InternalError:{}", error.as_ref())
                 }
+            }
+            Self::StreamError(error) => {
+                format!("StreamError:{}", error.as_ref())
             }
             Self::Panic => String::from("Panic"),
         }
