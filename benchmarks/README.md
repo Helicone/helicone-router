@@ -4,6 +4,9 @@
 
 This document contains performance benchmarks for the Helicone AI Gateway using k6 load testing. These benchmarks measure the gateway's ability to handle high-throughput AI inference requests.
 
+Additional benchmarks regarding caching latency with Redis are available in
+[cache.md](/benchmarks/cache.md)
+
 **Test Date**: June 30, 2025
 
 ## System Specifications
@@ -105,7 +108,7 @@ Full `k6` output is available in [sustained-load-results.md](/benchmarks/0.2.0-b
 
 A chart showing the sustained 3k req/s request rate can be seen here:
 
-![req-rate](/benchmarks/0.2.0-beta.14/imgs/sustained-load/req-rate.png)
+![req-rate](/benchmarks/imgs/sustained-load/req-rate.png)
 
 
 ### Latency added by AI Gateway
@@ -115,11 +118,11 @@ provided by our traces:
 
 1. Trace 1:
 
-![trace-1](/benchmarks/0.2.0-beta.14/imgs/sustained-load/trace-1.png)
+![trace-1](/benchmarks/imgs/sustained-load/trace-1.png)
 
 2. Trace 2:
 
-![trace-2](/benchmarks/0.2.0-beta.14/imgs/sustained-load/trace-2.png)
+![trace-2](/benchmarks/imgs/sustained-load/trace-2.png)
 
 By subtracting the time waiting for the provider from the total request time,
 we can calculate the overhead in latency added by the AI Gateway itself:
@@ -140,7 +143,7 @@ on how to make more robust queries in Tempo, please file an issue!
 A graph of the P95, P99, and P99.9 latency can be seen below:
 
 
-![latency](/benchmarks/0.2.0-beta.14/imgs/sustained-load/latency.png)
+![latency](/benchmarks/imgs/sustained-load/latency.png)
 
 Note that this is using a mock API server for the LLM provider,
 real world usage will see much higher latency due to provider inference.
@@ -151,18 +154,18 @@ real world usage will see much higher latency due to provider inference.
 
 You can see that this test was able to nearly saturate the CPU, getting to sustained ~80% usage:
 
-![cpu-usage](/benchmarks/0.2.0-beta.14/imgs/sustained-load/cpu.png)
+![cpu-usage](/benchmarks/imgs/sustained-load/cpu.png)
 
 
 ### Memory Usage
 
 Memory usage stayed below 100MB throughout the test despite the heavy traffic load:
 
-![memory-usage](/benchmarks/0.2.0-beta.14/imgs/sustained-load/memory.png)
+![memory-usage](/benchmarks/imgs/sustained-load/memory.png)
 
 Combined view:
 
-![cpu-and-mem](/benchmarks/0.2.0-beta.14/imgs/sustained-load/cpu-and-mem.png)
+![cpu-and-mem](/benchmarks/imgs/sustained-load/cpu-and-mem.png)
 
 
 ### Performance Analysis
@@ -207,7 +210,7 @@ Full `k6` output is available in [large-body-results.md](/benchmarks/0.2.0-beta.
 
 A chart showing the sustained 3k req/s request rate can be seen here:
 
-![req-rate](/benchmarks/0.2.0-beta.14/imgs/large-body/req-rate.png)
+![req-rate](/benchmarks/imgs/large-body/req-rate.png)
 
 
 ### Latency added by AI Gateway
@@ -217,11 +220,11 @@ provided by our traces:
 
 1. Trace 1:
 
-![trace-1](/benchmarks/0.2.0-beta.14/imgs/large-body/trace-1.png)
+![trace-1](/benchmarks/imgs/large-body/trace-1.png)
 
 2. Trace 2:
 
-![trace-2](/benchmarks/0.2.0-beta.14/imgs/large-body/trace-2.png)
+![trace-2](/benchmarks/imgs/large-body/trace-2.png)
 
 By subtracting the time waiting for the provider from the total request time,
 we can calculate the overhead in latency added by the AI Gateway itself:
@@ -242,7 +245,7 @@ on how to make more robust queries in Tempo, please file an issue!
 A graph of the P95, P99, and P99.9 latency can be seen below:
 
 
-![latency](/benchmarks/0.2.0-beta.14/imgs/large-body/latency.png)
+![latency](/benchmarks/imgs/large-body/latency.png)
 
 Note that this is using a mock API server for the LLM provider,
 real world usage will see much higher latency due to provider inference.
@@ -253,7 +256,7 @@ real world usage will see much higher latency due to provider inference.
 
 You can see that the AI Gateway had some headroom as it only reached ~60% CPU usage.
 
-![cpu-usage](/benchmarks/0.2.0-beta.14/imgs/large-body/cpu.png)
+![cpu-usage](/benchmarks/imgs/large-body/cpu.png)
 
 
 ### Memory Usage
@@ -261,7 +264,7 @@ You can see that the AI Gateway had some headroom as it only reached ~60% CPU us
 Memory usage stayed below 65MB throughout the test despite large request body sizes,
 thanks to the Gateway's intelligent stream processing:
 
-![memory-usage](/benchmarks/0.2.0-beta.14/imgs/large-body/memory.png)
+![memory-usage](/benchmarks/imgs/large-body/memory.png)
 
 
 ### Performance Analysis

@@ -1,15 +1,15 @@
-# fly.toml app configuration file generated for helicone-redis on 2024-10-13T08:22:06-07:00
+# fly.toml app configuration file generated for helicone-redis-patient-feather-2439 on 2025-07-01T11:34:06-07:00
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = 'helicone-redis'
+app = 'helicone-redis-patient-feather-2439'
 primary_region = 'sjc'
 
 [build]
-  image = "flyio/redis:8.0.2-alpine"
+  image = 'redis:8.0.2-alpine'
 
-[mounts]
+[[mounts]]
   source = 'redis_storage_1'
   destination = '/data'
   initial_size = '10gb'

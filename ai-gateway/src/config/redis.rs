@@ -23,7 +23,7 @@ impl Default for RedisConfig {
 }
 
 fn default_url() -> Secret<String> {
-    Secret::from("redis://localhost:6379".to_string())
+    Secret::from("redis://localhost:6340".to_string())
 }
 
 fn default_connection_timeout() -> Duration {
