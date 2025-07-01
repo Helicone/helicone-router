@@ -53,6 +53,22 @@ const URL_REGEX: &str =
 pub type UnifiedApiService =
     rate_limit::Service<CacheService<ErrorHandler<unified_api::Service>>>;
 
+fn extract_path_and_query(
+    path: &str,
+    query: Option<&str>,
+) -> Result<PathAndQuery, ApiError> {
+    let path_and_query = if let Some(query_params) = query {
+        PathAndQuery::from_str(&format!("{path}?{query_params}"))
+    } else {
+        PathAndQuery::from_str(path)
+    };
+
+    path_and_query.map_err(|e| {
+        tracing::warn!(error = %e, "Failed to convert extracted path to PathAndQuery");
+        ApiError::Internal(InternalError::Internal)
+    })
+}
+
 #[derive(Debug)]
 pub struct MetaRouter {
     inner: HashMap<RouterId, Router>,
@@ -124,24 +140,15 @@ impl MetaRouter {
             "received /router request"
         );
         let extracted_path_and_query =
-            if let Some(query_params) = req.uri().query() {
-                PathAndQuery::try_from(format!(
-                    "{extracted_api_path}?{query_params}"
-                ))
-            } else {
-                PathAndQuery::try_from(extracted_api_path)
+            match extract_path_and_query(extracted_api_path, req.uri().query())
+            {
+                Ok(p) => p,
+                Err(e) => {
+                    return ResponseFuture::Ready {
+                        future: ready(Err(e)),
+                    };
+                }
             };
-
-        let Ok(extracted_path_and_query) = extracted_path_and_query else {
-            // This should **never** happen theoretically since in order to
-            // get this far, the request uri should have
-            // been valid, and a subpath of that which
-            // we extract with the regex should also be valid.
-            tracing::warn!("Failed to convert extracted path to PathAndQuery");
-            return ResponseFuture::Ready {
-                future: ready(Err(ApiError::Internal(InternalError::Internal))),
-            };
-        };
         if let Some(router) = self.inner.get_mut(&router_id) {
             req.extensions_mut().insert(extracted_path_and_query);
             ResponseFuture::RouterRequest {
@@ -163,16 +170,14 @@ impl MetaRouter {
         let rest = req.uri().path().trim_start_matches("/ai");
         tracing::trace!(api_path = rest, "received /ai request");
         let extracted_path_and_query =
-            if let Some(query_params) = req.uri().query() {
-                PathAndQuery::try_from(format!("{rest}?{query_params}"))
-            } else {
-                PathAndQuery::try_from(rest)
+            match extract_path_and_query(rest, req.uri().query()) {
+                Ok(p) => p,
+                Err(e) => {
+                    return ResponseFuture::Ready {
+                        future: ready(Err(e)),
+                    };
+                }
             };
-        let Ok(extracted_path_and_query) = extracted_path_and_query else {
-            return ResponseFuture::Ready {
-                future: ready(Err(ApiError::Internal(InternalError::Internal))),
-            };
-        };
         req.extensions_mut().insert(extracted_path_and_query);
         // assumes request is from OpenAI compatible client
         // and uses the model name to determine the provider.
@@ -198,19 +203,14 @@ impl MetaRouter {
             Ok(provider) => {
                 let rest = segment_iter.collect::<Vec<_>>().join("/");
                 let extracted_path_and_query =
-                    if let Some(query_params) = req.uri().query() {
-                        PathAndQuery::try_from(format!("{rest}?{query_params}"))
-                    } else {
-                        PathAndQuery::try_from(rest)
+                    match extract_path_and_query(&rest, req.uri().query()) {
+                        Ok(p) => p,
+                        Err(e) => {
+                            return ResponseFuture::Ready {
+                                future: ready(Err(e)),
+                            };
+                        }
                     };
-                let Ok(extracted_path_and_query) = extracted_path_and_query
-                else {
-                    return ResponseFuture::Ready {
-                        future: ready(Err(ApiError::Internal(
-                            InternalError::Internal,
-                        ))),
-                    };
-                };
                 req.extensions_mut().insert(extracted_path_and_query);
                 // for the passthrough endpoints, we don't want to
                 // collect/deserialize the request
