@@ -192,9 +192,9 @@ impl App {
         Ok(app)
     }
 
-    /// Initializes all the clients, managers, and other stateful components that
-    /// are shared across the application. This includes setting up metrics,
-    /// monitoring, caching, and API keys.
+    /// Initializes all the clients, managers, and other stateful components
+    /// that are shared across the application. This includes setting up
+    /// metrics, monitoring, caching, and API keys.
     fn build_app_state(config: &Config) -> Result<AppState, InitError> {
         let minio = Minio::new(config.minio.clone())?;
         let jawn_http_client = JawnClient::new()?;

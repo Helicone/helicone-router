@@ -19,7 +19,8 @@ impl ResponseForPanic for PanicResponder {
         } else if let Some(s) = err.downcast_ref::<&str>() {
             s.to_string()
         } else {
-            "Service panicked but `CatchPanic` was unable to downcast the panic info"
+            "Service panicked but `CatchPanic` was unable to downcast the \
+             panic info"
                 .to_string()
         };
         ApiError::Panic(details).into_response()
