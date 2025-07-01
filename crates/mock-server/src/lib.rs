@@ -21,8 +21,9 @@ pub struct AppState {
     pub jawn_latency: u32,
     #[serde(default = "default_minio_latency")]
     pub minio_latency: u32,
-
+    #[serde(default = "default_address")]
     pub address: String,
+    #[serde(default = "default_port")]
     pub port: u16,
 }
 
@@ -51,6 +52,14 @@ fn default_jawn_latency() -> u32 {
 
 fn default_minio_latency() -> u32 {
     5
+}
+
+fn default_address() -> String {
+    "[::]".to_string()
+}
+
+fn default_port() -> u16 {
+    5150
 }
 
 pub fn router(app_state: AppState) -> Router {
