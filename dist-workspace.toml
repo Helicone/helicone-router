@@ -3,6 +3,7 @@ members = ["cargo:ai-gateway"]
 
 # Config for 'dist'
 [dist]
+# Whether to publish prereleases to package managers
 publish-prereleases = true
 # The preferred dist version to use in CI (Cargo.toml SemVer syntax)
 cargo-dist-version = "0.28.5"
@@ -26,3 +27,5 @@ install-updater = false
 npm-package = "ai-gateway"
 # Customize the Homebrew formula name
 formula = "ai-gateway"
+# Which actions to run on pull requests
+pr-run-mode = "skip"

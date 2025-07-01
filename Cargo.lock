@@ -39,7 +39,7 @@ dependencies = [
 
 [[package]]
 name = "ai-gateway"
-version = "0.2.0-beta.15"
+version = "0.2.0-beta.16"
 dependencies = [
  "anthropic-ai-sdk",
  "async-openai",
@@ -3081,7 +3081,7 @@ dependencies = [
 
 [[package]]
 name = "mock-server"
-version = "0.2.0-beta.15"
+version = "0.2.0-beta.16"
 dependencies = [
  "ai-gateway",
  "serde_json",
@@ -5109,7 +5109,7 @@ checksum = "55937e1799185b12863d447f42597ed69d9928686b8d88a1df17376a097d8369"
 
 [[package]]
 name = "telemetry"
-version = "0.2.0-beta.15"
+version = "0.2.0-beta.16"
 dependencies = [
  "http 1.3.1",
  "log-panics",
@@ -6058,7 +6058,7 @@ dependencies = [
 
 [[package]]
 name = "weighted-balance"
-version = "0.2.0-beta.15"
+version = "0.2.0-beta.16"
 dependencies = [
  "futures",
  "pin-project-lite",
