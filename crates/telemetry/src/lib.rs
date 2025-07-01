@@ -170,15 +170,20 @@ fn init_otlp_with_stdout(
 fn init_otlp_pipeline(
     config: &Config,
     with_stdout: bool,
-) -> Result<(SdkLoggerProvider, SdkTracerProvider, SdkMeterProvider), TelemetryError> {
+) -> Result<
+    (SdkLoggerProvider, SdkTracerProvider, SdkMeterProvider),
+    TelemetryError,
+> {
     let resource = resource(config);
 
     // logging
     let logger_provider = logger_provider(config, resource.clone())
         .map_err(TelemetryError::LogExporterBuild)?;
     let otel_layer =
-        opentelemetry_appender_tracing::layer::OpenTelemetryTracingBridge::new(&logger_provider)
-            .with_filter(env_filter(config)?);
+        opentelemetry_appender_tracing::layer::OpenTelemetryTracingBridge::new(
+            &logger_provider,
+        )
+        .with_filter(env_filter(config)?);
 
     // tracing
     let tracer_provider = tracer_provider(config, resource.clone())

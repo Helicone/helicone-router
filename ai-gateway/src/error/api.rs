@@ -22,8 +22,8 @@ pub enum ApiError {
     Authentication(#[from] AuthError),
     /// Internal error: {0}
     Internal(#[from] InternalError),
-    /// Box: {0}
-    Box(#[from] Box<dyn std::error::Error + Send + Sync>),
+    /// Service panicked: {0}
+    Panic(String),
 }
 
 #[derive(Debug, Deserialize, Serialize, ToSchema)]
@@ -46,7 +46,7 @@ impl IntoResponse for ApiError {
             ApiError::InvalidRequest(error) => error.into_response(),
             ApiError::Authentication(error) => error.into_response(),
             ApiError::Internal(error) => error.into_response(),
-            ApiError::Box(error) => {
+            ApiError::Panic(error) => {
                 tracing::error!(error = %error, "Internal server error");
                 (
                     StatusCode::INTERNAL_SERVER_ERROR,
@@ -75,8 +75,8 @@ pub enum ApiErrorMetric {
     Authentication(#[from] AuthErrorMetric),
     /// Internal
     Internal(#[from] InternalErrorMetric),
-    /// Boxed error
-    Box,
+    /// Panic
+    Panic,
 }
 
 impl From<&ApiError> for ApiErrorMetric {
@@ -93,7 +93,7 @@ impl From<&ApiError> for ApiErrorMetric {
             ApiError::Internal(internal_error) => {
                 Self::Internal(InternalErrorMetric::from(internal_error))
             }
-            ApiError::Box(_error) => Self::Box,
+            ApiError::Panic(_error) => Self::Panic,
         }
     }
 }
@@ -114,7 +114,7 @@ impl ErrorMetric for ApiErrorMetric {
                     format!("InternalError:{}", error.as_ref())
                 }
             }
-            Self::Box => String::from("Box"),
+            Self::Panic => String::from("Panic"),
         }
     }
 }
