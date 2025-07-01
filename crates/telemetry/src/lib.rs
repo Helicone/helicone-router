@@ -155,41 +155,7 @@ fn init_otlp(
     (SdkLoggerProvider, SdkTracerProvider, SdkMeterProvider),
     TelemetryError,
 > {
-    let resource = resource(config);
-    // logging
-    let logger_provider = logger_provider(config, resource.clone())
-        .map_err(TelemetryError::LogExporterBuild)?;
-    let otel_layer =
-        opentelemetry_appender_tracing::layer::OpenTelemetryTracingBridge::new(
-            &logger_provider,
-        );
-    let filter = env_filter(config)?;
-    let otel_layer = otel_layer.with_filter(filter);
-
-    // tracing
-    let tracer_provider = tracer_provider(config, resource.clone())
-        .map_err(TelemetryError::TraceExporterBuild)?;
-    let tracer = tracer_provider.tracer(config.service_name.clone());
-    let filter = env_filter(config)?;
-    let tracing_layer = tracing_opentelemetry::layer()
-        .with_tracer(tracer)
-        .with_filter(filter);
-
-    tracing_subscriber::registry()
-        .with(tracing_layer)
-        .with(otel_layer)
-        .try_init()?;
-
-    // metrics
-    let metrics_provider = metrics_provider(config, resource.clone())
-        .map_err(TelemetryError::MetricExporterBuild)?;
-
-    global::set_meter_provider(metrics_provider.clone());
-    global::set_tracer_provider(tracer_provider.clone());
-
-    log_panics::init();
-
-    Ok((logger_provider, tracer_provider, metrics_provider))
+    init_otlp_pipeline(config, false)
 }
 
 fn init_otlp_with_stdout(
@@ -198,42 +164,55 @@ fn init_otlp_with_stdout(
     (SdkLoggerProvider, SdkTracerProvider, SdkMeterProvider),
     TelemetryError,
 > {
+    init_otlp_pipeline(config, true)
+}
+
+fn init_otlp_pipeline(
+    config: &Config,
+    with_stdout: bool,
+) -> Result<(SdkLoggerProvider, SdkTracerProvider, SdkMeterProvider), TelemetryError> {
     let resource = resource(config);
+
+    // logging
     let logger_provider = logger_provider(config, resource.clone())
         .map_err(TelemetryError::LogExporterBuild)?;
     let otel_layer =
-        opentelemetry_appender_tracing::layer::OpenTelemetryTracingBridge::new(
-            &logger_provider,
-        );
-    let filter = env_filter(config)?;
-    let otel_layer = otel_layer.with_filter(filter);
+        opentelemetry_appender_tracing::layer::OpenTelemetryTracingBridge::new(&logger_provider)
+            .with_filter(env_filter(config)?);
 
+    // tracing
     let tracer_provider = tracer_provider(config, resource.clone())
         .map_err(TelemetryError::TraceExporterBuild)?;
     let tracer = tracer_provider.tracer(config.service_name.clone());
-    let filter = env_filter(config)?;
     let tracing_layer = tracing_opentelemetry::layer()
         .with_tracer(tracer)
-        .with_filter(filter);
-
-    let logger_layer = tracing_subscriber::fmt::layer()
-        .pretty()
-        .with_file(true)
-        .with_line_number(true)
         .with_filter(env_filter(config)?);
 
+    let stdout_layer = if with_stdout {
+        Some(
+            tracing_subscriber::fmt::layer()
+                .pretty()
+                .with_file(true)
+                .with_line_number(true)
+                .with_filter(env_filter(config)?),
+        )
+    } else {
+        None
+    };
+
     tracing_subscriber::registry()
-        .with(logger_layer)
         .with(tracing_layer)
         .with(otel_layer)
+        .with(stdout_layer)
         .try_init()?;
 
     // metrics
-    let metrics_provider = metrics_provider(config, resource.clone())
+    let metrics_provider = metrics_provider(config, resource)
         .map_err(TelemetryError::MetricExporterBuild)?;
 
     global::set_meter_provider(metrics_provider.clone());
     global::set_tracer_provider(tracer_provider.clone());
+
     log_panics::init();
 
     Ok((logger_provider, tracer_provider, metrics_provider))
