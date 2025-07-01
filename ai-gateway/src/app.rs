@@ -34,7 +34,7 @@ use crate::{
         health::provider::HealthMonitorMap, metrics::EndpointMetricsRegistry,
         rate_limit::RateLimitMonitorMap,
     },
-    error::{self, init::InitError, runtime::RuntimeError},
+    error::{init::InitError, runtime::RuntimeError},
     logger::service::JawnClient,
     metrics::{self, Metrics, attribute_extractor::AttributeExtractor},
     middleware::{
@@ -325,20 +325,25 @@ impl meltdown::Service for App {
 
             let handle = axum_server::Handle::new();
             let app_factory = AppFactory::new_hyper_app(self);
-            // sleep so that the banner is not printed before the server is
-            // ready
-            tokio::time::sleep(std::time::Duration::from_millis(250)).await;
+
+            let listener = tokio::net::TcpListener::bind(addr)
+                .await
+                .map_err(InitError::Bind)?;
+            let addr = listener.local_addr().map_err(InitError::Bind)?;
             cli::helpers::show_welcome_banner(&addr);
+
+            let listener = listener.into_std().map_err(InitError::Bind)?;
+
             match &config.server.tls {
                 TlsConfig::Enabled { cert, key } => {
                     let tls_config =
                         RustlsConfig::from_pem_file(cert.clone(), key.clone())
                             .await
-                            .map_err(error::init::InitError::Tls)?;
+                            .map_err(InitError::Tls)?;
 
                     tokio::select! {
                         biased;
-                        server_output = axum_server::bind_rustls(addr, tls_config)
+                        server_output = axum_server::from_tcp_rustls(listener, tls_config)
                             // https://brooker.co.za/blog/2024/05/09/nagle.html
                             .acceptor(NoDelayAcceptor)
                             .handle(handle.clone())
@@ -351,7 +356,7 @@ impl meltdown::Service for App {
                 TlsConfig::Disabled => {
                     tokio::select! {
                         biased;
-                        server_output = axum_server::bind(addr)
+                        server_output = axum_server::from_tcp(listener)
                             .handle(handle.clone())
                             .serve(app_factory) => server_output.map_err(RuntimeError::Serve)?,
                         () = token => {
