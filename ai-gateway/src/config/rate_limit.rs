@@ -73,6 +73,13 @@ impl Default for GlobalRateLimitConfig {
 pub enum RateLimitStore {
     #[default]
     InMemory,
+    Redis(RedisRateLimitConfig),
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize, Eq, PartialEq)]
+#[serde(deny_unknown_fields, rename_all = "kebab-case")]
+pub struct RedisRateLimitConfig {
+    pub host_url: url::Url,
 }
 
 fn default_capacity() -> NonZeroU32 {
