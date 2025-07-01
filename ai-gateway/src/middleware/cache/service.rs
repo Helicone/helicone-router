@@ -33,6 +33,7 @@ use crate::{
         invalid_req::InvalidRequestError,
     },
     logger::service::LoggerService,
+    metrics::tfft::TFFTFuture,
     types::{
         body::BodyReader,
         extensions::{AuthContext, MapperContext},
@@ -253,6 +254,7 @@ async fn check_cache(
                 resp_body.into_data_stream(),
                 InternalError::CollectBodyError,
             );
+
             let (user_resp_body, body_reader, tfft_rx) =
                 BodyReader::wrap_stream(stream, false);
             let response = Response::from_parts(resp_parts, user_resp_body);
@@ -270,30 +272,45 @@ async fn check_cache(
                     )?;
 
                 let app_state_cloned = app_state.clone();
+                // TODO(eng-2160): make cache service agnostic to which endpoint
+                // is used
+                let deserialized_body = serde_json::from_slice::<
+                    async_openai::types::CreateChatCompletionRequest,
+                >(&req_body_bytes)
+                .map_err(|e| InternalError::Deserialize {
+                    ty: "async_openai::types::CreateChatCompletionRequest",
+                    error: e,
+                });
                 tokio::spawn(
-            async move {
-                        // TODO(eng-2160): make cache service agnostic to which endpoint is used
-                        let deserialized_body = serde_json::from_slice::<async_openai::types::CreateChatCompletionRequest>(&req_body_bytes).map_err(|e| {
-                            InternalError::Deserialize {
-                                ty: "async_openai::types::CreateChatCompletionRequest",
-                                error: e,
-                            }
-                        });
+                    async move {
                         let Ok(deserialized_body) = deserialized_body else {
-                            tracing::error!("Could not deserialize request body");
+                            tracing::error!(
+                                "Could not deserialize request body"
+                            );
                             return;
                         };
-                        let Ok(model) = ModelId::from_str(&deserialized_body.model) else {
-                            tracing::error!("Could not parse model id from request body");
+                        let Ok(model) =
+                            ModelId::from_str(&deserialized_body.model)
+                        else {
+                            tracing::error!(
+                                "Could not parse model id from request body"
+                            );
                             return;
                         };
-                        let provider = model.inference_provider().unwrap_or_else(|| {
-                            // this should never happen in practice, but we need to handle it, so we
-                            // default to OpenAI
-                            tracing::error!("Could not parse inference provider from request body");
-                            InferenceProvider::OpenAI
-                        });
-                        let is_stream = deserialized_body.stream.is_some_and(|stream| stream);
+                        let provider =
+                            model.inference_provider().unwrap_or_else(|| {
+                                // this should never happen in practice, but we
+                                // need to handle it, so we
+                                // default to OpenAI
+                                tracing::error!(
+                                    "Could not parse inference provider from \
+                                     request body"
+                                );
+                                InferenceProvider::OpenAI
+                            });
+                        let is_stream = deserialized_body
+                            .stream
+                            .is_some_and(|stream| stream);
                         let mapper_ctx = MapperContext {
                             is_stream,
                             model: Some(model),
@@ -324,9 +341,27 @@ async fn check_cache(
                     }
                     .instrument(tracing::Span::current()),
                 );
-            }
+                Ok(CacheCheckResult::Fresh(response))
+            } else {
+                tokio::spawn(
+                    async move {
+                        let tfft_future = TFFTFuture::new(start_instant, tfft_rx);
+                        let collect_future = body_reader.collect();
+                        let (_response_body, tfft_duration) = tokio::join!(collect_future, tfft_future);
+                        if let Ok(tfft_duration) = tfft_duration {
+                            tracing::trace!(tfft_duration = ?tfft_duration, "tfft_duration");
+                            let attributes = [
+                                KeyValue::new("path", target_url.path().to_string()),
+                            ];
+                            #[allow(clippy::cast_precision_loss)]
+                            app_state.0.metrics.tfft_duration.record(tfft_duration.as_millis() as f64, &attributes);
+                        } else { tracing::error!("Failed to get TFFT signal") }
+                    }
+                    .instrument(tracing::Span::current()),
+                );
 
-            Ok(CacheCheckResult::Fresh(response))
+                Ok(CacheCheckResult::Fresh(response))
+            }
         }
         BeforeRequest::Stale { request, matches } if matches => {
             Ok(CacheCheckResult::Stale(request))
