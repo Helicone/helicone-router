@@ -15,6 +15,9 @@ use ai_gateway::{
 };
 use clap::Parser;
 use meltdown::Meltdown;
+use opentelemetry_sdk::{
+    logs::SdkLoggerProvider, metrics::SdkMeterProvider, trace::SdkTracerProvider,
+};
 use tracing::{debug, info};
 
 #[global_allocator]
@@ -33,9 +36,22 @@ pub struct Args {
     verbose: bool,
 }
 
-#[allow(clippy::too_many_lines)]
 #[tokio::main]
 async fn main() -> Result<(), RuntimeError> {
+    let config = load_and_validate_config()?;
+    let (logger_provider, tracer_provider, metrics_provider) =
+        init_telemetry(&config)?;
+
+    run_app(config).await?;
+
+    shutdown_telemetry(logger_provider, tracer_provider, metrics_provider);
+
+    println!("shut down");
+
+    Ok(())
+}
+
+fn load_and_validate_config() -> Result<Config, RuntimeError> {
     dotenvy::dotenv().ok();
     let args = Args::parse();
     let mut config = match Config::try_read(args.config) {
@@ -51,9 +67,25 @@ async fn main() -> Result<(), RuntimeError> {
         config.telemetry.level = "info,ai_gateway=trace".to_string();
     }
 
+    config.validate().inspect_err(|e| {
+        tracing::error!(error = %e, "configuration validation failed");
+    })?;
+
+    Ok(config)
+}
+
+fn init_telemetry(
+    config: &Config,
+) -> Result<
+    (
+        Option<SdkLoggerProvider>,
+        SdkTracerProvider,
+        Option<SdkMeterProvider>,
+    ),
+    InitError,
+> {
     let (logger_provider, tracer_provider, metrics_provider) =
-        telemetry::init_telemetry(&config.telemetry)
-            .map_err(InitError::Telemetry)?;
+        telemetry::init_telemetry(&config.telemetry)?;
 
     debug!("telemetry initialized");
     let pretty_config = serde_yml::to_string(&config)
@@ -63,9 +95,10 @@ async fn main() -> Result<(), RuntimeError> {
     #[cfg(debug_assertions)]
     tracing::warn!("running in debug mode");
 
-    config.validate().inspect_err(|e| {
-        tracing::error!(error = %e, "configuration validation failed");
-    })?;
+    Ok((logger_provider, tracer_provider, metrics_provider))
+}
+
+async fn run_app(config: Config) -> Result<(), RuntimeError> {
     let mut shutting_down = false;
     let helicone_config = config.helicone.clone();
     let app = App::new(config).await?;
@@ -145,7 +178,14 @@ async fn main() -> Result<(), RuntimeError> {
             shutting_down = true;
         }
     }
+    Ok(())
+}
 
+fn shutdown_telemetry(
+    logger_provider: Option<SdkLoggerProvider>,
+    tracer_provider: SdkTracerProvider,
+    metrics_provider: Option<SdkMeterProvider>,
+) {
     if let Some(logger_provider) = logger_provider {
         if let Err(e) = logger_provider.shutdown() {
             println!("error shutting down logger provider: {e}");
@@ -159,8 +199,4 @@ async fn main() -> Result<(), RuntimeError> {
             println!("error shutting down metrics provider: {e}");
         }
     }
-
-    println!("shut down");
-
-    Ok(())
 }
