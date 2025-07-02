@@ -49,11 +49,21 @@ impl Layer {
     /// Create a new rate limit layer to be applied globally.
     #[must_use]
     pub fn global(app_state: &AppState) -> Self {
+        // if let Some(rate_limit_config) =
+        // &app_state.0.config.global.rate_limit
+        // && let RateLimitStore::Redis(redis_config) =
+        //     &rate_limit_config.store
         if let Some(rate_limit_config) = &app_state.0.config.global.rate_limit {
-            if rate_limit_config.store == RateLimitStore::InMemory {
-                Self::new_in_memory_inner(app_state.0.global_rate_limit.clone())
+            if let RateLimitStore::Redis(redis_config) =
+                &rate_limit_config.store
+            {
+                tracing::info!("creating redis rate limit layer");
+                Self::new_redis_inner(
+                    rate_limit_config.limits.clone(),
+                    redis_config.host_url.clone(),
+                )
             } else {
-                Self::new_redis_inner(rate_limit_config.limits.clone())
+                Self::new_in_memory_inner(app_state.0.global_rate_limit.clone())
             }
         } else {
             Self {
@@ -63,12 +73,13 @@ impl Layer {
     }
 
     #[must_use]
-    fn new_redis_inner(rl: Option<LimitsConfig>) -> Self {
+    fn new_redis_inner(rl: Option<LimitsConfig>, url: url::Url) -> Self {
         if let Some(rl) = rl {
             Self {
-                inner: InnerLayer::Redis(RedisRateLimitLayer::new(Arc::new(
-                    rl,
-                ))),
+                inner: InnerLayer::Redis(RedisRateLimitLayer::new(
+                    Arc::new(rl),
+                    url,
+                )),
             }
         } else {
             Self {
@@ -107,18 +118,21 @@ impl Layer {
             RouterRateLimitConfig::None => Ok(Self {
                 inner: InnerLayer::None,
             }),
-            RouterRateLimitConfig::Custom { limits } => {
-                if let Some(rate_limit_config) =
-                    &app_state.0.config.global.rate_limit
-                    && let RateLimitStore::Redis(_) = rate_limit_config.store
-                    && let Some(limits) = &rate_limit_config.limits
+            RouterRateLimitConfig::Custom { store, limits } => {
+                if let Some(store) = store
+                    && let RateLimitStore::Redis(redis_config) = store
                 {
+                    tracing::info!(
+                        "creating redis rate limit layer for router"
+                    );
                     return Ok(Self {
                         inner: InnerLayer::Redis(RedisRateLimitLayer::new(
                             Arc::new(limits.clone()),
+                            redis_config.host_url.clone(),
                         )),
                     });
                 }
+
                 let gcra = &limits.per_api_key;
                 let per_cell_duration = gcra
                     .refill_frequency
@@ -328,6 +342,7 @@ mod tests {
         .await;
         let router_config =
             create_router_config(RouterRateLimitConfig::Custom {
+                store: Some(RateLimitStore::InMemory),
                 limits: create_test_limits(),
             });
 
@@ -348,6 +363,7 @@ mod tests {
         .await;
         let router_config =
             create_router_config(RouterRateLimitConfig::Custom {
+                store: Some(RateLimitStore::InMemory),
                 limits: create_test_limits(),
             });
 

@@ -88,14 +88,17 @@ impl Router {
                 balance_config,
             )
             .await?;
+            let buffered_balancer = ServiceBuilder::new()
+                .map_err(|e| ApiError::from(InternalError::BufferError(e)))
+                .layer(buffer::BufferLayer::new(BUFFER_SIZE))
+                .service(balancer);
+
             let service_stack = ServiceBuilder::new()
                 .layer(cache_layer.clone())
                 .layer(ErrorHandlerLayer::new(app_state.clone()))
-                .map_err(|e| ApiError::from(InternalError::BufferError(e)))
-                .layer(buffer::BufferLayer::new(BUFFER_SIZE))
-                .layer(rl_layer.clone())
                 .layer(request_context_layer.clone())
-                .service(balancer);
+                .layer(rl_layer.clone())
+                .service(buffered_balancer);
 
             inner.insert(*endpoint_type, BoxCloneService::new(service_stack));
         }

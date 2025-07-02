@@ -11,7 +11,9 @@ use super::{
     retry::RetryConfig,
 };
 use crate::{
-    config::cache::CacheConfig, error::init::InitError, types::router::RouterId,
+    config::{cache::CacheConfig, rate_limit::RateLimitStore},
+    error::init::InitError,
+    types::router::RouterId,
 };
 
 #[derive(Debug, Clone, Deserialize, Serialize, Eq, PartialEq, AsRef, AsMut)]
@@ -90,9 +92,15 @@ pub enum RouterRateLimitConfig {
     None,
     /// Routers must configure their own rate limit settings.
     Custom {
+        #[serde(default = "default_rate_limit_store")]
+        store: Option<RateLimitStore>,
         #[serde(default, flatten)]
         limits: LimitsConfig,
     },
+}
+
+fn default_rate_limit_store() -> Option<RateLimitStore> {
+    Some(RateLimitStore::InMemory)
 }
 
 impl RouterRateLimitConfig {

@@ -77,9 +77,18 @@ pub enum RateLimitStore {
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize, Eq, PartialEq)]
-#[serde(deny_unknown_fields, rename_all = "kebab-case")]
+#[serde(rename_all = "kebab-case")]
 pub struct RedisRateLimitConfig {
+    #[serde(default = "default_redis_host_url")]
     pub host_url: url::Url,
+}
+
+impl Default for RedisRateLimitConfig {
+    fn default() -> Self {
+        Self {
+            host_url: default_redis_host_url(),
+        }
+    }
 }
 
 fn default_capacity() -> NonZeroU32 {
@@ -88,6 +97,10 @@ fn default_capacity() -> NonZeroU32 {
 
 pub(crate) fn default_refill_frequency() -> Duration {
     Duration::from_secs(1)
+}
+
+fn default_redis_host_url() -> url::Url {
+    url::Url::parse("redis://localhost:6379").unwrap()
 }
 
 #[cfg(feature = "testing")]

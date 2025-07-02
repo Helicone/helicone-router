@@ -69,6 +69,10 @@ pub enum InternalError {
     AwsRequestSigningError(String),
     /// Cache error: {0}
     CacheError(http_cache::BoxError),
+    /// Redis error: {0}
+    RedisError(redis::RedisError),
+    /// Pool error: {0}
+    PoolError(r2d2::Error),
 }
 
 impl IntoResponse for InternalError {
@@ -140,6 +144,10 @@ pub enum InternalErrorMetric {
     AwsRequestSigningError,
     /// Cache error
     CacheError,
+    /// Redis error
+    RedisError,
+    /// Pool error
+    PoolError,
 }
 
 impl From<&InternalError> for InternalErrorMetric {
@@ -175,6 +183,8 @@ impl From<&InternalError> for InternalErrorMetric {
                 Self::AwsRequestSigningError
             }
             InternalError::CacheError(_) => Self::CacheError,
+            InternalError::RedisError(_) => Self::RedisError,
+            InternalError::PoolError(_) => Self::PoolError,
         }
     }
 }

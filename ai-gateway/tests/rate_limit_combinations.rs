@@ -205,6 +205,7 @@ async fn test_router_specific_with_custom_limits() {
         RouterId::Default,
         RouterConfig {
             rate_limit: RouterRateLimitConfig::Custom {
+                store: Some(RateLimitStore::InMemory),
                 limits: create_test_limits(2, 1000), // 2 requests per second
             },
             load_balance:
@@ -271,6 +272,7 @@ async fn test_global_with_custom_router_override() {
         RouterId::Default,
         RouterConfig {
             rate_limit: RouterRateLimitConfig::Custom {
+                store: Some(RateLimitStore::InMemory),
                 limits: create_test_limits(2, 1000), /* 2 requests per second
                                                       * for this router */
             },
@@ -340,6 +342,7 @@ async fn test_router_independence_different_rate_limits() {
             strict_router_id.clone(),
             RouterConfig {
                 rate_limit: RouterRateLimitConfig::Custom {
+                    store: Some(RateLimitStore::InMemory),
                     limits: create_test_limits(1, 1000), /* 1 request per
                                                          second - strict */
                 },
@@ -352,6 +355,7 @@ async fn test_router_independence_different_rate_limits() {
             lenient_router_id.clone(),
             RouterConfig {
                 rate_limit: RouterRateLimitConfig::Custom {
+                    store: Some(RateLimitStore::InMemory),
                     limits: create_test_limits(5, 1000), /* 5 requests per
                                                          second - lenient */
                 },
@@ -518,6 +522,7 @@ async fn test_multi_router_different_rate_limits_in_memory() {
             router_a_id.clone(),
             RouterConfig {
                 rate_limit: RouterRateLimitConfig::Custom {
+                    store: Some(RateLimitStore::InMemory),
                     limits: create_test_limits(1, 1000),
                 },
                 load_balance:
@@ -529,6 +534,7 @@ async fn test_multi_router_different_rate_limits_in_memory() {
             router_b_id.clone(),
             RouterConfig {
                 rate_limit: RouterRateLimitConfig::Custom {
+                    store: Some(RateLimitStore::InMemory),
                     limits: create_test_limits(3, 1000),
                 },
                 load_balance:
