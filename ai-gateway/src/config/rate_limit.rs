@@ -3,7 +3,10 @@ use std::{num::NonZeroU32, time::Duration};
 use serde::{Deserialize, Serialize};
 use tower_governor::governor::{GovernorConfig, GovernorConfigBuilder};
 
-use crate::middleware::rate_limit::extractor::RateLimitKeyExtractor;
+use crate::{
+    config::redis::RedisConfig,
+    middleware::rate_limit::extractor::RateLimitKeyExtractor,
+};
 
 pub type RateLimiterConfig = GovernorConfig<
     RateLimitKeyExtractor,
@@ -73,22 +76,7 @@ impl Default for GlobalRateLimitConfig {
 pub enum RateLimitStore {
     #[default]
     InMemory,
-    Redis(RedisRateLimitConfig),
-}
-
-#[derive(Debug, Clone, Deserialize, Serialize, Eq, PartialEq)]
-#[serde(rename_all = "kebab-case")]
-pub struct RedisRateLimitConfig {
-    #[serde(default = "default_redis_host_url")]
-    pub host_url: url::Url,
-}
-
-impl Default for RedisRateLimitConfig {
-    fn default() -> Self {
-        Self {
-            host_url: default_redis_host_url(),
-        }
-    }
+    Redis(RedisConfig),
 }
 
 fn default_capacity() -> NonZeroU32 {
