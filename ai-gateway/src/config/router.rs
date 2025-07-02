@@ -99,6 +99,7 @@ pub enum RouterRateLimitConfig {
     },
 }
 
+#[allow(clippy::unnecessary_wraps)]
 fn default_rate_limit_store() -> Option<RateLimitStore> {
     Some(RateLimitStore::InMemory)
 }

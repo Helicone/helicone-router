@@ -87,10 +87,6 @@ pub(crate) fn default_refill_frequency() -> Duration {
     Duration::from_secs(1)
 }
 
-fn default_redis_host_url() -> url::Url {
-    url::Url::parse("redis://localhost:6379").unwrap()
-}
-
 #[cfg(feature = "testing")]
 impl crate::tests::TestDefault for GlobalRateLimitConfig {
     fn test_default() -> Self {

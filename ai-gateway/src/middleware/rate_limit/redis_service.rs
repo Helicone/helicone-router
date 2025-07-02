@@ -12,19 +12,24 @@ use redis::{Client, Commands};
 
 use crate::{
     config::rate_limit::{LimitsConfig, default_refill_frequency},
-    error::{api::ApiError, internal::InternalError},
+    error::{api::ApiError, init::InitError, internal::InternalError},
     types::{extensions::AuthContext, request::Request},
 };
 
 #[derive(Debug, Clone)]
 pub struct RedisRateLimitLayer {
     pub config: Arc<LimitsConfig>,
-    pub url: url::Url,
+    pub pool: Pool<Client>,
 }
 
 impl RedisRateLimitLayer {
-    pub fn new(config: Arc<LimitsConfig>, url: url::Url) -> Self {
-        Self { config, url }
+    pub fn new(
+        config: Arc<LimitsConfig>,
+        url: url::Url,
+    ) -> Result<Self, InitError> {
+        let client = Client::open(url)?;
+        let pool = Pool::builder().build(client)?;
+        Ok(Self { config, pool })
     }
 }
 
@@ -35,7 +40,7 @@ impl<S> tower::layer::Layer<S> for RedisRateLimitLayer {
         RedisRateLimitService::new(
             service,
             self.config.clone(),
-            self.url.clone(),
+            self.pool.clone(),
         )
     }
 }
@@ -48,11 +53,11 @@ pub struct RedisRateLimitService<S> {
 }
 
 impl<S> RedisRateLimitService<S> {
-    // TODO: handle errors - ask @tom
-    pub fn new(inner: S, config: Arc<LimitsConfig>, url: url::Url) -> Self {
-        tracing::info!("connecting to redis at {}", url);
-        let client = Client::open(url).unwrap();
-        let pool = Pool::builder().build(client).unwrap();
+    pub fn new(
+        inner: S,
+        config: Arc<LimitsConfig>,
+        pool: Pool<Client>,
+    ) -> Self {
         Self {
             inner,
             config,
@@ -150,15 +155,15 @@ where
     };
 
     let earliest_allowed_time =
-        new_tat - (interval_per_token_ms * gcra.capacity.get() as u128);
+        new_tat - (interval_per_token_ms * u128::from(gcra.capacity.get()));
 
     if earliest_allowed_time <= now_ms {
         let _: () =
             conn.set(&key, new_tat).map_err(InternalError::RedisError)?;
-        return inner.call(req).await.map_err(|e| {
+        inner.call(req).await.map_err(|e| {
             tracing::error!("error calling inner service: {:?}", e);
             ApiError::Internal(InternalError::Internal)
-        });
+        })
     } else {
         let response = (StatusCode::TOO_MANY_REQUESTS, "Too Many Requests")
             .into_response();
