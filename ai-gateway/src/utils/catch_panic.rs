@@ -17,7 +17,7 @@ impl ResponseForPanic for PanicResponder {
         let details = if let Some(s) = err.downcast_ref::<String>() {
             s.clone()
         } else if let Some(s) = err.downcast_ref::<&str>() {
-            s.to_string()
+            (*s).to_string()
         } else {
             "Service panicked but `CatchPanic` was unable to downcast the \
              panic info"
