@@ -45,7 +45,7 @@ async fn main() -> Result<(), RuntimeError> {
 
     run_app(config).await?;
 
-    shutdown_telemetry(logger_provider, tracer_provider, metrics_provider);
+    shutdown_telemetry(logger_provider, &tracer_provider, metrics_provider);
 
     println!("shut down");
 
@@ -184,7 +184,7 @@ async fn run_app(config: Config) -> Result<(), RuntimeError> {
 
 fn shutdown_telemetry(
     logger_provider: Option<SdkLoggerProvider>,
-    tracer_provider: SdkTracerProvider,
+    tracer_provider: &SdkTracerProvider,
     metrics_provider: Option<SdkMeterProvider>,
 ) {
     if let Some(logger_provider) = logger_provider {
