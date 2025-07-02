@@ -1,6 +1,6 @@
 # Scripts Directory
 
-This directory contains various testing and utility scripts for the Helicone Router project.
+This directory contains various testing and utility scripts for the Helicone AI Gateway project.
 
 ## Contents
 

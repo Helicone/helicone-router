@@ -10,6 +10,7 @@
     "start": "ts-node index.ts"
   },
   "dependencies": {
+    "dotenv": "^17.0.1",
     "openai": "^5.7.0"
   },
   "devDependencies": {

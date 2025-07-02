@@ -174,7 +174,7 @@ impl Service<Request> for Dispatcher {
         // see: https://docs.rs/tower/latest/tower/trait.Service.html#be-careful-when-cloning-inner-services
         let this = self.clone();
         let this = std::mem::replace(self, this);
-        tracing::trace!(provider = ?this.provider, "Dispatcher received request");
+        tracing::trace!(provider = ?this.provider, "dispatcher received request");
         Box::pin(async move { this.dispatch(req).await })
     }
 }
