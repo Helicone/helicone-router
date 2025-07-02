@@ -19,12 +19,16 @@ use std::path::PathBuf;
 
 use config::ConfigError;
 use displaydoc::Display;
+use json_patch::merge;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use strum::IntoStaticStr;
 use thiserror::Error;
 
-use crate::{error::init::InitError, types::provider::InferenceProvider};
+use crate::{
+    error::init::InitError,
+    types::{provider::InferenceProvider, secret::Secret},
+};
 
 const ROUTER_ID_REGEX: &str = r"^[A-Za-z0-9_-]{1,12}$";
 pub(crate) const SDK: InferenceProvider = InferenceProvider::OpenAI;
@@ -51,7 +55,7 @@ pub enum DeploymentTarget {
     Sidecar,
 }
 
-#[derive(Debug, Default, Clone, Deserialize, Serialize)]
+#[derive(Debug, Default, Deserialize, Serialize)]
 #[serde(deny_unknown_fields, rename_all = "kebab-case")]
 pub struct MiddlewareConfig {
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -60,7 +64,7 @@ pub struct MiddlewareConfig {
     pub rate_limit: Option<self::rate_limit::GlobalRateLimitConfig>,
 }
 
-#[derive(Debug, Default, Clone, Deserialize, Serialize)]
+#[derive(Debug, Default, Deserialize, Serialize)]
 #[serde(default, deny_unknown_fields, rename_all = "kebab-case")]
 pub struct Config {
     pub telemetry: telemetry::Config,
@@ -74,7 +78,6 @@ pub struct Config {
 
     /// If a request is made with a model that is not in the `RouterConfig`
     /// model mapping, then we fallback to this.
-    #[serde(skip)]
     pub default_model_mapping: self::model_mapping::ModelMappingConfig,
     pub helicone: self::helicone::HeliconeConfig,
     /// *ALL* supported providers, independent of router configuration.
@@ -90,37 +93,60 @@ impl Config {
     pub fn try_read(
         config_file_path: Option<PathBuf>,
     ) -> Result<Self, Box<Error>> {
-        let mut builder = config::Config::builder()
-            .add_source(config::Config::try_from(&Self::default()).unwrap());
-
+        let mut default_config = serde_json::to_value(Self::default())
+            .expect("default config is serializable");
+        let mut builder = config::Config::builder();
         if let Some(path) = config_file_path {
             builder = builder.add_source(config::File::from(path));
         }
-
         builder = builder.add_source(
             config::Environment::with_prefix("AI_GATEWAY")
                 .try_parsing(true)
                 .separator("__")
                 .convert_case(config::Case::Kebab),
         );
-
-        // We need to support `HELICONE_CONTROL_PLANE_API_KEY` for backwards
-        // compatibility.
-        if let Ok(key) = std::env::var("HELICONE_CONTROL_PLANE_API_KEY") {
-            builder = builder.set_override("helicone.api-key", key).unwrap();
-        }
-
-        let mut config: Config = builder
+        let input_config: serde_json::Value = builder
             .build()
             .map_err(Error::from)
             .map_err(Box::new)?
             .try_deserialize()
             .map_err(Error::from)
             .map_err(Box::new)?;
+        merge(&mut default_config, &input_config);
 
-        config.default_model_mapping =
-            self::model_mapping::ModelMappingConfig::default();
+        let mut config: Config =
+            serde_path_to_error::deserialize(default_config)
+                .map_err(Error::from)
+                .map_err(Box::new)?;
 
+        // HACK: for secret fields in the **`Config`** struct that don't follow
+        // the       `AI_GATEWAY` prefix + the double underscore
+        // separator (`__`) format.
+        //
+        //       Right now, that only applies to
+        // `HELICONE_CONTROL_PLANE_API_KEY`,       provider keys also
+        // have their own format, but **they are not fields in       the
+        // `Config` struct**.
+        //
+        //       It was intentional to allow the
+        // `HELICONE_CONTROL_PLANE_API_KEY` naming       for better
+        // clarity, as the `AI_GATEWAY__HELICONE_OBSERVABILITY__API_KEY`
+        //       version is very verbose and confusing.
+        //
+        //       The bug here is that due to the Serialize impl, when we do
+        //       `serde_json::to_value(Self::default())` above, we get the
+        // literal value       `*****` rather than the secret we want.
+        //
+        //       The fix therefore is just to re-read the value from the
+        // environment       after serializing. This is only needed to
+        // be done here in this one place,       there aren't any other
+        // functions where we merge configs like we do here.
+        if let Ok(helicone_control_plane_api_key) =
+            std::env::var("HELICONE_CONTROL_PLANE_API_KEY")
+        {
+            config.helicone.api_key =
+                Secret::from(helicone_control_plane_api_key);
+        }
         Ok(config)
     }
 

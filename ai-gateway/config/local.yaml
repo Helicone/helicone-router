@@ -8,6 +8,10 @@ helicone:
   authentication: true
   observability: true
 
+# global:
+#   rate-limit:
+
+
 routers:
   default:
     load-balance:
