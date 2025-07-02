@@ -13,7 +13,8 @@ use redis::{Client, Commands};
 use crate::{
     config::rate_limit::{LimitsConfig, default_refill_frequency},
     error::{api::ApiError, init::InitError, internal::InternalError},
-    types::{extensions::AuthContext, request::Request},
+    middleware::rate_limit::extractor::get_redis_rl_key,
+    types::request::Request,
 };
 
 #[derive(Debug, Clone)]
@@ -115,13 +116,7 @@ where
     tracing::info!("making request with redis on config: {:?}", config);
     let mut conn = pool.get().map_err(InternalError::PoolError)?;
 
-    let Some(ctx) = req.extensions().get::<AuthContext>() else {
-        return Err(ApiError::Internal(InternalError::ExtensionNotFound(
-            "AuthContext",
-        )));
-    };
-
-    let key = format!("rl:{}", ctx.user_id);
+    let key = get_redis_rl_key(&req)?;
 
     let now_ms = SystemTime::now()
         .duration_since(UNIX_EPOCH)
@@ -144,9 +139,7 @@ where
     // get previous theoretical arrival time (TAT)
     let existing_tat: Option<u128> =
         conn.get(&key).map_err(InternalError::RedisError)?;
-    tracing::info!("existing_tat: {:?}", existing_tat);
     let tat = existing_tat.unwrap_or(now_ms);
-    tracing::info!("tat: {:?}", tat);
 
     let new_tat = if tat < now_ms {
         now_ms + interval_per_token_ms
