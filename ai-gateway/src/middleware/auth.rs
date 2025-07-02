@@ -57,10 +57,10 @@ where
         let app_state = self.app_state.clone();
         Box::pin(async move {
             if !app_state.0.config.helicone.authentication {
-                tracing::trace!("Auth middleware: auth disabled");
+                tracing::trace!("auth middleware: auth disabled");
                 return Ok(request);
             }
-            tracing::trace!("Auth middleware");
+            tracing::trace!("auth middleware");
             let Some(api_key) = request
                 .headers()
                 .get("authorization")

@@ -175,9 +175,12 @@ where
 
     fn call(&mut self, request: Request) -> Self::Future {
         match self {
-            Service::Enabled { service } => ResponseFuture::Enabled {
-                future: service.call(request),
-            },
+            Service::Enabled { service } => {
+                tracing::trace!("rate limit middleware");
+                ResponseFuture::Enabled {
+                    future: service.call(request),
+                }
+            }
             Service::Disabled { service } => ResponseFuture::Disabled {
                 future: service.call(request),
             },

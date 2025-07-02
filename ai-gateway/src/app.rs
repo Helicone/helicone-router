@@ -172,7 +172,7 @@ impl tower::Service<crate::types::request::Request> for App {
 
     #[inline]
     fn call(&mut self, req: crate::types::request::Request) -> Self::Future {
-        tracing::trace!(uri = %req.uri(), method = %req.method(), version = ?req.version(), "App received request");
+        tracing::trace!(uri = %req.uri(), method = %req.method(), version = ?req.version(), "app received request");
         self.service_stack.call(req)
     }
 }
