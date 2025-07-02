@@ -74,6 +74,7 @@ pub struct Config {
 
     /// If a request is made with a model that is not in the `RouterConfig`
     /// model mapping, then we fallback to this.
+    #[serde(skip)]
     pub default_model_mapping: self::model_mapping::ModelMappingConfig,
     pub helicone: self::helicone::HeliconeConfig,
     /// *ALL* supported providers, independent of router configuration.
@@ -109,13 +110,16 @@ impl Config {
             builder = builder.set_override("helicone.api-key", key).unwrap();
         }
 
-        let config: Config = builder
+        let mut config: Config = builder
             .build()
             .map_err(Error::from)
             .map_err(Box::new)?
             .try_deserialize()
             .map_err(Error::from)
             .map_err(Box::new)?;
+
+        config.default_model_mapping =
+            self::model_mapping::ModelMappingConfig::default();
 
         Ok(config)
     }
