@@ -180,7 +180,7 @@ impl tower::Service<crate::types::request::Request> for App {
 impl App {
     pub async fn new(config: Config) -> Result<Self, InitError> {
         tracing::debug!("creating app");
-        let app_state = Self::build_app_state(&config)?;
+        let app_state = Self::build_app_state(config)?;
         let service_stack =
             Self::build_service_stack(app_state.clone()).await?;
 
@@ -220,7 +220,7 @@ impl App {
                     );
                 })?;
 
-        let cache_manager = setup_cache(config, metrics.clone())?;
+        let cache_manager = setup_cache(&config, metrics.clone())?;
 
         let app_state = AppState(Arc::new(InnerAppState {
             config: config.clone(),
