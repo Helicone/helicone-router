@@ -31,9 +31,8 @@ pub mod openai;
 pub mod registry;
 pub mod service;
 
-use async_openai::error::WrappedError;
 use bytes::Bytes;
-use http::{StatusCode, response::Parts};
+use http::response::Parts;
 use serde::{Serialize, de::DeserializeOwned};
 
 pub use self::service::*;
@@ -249,23 +248,5 @@ where
 
             Ok(Some(Bytes::from(target_bytes)))
         }
-    }
-}
-
-pub(crate) fn openai_error_from_status(
-    status_code: StatusCode,
-    message: Option<String>,
-) -> WrappedError {
-    let kind = self::openai::get_error_type(status_code);
-    let code = self::openai::get_error_code(status_code);
-    let message = message.unwrap_or_else(|| kind.clone());
-
-    async_openai::error::WrappedError {
-        error: async_openai::error::ApiError {
-            message,
-            code,
-            param: None,
-            r#type: Some(kind),
-        },
     }
 }

@@ -651,22 +651,22 @@ impl
     }
 }
 
-pub(super) fn get_error_type(status_code: StatusCode) -> String {
-    if status_code == StatusCode::TOO_MANY_REQUESTS {
+pub(super) fn get_error_type(resp_parts: &Parts) -> String {
+    if resp_parts.status == StatusCode::TOO_MANY_REQUESTS {
         "tokens".to_string()
-    } else if status_code.is_client_error() {
+    } else if resp_parts.status.is_client_error() {
         INVALID_REQUEST_ERROR_TYPE.to_string()
     } else {
         SERVER_ERROR_TYPE.to_string()
     }
 }
 
-pub(super) fn get_error_code(status_code: StatusCode) -> Option<String> {
-    if status_code == StatusCode::UNAUTHORIZED
-        || status_code == StatusCode::FORBIDDEN
+pub(super) fn get_error_code(resp_parts: &Parts) -> Option<String> {
+    if resp_parts.status == StatusCode::UNAUTHORIZED
+        || resp_parts.status == StatusCode::FORBIDDEN
     {
         Some("invalid_api_key".to_string())
-    } else if status_code == StatusCode::TOO_MANY_REQUESTS {
+    } else if resp_parts.status == StatusCode::TOO_MANY_REQUESTS {
         Some("rate_limit_exceeded".to_string())
     } else {
         None

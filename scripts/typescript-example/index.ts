@@ -9,7 +9,7 @@ async function main() {
 
   const response = await client.chat.completions.create({
     // 100+ models available
-    model: "openai/gpt-4o-mini",
+    model: "anthropic/claude-sonnet-4-0",
     messages: [
       {
           role: "system",

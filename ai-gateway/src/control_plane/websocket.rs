@@ -287,7 +287,9 @@ mod tests {
             helicone_config,
         );
         let result = timeout(Duration::from_secs(1), connect_fut).await;
-        let Ok(result) = result else {
+        let result = if let Ok(r) = result {
+            r
+        } else {
             println!("timed out connecting to control plane, passing test");
             return;
         };

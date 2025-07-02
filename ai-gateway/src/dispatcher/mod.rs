@@ -13,8 +13,8 @@ use bytes::Bytes;
 use futures::Stream;
 
 pub use self::service::{Dispatcher, DispatcherService};
-use crate::error::api::ApiError;
+use crate::error::internal::InternalError;
 
 pub(crate) type BoxTryStream<I> =
-    Pin<Box<dyn Stream<Item = Result<I, ApiError>> + Send>>;
+    Pin<Box<dyn Stream<Item = Result<I, InternalError>> + Send>>;
 pub(crate) type SSEStream = BoxTryStream<Bytes>;

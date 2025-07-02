@@ -225,7 +225,7 @@ async fn run_forever_loop(
     request_type: RequestType,
     model: String,
 ) {
-    let mut rng = rand::rng();
+    let mut rng = rand::thread_rng();
     let mut request_count = 0u64;
     let start_time = Instant::now();
 
@@ -250,7 +250,7 @@ async fn run_forever_loop(
                     println!("Requests sent: {}, Current RPS: {:.2}", request_count, current_rps);
                 }
 
-                let delay_ms = rng.random_range(0..=2);
+                let delay_ms = rng.gen_range(0..=2);
                 sleep(Duration::from_millis(delay_ms)).await;
             } => {}
         }

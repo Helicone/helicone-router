@@ -149,8 +149,7 @@ mod tests {
     use super::*;
 
     #[test]
-    #[ignore = "run explicitly with `cargo test export_types` when you want to \
-                update the bindings"]
+    #[ignore]
     fn export_types() {
         fn generate_exports(dir: &Path) -> Option<Vec<String>> {
             let mut exports: Vec<String> = fs::read_dir(dir)
