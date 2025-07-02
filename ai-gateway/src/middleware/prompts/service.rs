@@ -99,7 +99,7 @@ struct Prompt2025Version {
 }
 
 // 0. Use ai-gateway/src/config/minio.rs for s3 client
-// 0. create wrapper type around openai request type that includes new fields 
+// 0. create wrapper type around openai request type that includes new fields
 // for prompt inputs
 
 // 1. use boxfuture as future type
@@ -139,7 +139,7 @@ async fn build_prompt_request(
         return Ok(req);
     };
 
-    // Removing the promptId is unnecessary? eventually we should keep it in the 
+    // Removing the promptId is unnecessary? eventually we should keep it in the
     // request body and update the type
     request_json.as_object_mut().unwrap().remove("promptId");
 
