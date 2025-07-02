@@ -70,6 +70,10 @@ pub enum InternalError {
     AwsRequestSigningError(String),
     /// Cache error: {0}
     CacheError(http_cache::BoxError),
+    /// Prompt error: {0}
+    PromptError(#[from] crate::error::prompts::PromptError),
+    /// Failed to complete prompt task: {0}
+    PromptTaskError(tokio::task::JoinError),
 }
 
 impl IntoResponse for InternalError {
@@ -141,6 +145,8 @@ pub enum InternalErrorMetric {
     AwsRequestSigningError,
     /// Cache error
     CacheError,
+    /// Prompt error
+    PromptError,
 }
 
 impl From<&InternalError> for InternalErrorMetric {
@@ -177,6 +183,8 @@ impl From<&InternalError> for InternalErrorMetric {
                 Self::AwsRequestSigningError
             }
             InternalError::CacheError(_) => Self::CacheError,
+            InternalError::PromptError(_) => Self::PromptError,
+            InternalError::PromptTaskError(_) => Self::TokioTaskError,
         }
     }
 }
