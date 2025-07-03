@@ -81,19 +81,19 @@ impl IntoResponse for InvalidRequestError {
             Self::TooManyRequests(error) => {
                 let mut headers = HeaderMap::new();
                 headers.insert(
-                    "Retry-After",
+                    "retry-after",
                     error.retry_after.to_string().parse().unwrap(),
                 );
                 headers.insert(
-                    "X-Retry-After",
+                    "x-ratelimit-after",
                     error.retry_after.to_string().parse().unwrap(),
                 );
                 headers.insert(
-                    "X-RateLimit-Limit",
+                    "x-ratelimit-limit",
                     error.ratelimit_limit.to_string().parse().unwrap(),
                 );
                 headers.insert(
-                    "X-RateLimit-Remaining",
+                    "x-ratelimit-remaining",
                     error.ratelimit_remaining.to_string().parse().unwrap(),
                 );
                 (

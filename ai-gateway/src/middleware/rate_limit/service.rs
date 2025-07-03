@@ -225,7 +225,7 @@ pin_project_lite::pin_project! {
 fn increment_retry_after_header<ResponseBody>(
     res: &mut http::Response<ResponseBody>,
 ) {
-    if let Some(retry_after) = res.headers().get("Retry-After") {
+    if let Some(retry_after) = res.headers().get("retry-after") {
         if let Some(retry_after_value) = retry_after
             .to_str()
             .ok()
@@ -235,11 +235,11 @@ fn increment_retry_after_header<ResponseBody>(
             let new_retry_after = retry_after_value + 1;
             tracing::info!("setting the retry after to: {}", new_retry_after);
             res.headers_mut().insert(
-                "Retry-After",
+                "retry-after",
                 new_retry_after.to_string().parse().unwrap(),
             );
             res.headers_mut().insert(
-                "X-Ratelimit-After",
+                "x-ratelimit-after",
                 new_retry_after.to_string().parse().unwrap(),
             );
         }

@@ -190,11 +190,11 @@ where
 
         if let Ok(mut res) = inner.call(req).await {
             res.headers_mut().insert(
-                "X-RateLimit-Limit",
+                "x-ratelimit-limit",
                 ratelimit_limit.to_string().parse().unwrap(),
             );
             res.headers_mut().insert(
-                "X-RateLimit-Remaining",
+                "x-ratelimit-remaining",
                 ratelimit_remaining.to_string().parse().unwrap(),
             );
             Ok(res)
