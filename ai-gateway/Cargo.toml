@@ -21,6 +21,7 @@ aws-sigv4 = { workspace = true }
 aws-smithy-runtime-api = { workspace = true }
 aws-credential-types = { workspace = true }
 backon = { workspace = true, features = ['tokio-sleep'] }
+base64 = { workspace = true }
 bytes = { workspace = true, features = ['serde'] }
 cache_control = { workspace = true }
 cfg-if = { workspace = true }
@@ -44,6 +45,7 @@ humantime-serde = { workspace = true }
 hyper = { workspace = true }
 hyper-util = { workspace = true, features = ['server-auto', 'server-graceful', 'tokio'] }
 indexmap = { workspace = true, features = ['serde'] }
+infer = { workspace = true }
 isocountry = { workspace = true }
 jemallocator = { workspace = true }
 json-patch = { workspace = true }

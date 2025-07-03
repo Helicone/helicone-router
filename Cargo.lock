@@ -52,6 +52,7 @@ dependencies = [
  "axum-core",
  "axum-server",
  "backon",
+ "base64 0.22.1",
  "bytes",
  "cache_control",
  "cargo-husky",
@@ -76,6 +77,7 @@ dependencies = [
  "hyper 1.6.0",
  "hyper-util",
  "indexmap 2.10.0",
+ "infer 0.19.0",
  "isocountry",
  "jemallocator",
  "json-patch",
@@ -1222,6 +1224,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6fac387a98bb7c37292057cffc56d62ecb629900026402633ae9160df93a8766"
 dependencies = [
  "nom",
+]
+
+[[package]]
+name = "cfb"
+version = "0.7.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d38f2da7a0a2c4ccf0065be06397cc26a81f4e528be095826eee9d4adbb8c60f"
+dependencies = [
+ "byteorder",
+ "fnv",
+ "uuid",
 ]
 
 [[package]]
@@ -2450,7 +2463,7 @@ dependencies = [
  "base64 0.13.1",
  "futures-lite 1.13.0",
  "http 0.2.12",
- "infer",
+ "infer 0.2.3",
  "pin-project-lite",
  "rand 0.7.3",
  "serde",
@@ -2792,6 +2805,15 @@ name = "infer"
 version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "64e9829a50b42bb782c1df523f78d332fe371b10c661e78b7a3c34b0198e9fac"
+
+[[package]]
+name = "infer"
+version = "0.19.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a588916bfdfd92e71cacef98a63d9b1f0d74d6599980d11894290e7ddefffcf7"
+dependencies = [
+ "cfb",
+]
 
 [[package]]
 name = "instant"

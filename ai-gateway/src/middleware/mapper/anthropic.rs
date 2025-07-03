@@ -7,7 +7,8 @@ use crate::{
     endpoints::openai::chat_completions::system_prompt,
     error::mapper::MapperError,
     middleware::mapper::{
-        DEFAULT_MAX_TOKENS, TryConvertError, model::ModelMapper,
+        DEFAULT_MAX_TOKENS, TryConvertError, mime_from_data_uri,
+        model::ModelMapper,
     },
     types::{
         model_id::{ModelId, Version},
@@ -142,10 +143,12 @@ impl
                                                 data: image.image_url.url,
                                             }
                                         } else {
+                                            let mime = mime_from_data_uri(&image.image_url.url)?;
+                                            let (_, b64) = image.image_url.url.split_once(',')?;
                                             anthropic::ImageSource {
                                                 type_: "base64".to_string(),
-                                                media_type: "image/png".to_string(),
-                                                data: image.image_url.url,
+                                                media_type: mime.mime_type().to_string(),
+                                                data: b64.to_string(),
                                             }
                                         };
                                         Some(anthropic::ContentBlock::Image { source: mapped_image })

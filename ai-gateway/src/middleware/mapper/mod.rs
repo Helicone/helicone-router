@@ -32,6 +32,7 @@ pub mod registry;
 pub mod service;
 
 use async_openai::error::WrappedError;
+use base64::Engine;
 use bytes::Bytes;
 use http::{StatusCode, response::Parts};
 use serde::{Serialize, de::DeserializeOwned};
@@ -268,4 +269,22 @@ pub(crate) fn openai_error_from_status(
             r#type: Some(kind),
         },
     }
+}
+
+pub(super) fn mime_from_data_uri(uri: &str) -> Option<infer::Type> {
+    // Split on the first comma.  If no comma => not a data-URI.
+    let (_first, b64) = uri.split_once(',')?;
+
+    // Only decode the first portion of base64 data for efficiency.
+    // Base64 has 4:3 ratio, so 64 chars -> ~48 bytes, which is plenty for MIME
+    // detection.
+    let b64_prefix = &b64[..b64.len().min(64)];
+
+    // Decode only the prefix into a fixed buffer.
+    let mut header = [0u8; 48];
+    let n = base64::engine::general_purpose::STANDARD
+        .decode_slice(b64_prefix.as_bytes(), &mut header)
+        .ok()?;
+
+    infer::get(&header[..n])
 }
