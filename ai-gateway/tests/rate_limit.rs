@@ -2,7 +2,9 @@ use std::collections::HashMap;
 
 use ai_gateway::{
     config::{
-        Config, helicone::HeliconeFeatures, rate_limit::GlobalRateLimitConfig,
+        Config,
+        helicone::HeliconeFeatures,
+        rate_limit::{GlobalRateLimitConfig, RateLimitStore},
     },
     control_plane::types::{Key, hash_key},
     tests::{TestDefault, harness::Harness, mock::MockArgs},
@@ -17,7 +19,8 @@ use uuid::Uuid;
 #[serial_test::serial]
 async fn rate_limit_capacity_enforced_in_memory() {
     rate_limit_capacity_enforced_impl(
-        ai_gateway::config::rate_limit::enabled_for_test_in_memory(),
+        ai_gateway::config::rate_limit::store_enabled_for_test_in_memory(),
+        ai_gateway::config::rate_limit::config_enabled_for_test(),
     )
     .await;
 }
@@ -26,17 +29,42 @@ async fn rate_limit_capacity_enforced_in_memory() {
 #[serial_test::serial]
 async fn rate_limit_per_user_isolation_in_memory() {
     rate_limit_per_user_isolation_impl(
-        ai_gateway::config::rate_limit::enabled_for_test_in_memory(),
+        ai_gateway::config::rate_limit::store_enabled_for_test_in_memory(),
+        ai_gateway::config::rate_limit::config_enabled_for_test(),
+    )
+    .await;
+}
+
+#[cfg(feature = "redis-testing")]
+#[tokio::test]
+#[serial_test::serial]
+async fn rate_limit_capacity_enforced_redis() {
+    rate_limit_capacity_enforced_impl(
+        ai_gateway::config::rate_limit::store_enabled_for_test_redis(),
+        ai_gateway::config::rate_limit::config_enabled_for_test(),
+    )
+    .await;
+}
+
+#[cfg(feature = "redis-testing")]
+#[tokio::test]
+#[serial_test::serial]
+async fn rate_limit_per_user_isolation_redis() {
+    rate_limit_per_user_isolation_impl(
+        ai_gateway::config::rate_limit::store_enabled_for_test_redis(),
+        ai_gateway::config::rate_limit::config_enabled_for_test(),
     )
     .await;
 }
 
 async fn rate_limit_capacity_enforced_impl(
+    rate_limit_store: RateLimitStore,
     rate_limit_config: GlobalRateLimitConfig,
 ) {
     let mut config = Config::test_default();
     config.helicone.features = HeliconeFeatures::All;
     config.global.rate_limit = Some(rate_limit_config);
+    config.rate_limit_store = rate_limit_store;
     let mock_args = MockArgs::builder()
         .stubs(HashMap::from([
             ("success:openai:chat_completion", 6.into()),
@@ -104,11 +132,13 @@ async fn rate_limit_capacity_enforced_impl(
 }
 
 async fn rate_limit_per_user_isolation_impl(
+    rate_limit_store: RateLimitStore,
     rate_limit_config: GlobalRateLimitConfig,
 ) {
     let mut config = Config::test_default();
     config.helicone.features = HeliconeFeatures::All;
     config.global.rate_limit = Some(rate_limit_config);
+    config.rate_limit_store = rate_limit_store;
 
     let mock_args = MockArgs::builder()
         .stubs(HashMap::from([

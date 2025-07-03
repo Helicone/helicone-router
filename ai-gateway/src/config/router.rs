@@ -92,16 +92,11 @@ pub enum RouterRateLimitConfig {
     None,
     /// Routers must configure their own rate limit settings.
     Custom {
-        #[serde(default = "default_rate_limit_store")]
+        /// If not specific, the store from the rate-limit-store config will be used.
         store: Option<RateLimitStore>,
         #[serde(default, flatten)]
         limits: LimitsConfig,
     },
-}
-
-#[allow(clippy::unnecessary_wraps)]
-fn default_rate_limit_store() -> Option<RateLimitStore> {
-    Some(RateLimitStore::InMemory)
 }
 
 impl RouterRateLimitConfig {

@@ -84,6 +84,7 @@ pub struct Config {
     pub providers: self::providers::ProvidersConfig,
 
     pub cache_store: self::cache::CacheStore,
+    pub rate_limit_store: self::rate_limit::RateLimitStore,
     /// Global middleware configuration, e.g. rate limiting, caching, etc.
     pub global: MiddlewareConfig,
     pub routers: self::router::RouterConfigs,
@@ -192,6 +193,7 @@ impl crate::tests::TestDefault for Config {
             deployment_target: DeploymentTarget::Sidecar,
             discover: self::discover::DiscoverConfig::test_default(),
             cache_store: self::cache::CacheStore::default(),
+            rate_limit_store: self::rate_limit::RateLimitStore::default(),
             routers: self::router::RouterConfigs::test_default(),
             response_headers:
                 self::response_headers::ResponseHeadersConfig::default(),

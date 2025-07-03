@@ -52,7 +52,7 @@ impl Layer {
     pub fn global(app_state: &AppState) -> Self {
         if let Some(rate_limit_config) = &app_state.0.config.global.rate_limit {
             if let RateLimitStore::Redis(redis_config) =
-                &rate_limit_config.store
+                &app_state.0.config.rate_limit_store
             {
                 Self::new_redis_inner(
                     rate_limit_config.limits.clone(),
@@ -114,7 +114,11 @@ impl Layer {
                 inner: InnerLayer::None,
             }),
             RouterRateLimitConfig::Custom { store, limits } => {
-                if let Some(store) = store
+                let ratelimit_store = store.clone().or_else(|| {
+                    Some(app_state.0.config.rate_limit_store.clone())
+                });
+
+                if let Some(store) = ratelimit_store
                     && let RateLimitStore::Redis(redis_config) = store
                     && let Ok(layer) = RedisRateLimitLayer::new(
                         Arc::new(limits.clone()),
@@ -348,7 +352,6 @@ mod tests {
     #[tokio::test]
     async fn global_app_with_none_router() {
         let app_state = create_test_app_state(GlobalRateLimitConfig {
-            store: RateLimitStore::InMemory,
             limits: Some(create_test_limits()),
             cleanup_interval: Duration::from_secs(300),
         })
@@ -365,7 +368,6 @@ mod tests {
     #[tokio::test]
     async fn global_app_with_custom_router() {
         let app_state = create_test_app_state(GlobalRateLimitConfig {
-            store: RateLimitStore::InMemory,
             limits: Some(create_test_limits()),
             cleanup_interval: Duration::from_secs(300),
         })
@@ -386,7 +388,6 @@ mod tests {
     #[tokio::test]
     async fn router_specific_app_with_custom_router() {
         let app_state = create_test_app_state(GlobalRateLimitConfig {
-            store: RateLimitStore::InMemory,
             limits: None,
             cleanup_interval: Duration::from_secs(300),
         })

@@ -16,8 +16,6 @@ pub type RateLimiterConfig = GovernorConfig<
 #[derive(Debug, Clone, Deserialize, Serialize, Eq, PartialEq)]
 #[serde(rename_all = "kebab-case")]
 pub struct GlobalRateLimitConfig {
-    #[serde(default)]
-    pub store: RateLimitStore,
     #[serde(default, flatten, skip_serializing_if = "Option::is_none")]
     pub limits: Option<LimitsConfig>,
     #[serde(with = "humantime_serde", default = "default_cleanup_interval")]
@@ -64,7 +62,6 @@ fn limiter_config(limits: Option<&LimitsConfig>) -> Option<RateLimiterConfig> {
 impl Default for GlobalRateLimitConfig {
     fn default() -> Self {
         Self {
-            store: RateLimitStore::InMemory,
             limits: None,
             cleanup_interval: default_cleanup_interval(),
         }
@@ -72,7 +69,7 @@ impl Default for GlobalRateLimitConfig {
 }
 
 #[derive(Debug, Default, Clone, Deserialize, Serialize, Eq, PartialEq)]
-#[serde(deny_unknown_fields, rename_all = "kebab-case")]
+#[serde(rename_all = "kebab-case", tag = "type")]
 pub enum RateLimitStore {
     #[default]
     InMemory,
@@ -91,7 +88,6 @@ pub(crate) fn default_refill_frequency() -> Duration {
 impl crate::tests::TestDefault for GlobalRateLimitConfig {
     fn test_default() -> Self {
         Self {
-            store: RateLimitStore::InMemory,
             limits: None,
             cleanup_interval: Duration::from_secs(60),
         }
@@ -100,10 +96,9 @@ impl crate::tests::TestDefault for GlobalRateLimitConfig {
 
 #[cfg(feature = "testing")]
 #[must_use]
-pub fn enabled_for_test_in_memory() -> GlobalRateLimitConfig {
+pub fn config_enabled_for_test() -> GlobalRateLimitConfig {
     use crate::tests::TestDefault;
     GlobalRateLimitConfig {
-        store: RateLimitStore::InMemory,
         limits: Some(LimitsConfig::test_default()),
         cleanup_interval: Duration::from_secs(60),
     }
@@ -111,18 +106,20 @@ pub fn enabled_for_test_in_memory() -> GlobalRateLimitConfig {
 
 #[cfg(feature = "testing")]
 #[must_use]
-pub fn enabled_for_test_redis() -> GlobalRateLimitConfig {
-    use crate::{tests::TestDefault, types::secret::Secret};
-    GlobalRateLimitConfig {
-        store: RateLimitStore::Redis(RedisConfig {
-            url: Secret::from(
-                "redis://localhost:6340".parse::<url::Url>().unwrap(),
-            ),
-            connection_timeout: Duration::from_secs(1),
-        }),
-        limits: Some(LimitsConfig::test_default()),
-        cleanup_interval: Duration::from_secs(60),
-    }
+pub fn store_enabled_for_test_in_memory() -> RateLimitStore {
+    RateLimitStore::InMemory
+}
+
+#[cfg(feature = "testing")]
+#[must_use]
+pub fn store_enabled_for_test_redis() -> RateLimitStore {
+    use crate::types::secret::Secret;
+    RateLimitStore::Redis(RedisConfig {
+        url: Secret::from(
+            "redis://localhost:6379".parse::<url::Url>().unwrap(),
+        ),
+        connection_timeout: Duration::from_secs(1),
+    })
 }
 
 #[derive(Debug, Default, Clone, Deserialize, Serialize, Eq, PartialEq)]
