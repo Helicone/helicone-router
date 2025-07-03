@@ -11,7 +11,7 @@ use crate::{
 };
 
 #[derive(Debug, Display)]
-#[displaydoc("Retry after {ratelimit_after}s.")]
+#[displaydoc("Retry after {retry_after}s.")]
 pub struct TooManyRequestsError {
     /// Request limit
     pub ratelimit_limit: u64,
@@ -19,7 +19,7 @@ pub struct TooManyRequestsError {
     pub ratelimit_remaining: u64,
     /// Number of seconds in which the API will become available again after
     /// its rate limit has been exceeded
-    pub ratelimit_after: u64,
+    pub retry_after: u64,
 }
 
 /// User errors
@@ -82,11 +82,11 @@ impl IntoResponse for InvalidRequestError {
                 let mut headers = HeaderMap::new();
                 headers.insert(
                     "Retry-After",
-                    error.ratelimit_after.to_string().parse().unwrap(),
+                    error.retry_after.to_string().parse().unwrap(),
                 );
                 headers.insert(
                     "X-Retry-After",
-                    error.ratelimit_after.to_string().parse().unwrap(),
+                    error.retry_after.to_string().parse().unwrap(),
                 );
                 headers.insert(
                     "X-RateLimit-Limit",

@@ -205,7 +205,7 @@ where
         let ratelimit_limit = u64::from(gcra.capacity.get());
         let ratelimit_remaining = 0;
         let difference = earliest_allowed_time - now_ms;
-        let ratelimit_after = Duration::from_millis(
+        let retry_after = Duration::from_millis(
             difference.try_into().expect("value too large"),
         )
         .as_secs()
@@ -214,7 +214,7 @@ where
             InvalidRequestError::TooManyRequests(TooManyRequestsError {
                 ratelimit_limit,
                 ratelimit_remaining,
-                ratelimit_after,
+                retry_after,
             }),
         ))
     }
