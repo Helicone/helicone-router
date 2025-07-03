@@ -18,23 +18,29 @@ use crate::{
         invalid_req::{InvalidRequestError, TooManyRequestsError},
     },
     middleware::rate_limit::extractor::get_redis_rl_key,
-    types::request::Request,
+    types::{request::Request, router::RouterId},
 };
 
 #[derive(Debug, Clone)]
 pub struct RedisRateLimitLayer {
     pub config: Arc<LimitsConfig>,
     pub pool: Pool<Client>,
+    pub router_id: Option<RouterId>,
 }
 
 impl RedisRateLimitLayer {
     pub fn new(
         config: Arc<LimitsConfig>,
         url: url::Url,
+        router_id: Option<RouterId>,
     ) -> Result<Self, InitError> {
         let client = Client::open(url)?;
         let pool = Pool::builder().build(client)?;
-        Ok(Self { config, pool })
+        Ok(Self {
+            config,
+            pool,
+            router_id,
+        })
     }
 }
 
@@ -46,6 +52,7 @@ impl<S> tower::layer::Layer<S> for RedisRateLimitLayer {
             service,
             self.config.clone(),
             self.pool.clone(),
+            self.router_id.clone(),
         )
     }
 }
@@ -55,6 +62,7 @@ pub struct RedisRateLimitService<S> {
     pub inner: S,
     pub config: Arc<LimitsConfig>,
     pub pool: Pool<Client>,
+    router_id: Option<RouterId>,
 }
 
 impl<S> RedisRateLimitService<S> {
@@ -62,11 +70,13 @@ impl<S> RedisRateLimitService<S> {
         inner: S,
         config: Arc<LimitsConfig>,
         pool: Pool<Client>,
+        router_id: Option<RouterId>,
     ) -> Self {
         Self {
             inner,
             config,
             pool,
+            router_id,
         }
     }
 }
@@ -99,7 +109,14 @@ where
         let mut this = self.clone();
         std::mem::swap(self, &mut this);
         Box::pin(async move {
-            make_request(&mut this.inner, &this.config, &this.pool, req).await
+            make_request(
+                &mut this.inner,
+                &this.config,
+                &this.pool,
+                req,
+                this.router_id.as_ref(),
+            )
+            .await
         })
     }
 }
@@ -109,6 +126,7 @@ async fn make_request<S>(
     config: &LimitsConfig,
     pool: &Pool<Client>,
     req: Request,
+    router_id: Option<&RouterId>,
 ) -> Result<Response, ApiError>
 where
     S: tower::Service<Request, Response = Response, Error = ApiError>
@@ -120,7 +138,7 @@ where
     tracing::info!("making request with redis on config: {:?}", config);
     let mut conn = pool.get().map_err(InternalError::PoolError)?;
 
-    let key = get_redis_rl_key(&req)?;
+    let key = get_redis_rl_key(&req, router_id)?;
 
     let now_ms = SystemTime::now()
         .duration_since(UNIX_EPOCH)
@@ -155,11 +173,18 @@ where
         new_tat - (interval_per_token_ms * u128::from(gcra.capacity.get()));
 
     if earliest_allowed_time <= now_ms {
-        let _: () =
-            conn.set(&key, new_tat).map_err(InternalError::RedisError)?;
+        let _: () = conn
+            .set_ex(&key, new_tat, gcra.refill_frequency.as_secs() + 1)
+            .map_err(InternalError::RedisError)?;
 
-        let ratelimit_remaining = u128::from(gcra.capacity.get())
-            - (new_tat - now_ms) / interval_per_token_ms;
+        let time_until_tat = tat.saturating_sub(now_ms);
+        let tokens_used = time_until_tat
+            .saturating_add(interval_per_token_ms - 1)
+            .saturating_div(interval_per_token_ms)
+            .saturating_add(1);
+        let ratelimit_remaining = gcra.capacity.get().saturating_sub(
+            u32::try_from(tokens_used).expect("value too large"),
+        );
 
         let ratelimit_limit = u64::from(gcra.capacity.get());
 

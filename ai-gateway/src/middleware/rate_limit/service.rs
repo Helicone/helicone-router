@@ -77,7 +77,7 @@ impl Layer {
     #[must_use]
     fn new_redis_inner(rl: Option<LimitsConfig>, url: url::Url) -> Self {
         if let Some(rl) = rl
-            && let Ok(layer) = RedisRateLimitLayer::new(Arc::new(rl), url)
+            && let Ok(layer) = RedisRateLimitLayer::new(Arc::new(rl), url, None)
         {
             Self {
                 inner: InnerLayer::Redis(layer),
@@ -124,13 +124,20 @@ impl Layer {
                     && let RateLimitStore::Redis(redis_config) = store
                     && let Ok(layer) = RedisRateLimitLayer::new(
                         Arc::new(limits.clone()),
-                        url::Url::parse(redis_config.url.expose()).map_err(
-                            |_e| {
+                        url::Url::parse(redis_config.url.expose())
+                            .map_err(|_e| {
                                 InitError::InvalidRateLimitConfig(
                                     "Invalid redis url",
                                 )
-                            },
-                        )?,
+                            })
+                            .map_err(|e| {
+                                tracing::error!(
+                                    "error creating redis layer: {:?}",
+                                    e
+                                );
+                                e
+                            })?,
+                        Some(router_id.clone()),
                     )
                 {
                     return Ok(Self {

@@ -3,7 +3,7 @@ use tower_governor::{GovernorError, key_extractor::KeyExtractor};
 
 use crate::{
     error::internal::InternalError,
-    types::{extensions::AuthContext, user::UserId},
+    types::{extensions::AuthContext, router::RouterId, user::UserId},
 };
 
 #[derive(Debug, Clone)]
@@ -24,7 +24,14 @@ fn get_user_id<T>(req: &Request<T>) -> Result<UserId, InternalError> {
     Ok(ctx.user_id)
 }
 
-pub fn get_redis_rl_key<T>(req: &Request<T>) -> Result<String, InternalError> {
+pub fn get_redis_rl_key<T>(
+    req: &Request<T>,
+    router_id: Option<&RouterId>,
+) -> Result<String, InternalError> {
     let user_id = get_user_id(req)?;
-    Ok(format!("rl:per-api-key:{user_id}"))
+    if let Some(router_id) = router_id {
+        Ok(format!("rl:per-api-key:{router_id}:{user_id}"))
+    } else {
+        Ok(format!("rl:per-api-key:GLOBAL_ROUTER:{user_id}"))
+    }
 }

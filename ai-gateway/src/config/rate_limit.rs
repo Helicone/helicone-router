@@ -109,6 +109,22 @@ pub fn enabled_for_test_in_memory() -> GlobalRateLimitConfig {
     }
 }
 
+#[cfg(feature = "testing")]
+#[must_use]
+pub fn enabled_for_test_redis() -> GlobalRateLimitConfig {
+    use crate::{tests::TestDefault, types::secret::Secret};
+    GlobalRateLimitConfig {
+        store: RateLimitStore::Redis(RedisConfig {
+            url: Secret::from(
+                "redis://localhost:6340".parse::<url::Url>().unwrap(),
+            ),
+            connection_timeout: Duration::from_secs(1),
+        }),
+        limits: Some(LimitsConfig::test_default()),
+        cleanup_interval: Duration::from_secs(60),
+    }
+}
+
 #[derive(Debug, Default, Clone, Deserialize, Serialize, Eq, PartialEq)]
 #[serde(deny_unknown_fields, rename_all = "kebab-case")]
 pub struct LimitsConfig {

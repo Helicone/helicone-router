@@ -141,6 +141,14 @@ name = "rate_limit_combinations"
 required-features = ["testing"]
 
 [[test]]
+name = "redis_rate_limit"
+required-features = ["testing", "redis-testing"]
+
+[[test]]
+name = "redis_rate_limit_combinations"
+required-features = ["testing", "redis-testing"]
+
+[[test]]
 name = "rate_limit_monitor"
 required-features = ["testing"]
 
