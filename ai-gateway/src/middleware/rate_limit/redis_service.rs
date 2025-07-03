@@ -1,10 +1,11 @@
 use std::{
     sync::Arc,
     task::{Context, Poll},
-    time::{Duration, SystemTime, UNIX_EPOCH},
+    time::Duration,
 };
 
 use axum_core::response::Response;
+use chrono::{DateTime, Utc};
 use futures::future::BoxFuture;
 use r2d2::Pool;
 use redis::{Client, Commands};
@@ -136,10 +137,17 @@ where
 
     let key = get_redis_rl_key(&req, router_id)?;
 
-    let now_ms = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .unwrap()
-        .as_millis();
+    let now_ms = req
+        .extensions()
+        .get::<DateTime<Utc>>()
+        .copied()
+        .unwrap_or_else(|| {
+            tracing::warn!(
+                "did not find expected DateTime<Utc> in req extensions"
+            );
+            Utc::now()
+        })
+        .timestamp_millis();
 
     let gcra = &config.per_api_key;
     let interval_per_token_ms = gcra
@@ -152,10 +160,12 @@ where
             );
             default_refill_frequency()
         })
-        .as_millis();
+        .as_millis()
+        .try_into()
+        .expect("value too large");
 
     // get previous theoretical arrival time (TAT)
-    let existing_tat: Option<u128> =
+    let existing_tat: Option<i64> =
         conn.get(&key).map_err(InternalError::RedisError)?;
     let tat = existing_tat.unwrap_or(now_ms);
 
@@ -166,7 +176,7 @@ where
     };
 
     let earliest_allowed_time =
-        new_tat - (interval_per_token_ms * u128::from(gcra.capacity.get()));
+        new_tat - (interval_per_token_ms * i64::from(gcra.capacity.get()));
 
     if earliest_allowed_time <= now_ms {
         let _: () = conn

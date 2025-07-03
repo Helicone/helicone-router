@@ -1,8 +1,6 @@
 use std::sync::Arc;
 
-use chrono::{DateTime, Utc};
 use derive_more::{AsRef, From, Into};
-use tokio::time::Instant;
 
 use super::{
     model_id::ModelId, org::OrgId, provider::ProviderKeys, user::UserId,
@@ -28,8 +26,6 @@ pub struct RequestContext {
     /// If `None`, the router is configured to not require auth for requests,
     /// disabling some features.
     pub auth_context: Option<AuthContext>,
-    pub start_time: DateTime<Utc>,
-    pub start_instant: Instant,
 }
 
 #[derive(Debug, Clone)]

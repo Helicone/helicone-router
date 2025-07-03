@@ -5,13 +5,16 @@ use std::{
 };
 
 use bytes::Bytes;
-use chrono::DateTime;
+use chrono::{DateTime, Utc};
 use futures::{TryStreamExt, future::BoxFuture};
 use http::{HeaderMap, HeaderName, HeaderValue, StatusCode, uri::PathAndQuery};
 use http_body_util::BodyExt;
 use opentelemetry::KeyValue;
 use reqwest::RequestBuilder;
-use tokio::sync::{mpsc::Sender, oneshot};
+use tokio::{
+    sync::{mpsc::Sender, oneshot},
+    time::Instant,
+};
 use tower::{Service, ServiceBuilder};
 use tracing::{Instrument, info_span};
 
@@ -229,7 +232,26 @@ impl Dispatcher {
             .copied()
             .ok_or(InternalError::ExtensionNotFound("InferenceProvider"))?;
         let router_id = req.extensions().get::<RouterId>().cloned();
-        let start_instant = req_ctx.start_instant;
+        let start_instant = req
+            .extensions()
+            .get::<Instant>()
+            .copied()
+            .unwrap_or_else(|| {
+                tracing::warn!(
+                    "did not find expected Instant in req extensions"
+                );
+                Instant::now()
+            });
+        let start_time = req
+            .extensions()
+            .get::<DateTime<Utc>>()
+            .copied()
+            .unwrap_or_else(|| {
+                tracing::warn!(
+                    "did not find expected DateTime<Utc> in req extensions"
+                );
+                Utc::now()
+            });
 
         let target_url = base_url
             .join(extracted_path_and_query.as_str())
@@ -308,7 +330,6 @@ impl Dispatcher {
                 .auth_context
                 .clone()
                 .ok_or(InternalError::ExtensionNotFound("AuthContext"))?;
-            let start_time = req_ctx.start_time;
 
             let response_logger = LoggerService::builder()
                 .app_state(self.app_state.clone())
