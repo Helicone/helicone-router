@@ -1,6 +1,6 @@
 use axum_core::response::IntoResponse;
 use displaydoc::Display;
-use http::StatusCode;
+use http::{HeaderMap, StatusCode};
 use thiserror::Error;
 use tracing::debug;
 
@@ -9,6 +9,18 @@ use crate::{
     middleware::mapper::openai::INVALID_REQUEST_ERROR_TYPE,
     types::{json::Json, provider::InferenceProvider},
 };
+
+#[derive(Debug, Display)]
+#[displaydoc("Retry after {ratelimit_after}s.")]
+pub struct TooManyRequestsError {
+    /// Request limit
+    pub ratelimit_limit: u64,
+    /// Number of requests left for the time window
+    pub ratelimit_remaining: u64,
+    /// Number of seconds in which the API will become available again after
+    /// its rate limit has been exceeded
+    pub ratelimit_after: u64,
+}
 
 /// User errors
 #[derive(Debug, Error, Display, strum::AsRefStr)]
@@ -33,6 +45,8 @@ pub enum InvalidRequestError {
     Provider4xxError(StatusCode),
     /// Invalid cache config
     InvalidCacheConfig,
+    /// Too many requests: {0}
+    TooManyRequests(TooManyRequestsError),
 }
 
 impl IntoResponse for InvalidRequestError {
@@ -64,6 +78,40 @@ impl IntoResponse for InvalidRequestError {
                 }),
             )
                 .into_response(),
+            Self::TooManyRequests(error) => {
+                let mut headers = HeaderMap::new();
+                headers.insert(
+                    "Retry-After",
+                    error.ratelimit_after.to_string().parse().unwrap(),
+                );
+                headers.insert(
+                    "X-Retry-After",
+                    error.ratelimit_after.to_string().parse().unwrap(),
+                );
+                headers.insert(
+                    "X-RateLimit-Limit",
+                    error.ratelimit_limit.to_string().parse().unwrap(),
+                );
+                headers.insert(
+                    "X-RateLimit-Remaining",
+                    error.ratelimit_remaining.to_string().parse().unwrap(),
+                );
+                (
+                    StatusCode::TOO_MANY_REQUESTS,
+                    headers,
+                    Json(ErrorResponse {
+                        error: ErrorDetails {
+                            message,
+                            r#type: Some(
+                                INVALID_REQUEST_ERROR_TYPE.to_string(),
+                            ),
+                            param: None,
+                            code: None,
+                        },
+                    }),
+                )
+                    .into_response()
+            }
             _ => (
                 StatusCode::BAD_REQUEST,
                 Json(ErrorResponse {
@@ -97,6 +145,8 @@ pub enum InvalidRequestErrorMetric {
     InvalidRequestBody,
     /// Upstream 4xx error
     Provider4xxError,
+    /// Too many requests
+    TooManyRequests,
 }
 
 impl From<&InvalidRequestError> for InvalidRequestErrorMetric {
@@ -116,6 +166,7 @@ impl From<&InvalidRequestError> for InvalidRequestErrorMetric {
                 Self::InvalidRequestBody
             }
             InvalidRequestError::Provider4xxError(_) => Self::Provider4xxError,
+            InvalidRequestError::TooManyRequests(_) => Self::TooManyRequests,
         }
     }
 }

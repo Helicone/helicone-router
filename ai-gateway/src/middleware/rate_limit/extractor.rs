@@ -26,5 +26,5 @@ fn get_user_id<T>(req: &Request<T>) -> Result<UserId, InternalError> {
 
 pub fn get_redis_rl_key<T>(req: &Request<T>) -> Result<String, InternalError> {
     let user_id = get_user_id(req)?;
-    Ok(format!("rl:per-api-key:{}", user_id))
+    Ok(format!("rl:per-api-key:{user_id}"))
 }

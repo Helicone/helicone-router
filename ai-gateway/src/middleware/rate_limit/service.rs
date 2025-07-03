@@ -6,6 +6,7 @@ use std::{
 };
 
 use governor::middleware::StateInformationMiddleware;
+use http::Response;
 use tower_governor::{GovernorLayer, governor::GovernorConfigBuilder};
 
 use super::extractor::RateLimitKeyExtractor;
@@ -49,10 +50,6 @@ impl Layer {
     /// Create a new rate limit layer to be applied globally.
     #[must_use]
     pub fn global(app_state: &AppState) -> Self {
-        // if let Some(rate_limit_config) =
-        // &app_state.0.config.global.rate_limit
-        // && let RateLimitStore::Redis(redis_config) =
-        //     &rate_limit_config.store
         if let Some(rate_limit_config) = &app_state.0.config.global.rate_limit {
             if let RateLimitStore::Redis(redis_config) =
                 &rate_limit_config.store
@@ -217,33 +214,72 @@ pin_project_lite::pin_project! {
     }
 }
 
-impl<InMemoryFuture, RedisFuture, DisabledFuture, Response, Error> Future
+// add a second to the retry after header to prevent rounding errors
+fn increment_retry_after_header<ResponseBody>(
+    res: &mut http::Response<ResponseBody>,
+) {
+    if let Some(retry_after) = res.headers().get("Retry-After") {
+        if let Some(retry_after_value) = retry_after
+            .to_str()
+            .ok()
+            .and_then(|s| s.parse::<u64>().ok())
+        {
+            tracing::info!("the retry after is: {}", retry_after_value);
+            let new_retry_after = retry_after_value + 1;
+            tracing::info!("setting the retry after to: {}", new_retry_after);
+            res.headers_mut().insert(
+                "Retry-After",
+                new_retry_after.to_string().parse().unwrap(),
+            );
+            res.headers_mut().insert(
+                "X-Ratelimit-After",
+                new_retry_after.to_string().parse().unwrap(),
+            );
+        }
+    }
+}
+
+impl<InMemoryFuture, RedisFuture, DisabledFuture, ResponseBody, Error> Future
     for ResponseFuture<InMemoryFuture, RedisFuture, DisabledFuture>
 where
-    InMemoryFuture: Future<Output = Result<Response, Error>>,
-    RedisFuture: Future<Output = Result<Response, Error>>,
-    DisabledFuture: Future<Output = Result<Response, Error>>,
+    InMemoryFuture: Future<Output = Result<Response<ResponseBody>, Error>>,
+    RedisFuture: Future<Output = Result<Response<ResponseBody>, Error>>,
+    DisabledFuture: Future<Output = Result<Response<ResponseBody>, Error>>,
 {
-    type Output = Result<Response, Error>;
+    type Output = Result<Response<ResponseBody>, Error>;
 
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         match self.project() {
-            EnumProj::InMemory { future } => future.poll(cx),
+            EnumProj::InMemory { future } => {
+                let result = std::task::ready!(future.poll(cx));
+                if let Ok(mut res) = result {
+                    increment_retry_after_header(&mut res);
+                    Poll::Ready(Ok(res))
+                } else {
+                    Poll::Ready(result)
+                }
+            }
             EnumProj::Redis { future } => future.poll(cx),
             EnumProj::Disabled { future } => future.poll(cx),
         }
     }
 }
 
-impl<S, Request> tower::Service<Request> for Service<S>
+impl<S, Request, ResponseBody> tower::Service<Request> for Service<S>
 where
-    S: tower::Service<Request>,
-    GovernorService<S>:
-        tower::Service<Request, Response = S::Response, Error = S::Error>,
-    RedisRateLimitService<S>:
-        tower::Service<Request, Response = S::Response, Error = S::Error>,
+    S: tower::Service<Request, Response = Response<ResponseBody>>,
+    GovernorService<S>: tower::Service<
+            Request,
+            Response = Response<ResponseBody>,
+            Error = S::Error,
+        >,
+    RedisRateLimitService<S>: tower::Service<
+            Request,
+            Response = Response<ResponseBody>,
+            Error = S::Error,
+        >,
 {
-    type Response = S::Response;
+    type Response = Response<ResponseBody>;
     type Error = S::Error;
     type Future = ResponseFuture<
         <GovernorService<S> as tower::Service<Request>>::Future,

@@ -1,18 +1,22 @@
 use std::{
     sync::Arc,
     task::{Context, Poll},
-    time::{SystemTime, UNIX_EPOCH},
+    time::{Duration, SystemTime, UNIX_EPOCH},
 };
 
-use axum_core::response::{IntoResponse, Response};
+use axum_core::response::Response;
 use futures::future::BoxFuture;
-use http::StatusCode;
 use r2d2::Pool;
 use redis::{Client, Commands};
 
 use crate::{
     config::rate_limit::{LimitsConfig, default_refill_frequency},
-    error::{api::ApiError, init::InitError, internal::InternalError},
+    error::{
+        api::ApiError,
+        init::InitError,
+        internal::InternalError,
+        invalid_req::{InvalidRequestError, TooManyRequestsError},
+    },
     middleware::rate_limit::extractor::get_redis_rl_key,
     types::request::Request,
 };
@@ -153,13 +157,40 @@ where
     if earliest_allowed_time <= now_ms {
         let _: () =
             conn.set(&key, new_tat).map_err(InternalError::RedisError)?;
-        inner.call(req).await.map_err(|e| {
-            tracing::error!("error calling inner service: {:?}", e);
-            ApiError::Internal(InternalError::Internal)
-        })
+
+        let ratelimit_remaining = u128::from(gcra.capacity.get())
+            - (new_tat - now_ms) / interval_per_token_ms;
+
+        let ratelimit_limit = u64::from(gcra.capacity.get());
+
+        if let Ok(mut res) = inner.call(req).await {
+            res.headers_mut().insert(
+                "X-RateLimit-Limit",
+                ratelimit_limit.to_string().parse().unwrap(),
+            );
+            res.headers_mut().insert(
+                "X-RateLimit-Remaining",
+                ratelimit_remaining.to_string().parse().unwrap(),
+            );
+            Ok(res)
+        } else {
+            Err(ApiError::Internal(InternalError::Internal))
+        }
     } else {
-        let response = (StatusCode::TOO_MANY_REQUESTS, "Too Many Requests")
-            .into_response();
-        Ok(response)
+        let ratelimit_limit = u64::from(gcra.capacity.get());
+        let ratelimit_remaining = 0;
+        let difference = earliest_allowed_time - now_ms;
+        let ratelimit_after = Duration::from_millis(
+            difference.try_into().expect("value too large"),
+        )
+        .as_secs()
+            + 1; // adding a second to retry-after header to prevent rounding errors
+        Err(ApiError::InvalidRequest(
+            InvalidRequestError::TooManyRequests(TooManyRequestsError {
+                ratelimit_limit,
+                ratelimit_remaining,
+                ratelimit_after,
+            }),
+        ))
     }
 }
