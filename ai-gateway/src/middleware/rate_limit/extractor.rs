@@ -32,6 +32,6 @@ pub fn get_redis_rl_key<T>(
     if let Some(router_id) = router_id {
         Ok(format!("rl:per-api-key:{router_id}:{user_id}"))
     } else {
-        Ok(format!("rl:per-api-key:GLOBAL_ROUTER:{user_id}"))
+        Ok(format!("rl:per-api-key:GLOBAL:{user_id}"))
     }
 }

@@ -97,14 +97,11 @@ where
         &mut self,
         cx: &mut Context<'_>,
     ) -> Poll<Result<(), Self::Error>> {
-        self.inner
-            .poll_ready(cx)
-            .map_err(|_| ApiError::Internal(InternalError::Internal))
+        self.inner.poll_ready(cx)
     }
 
     #[tracing::instrument(name = "rate_limit", skip_all)]
     fn call(&mut self, req: Request) -> Self::Future {
-        tracing::trace!("rate_limit middleware");
         // see: https://docs.rs/tower/latest/tower/trait.Service.html#be-careful-when-cloning-inner-services
         let mut this = self.clone();
         std::mem::swap(self, &mut this);
@@ -135,7 +132,6 @@ where
         + 'static,
     S::Future: Send + 'static,
 {
-    tracing::info!("making request with redis on config: {:?}", config);
     let mut conn = pool.get().map_err(InternalError::PoolError)?;
 
     let key = get_redis_rl_key(&req, router_id)?;

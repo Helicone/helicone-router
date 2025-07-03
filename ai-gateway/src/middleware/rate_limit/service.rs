@@ -56,13 +56,7 @@ impl Layer {
             {
                 Self::new_redis_inner(
                     rate_limit_config.limits.clone(),
-                    url::Url::parse(redis_config.url.expose())
-                        .map_err(|_e| {
-                            InitError::InvalidRateLimitConfig(
-                                "Invalid redis url",
-                            )
-                        })
-                        .unwrap(),
+                    redis_config.url.expose().clone(),
                 )
             } else {
                 Self::new_in_memory_inner(app_state.0.global_rate_limit.clone())
@@ -124,19 +118,7 @@ impl Layer {
                     && let RateLimitStore::Redis(redis_config) = store
                     && let Ok(layer) = RedisRateLimitLayer::new(
                         Arc::new(limits.clone()),
-                        url::Url::parse(redis_config.url.expose())
-                            .map_err(|_e| {
-                                InitError::InvalidRateLimitConfig(
-                                    "Invalid redis url",
-                                )
-                            })
-                            .map_err(|e| {
-                                tracing::error!(
-                                    "error creating redis layer: {:?}",
-                                    e
-                                );
-                                e
-                            })?,
+                        redis_config.url.expose().clone(),
                         Some(router_id.clone()),
                     )
                 {
@@ -231,9 +213,7 @@ fn increment_retry_after_header<ResponseBody>(
             .ok()
             .and_then(|s| s.parse::<u64>().ok())
         {
-            tracing::info!("the retry after is: {}", retry_after_value);
             let new_retry_after = retry_after_value + 1;
-            tracing::info!("setting the retry after to: {}", new_retry_after);
             res.headers_mut().insert(
                 "retry-after",
                 new_retry_after.to_string().parse().unwrap(),

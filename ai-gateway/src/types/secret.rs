@@ -12,8 +12,8 @@ impl<T> Secret<T>
 where
     T: AsRef<str>,
 {
-    pub fn expose(&self) -> &str {
-        self.0.as_ref()
+    pub fn expose(&self) -> &T {
+        &self.0
     }
 }
 
