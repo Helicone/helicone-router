@@ -128,7 +128,7 @@ async fn run_app(config: Config) -> Result<(), RuntimeError> {
         ai_gateway::utils::meltdown::wait_for_shutdown_signals,
     ));
 
-    if app.state.0.config.helicone.authentication {
+    if app.state.0.config.helicone.is_auth_enabled() {
         meltdown = meltdown.register(TaggedService::new(
             "control-plane-client",
             ControlPlaneClient::connect(control_plane_state, helicone_config)

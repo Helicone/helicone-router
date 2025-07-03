@@ -1,7 +1,7 @@
 use std::{collections::HashMap, time::Duration};
 
 use ai_gateway::{
-    config::{Config, cache::CacheStore},
+    config::{Config, cache::CacheStore, helicone::HeliconeFeatures},
     tests::{TestDefault, harness::Harness, mock::MockArgs},
 };
 use http::{Method, Request, StatusCode};
@@ -175,7 +175,7 @@ async fn cache_enabled_globally() {
 #[serial_test::serial(default_mock)]
 async fn cache_disabled_globally() {
     let mut config = Config::test_default();
-    config.helicone.authentication = false;
+    config.helicone.features = HeliconeFeatures::None;
     // Ensure cache is NOT set globally (None by default)
     config.global.cache = None;
 
@@ -301,7 +301,7 @@ async fn cache_enabled_per_router() {
     let mut config = Config::test_default();
     // Disable auth for this test since we're testing basic passthrough
     // functionality
-    config.helicone.authentication = false;
+    config.helicone.features = HeliconeFeatures::None;
     config.global.cache = None;
 
     // Create multiple routers with different cache configurations

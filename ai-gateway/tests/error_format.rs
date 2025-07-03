@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use ai_gateway::{
-    config::Config,
+    config::{Config, helicone::HeliconeFeatures},
     tests::{TestDefault, harness::Harness, mock::MockArgs},
 };
 use http::{Method, Request, StatusCode};
@@ -12,7 +12,7 @@ use tower::Service;
 #[serial_test::serial]
 async fn unauthorized() {
     let mut config = Config::test_default();
-    config.helicone.authentication = true;
+    config.helicone.features = HeliconeFeatures::Auth;
 
     let mock_args = MockArgs::builder()
         .stubs(HashMap::from([
@@ -59,7 +59,7 @@ async fn unauthorized() {
 #[serial_test::serial]
 async fn invalid_request_body() {
     let mut config = Config::test_default();
-    config.helicone.authentication = false;
+    config.helicone.features = HeliconeFeatures::None;
 
     let mock_args = MockArgs::builder()
         .stubs(HashMap::from([

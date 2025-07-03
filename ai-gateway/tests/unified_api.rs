@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use ai_gateway::{
-    config::Config,
+    config::{Config, helicone::HeliconeFeatures},
     tests::{TestDefault, harness::Harness, mock::MockArgs},
 };
 use http::{Method, Request, StatusCode};
@@ -16,7 +16,7 @@ async fn openai_unified_api() {
     let mut config = Config::test_default();
     // Disable auth for this test since we're testing basic passthrough
     // functionality
-    config.helicone.authentication = false;
+    config.helicone.features = HeliconeFeatures::None;
 
     let mock_args = MockArgs::builder()
         .stubs(HashMap::from([
@@ -66,7 +66,7 @@ async fn anthropic_unified_api() {
     let mut config = Config::test_default();
     // Disable auth for this test since we're testing basic passthrough
     // functionality
-    config.helicone.authentication = false;
+    config.helicone.features = HeliconeFeatures::None;
 
     let mock_args = MockArgs::builder()
         .stubs(HashMap::from([

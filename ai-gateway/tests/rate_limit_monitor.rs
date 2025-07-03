@@ -4,6 +4,7 @@ use ai_gateway::{
     config::{
         Config,
         balance::{BalanceConfig, BalanceConfigInner, BalanceTarget},
+        helicone::HeliconeFeatures,
         router::{RouterConfig, RouterConfigs},
     },
     discover::monitor::rate_limit::RateLimitMonitor,
@@ -23,7 +24,7 @@ use tower::Service;
 async fn rate_limit_removes_provider_from_lb_pool() {
     let mut config = Config::test_default();
     // Enable auth so that logging services are called
-    config.helicone.authentication = true;
+    config.helicone.features = HeliconeFeatures::All;
     let balance_config = BalanceConfig::from(HashMap::from([(
         EndpointType::Chat,
         BalanceConfigInner::Weighted {

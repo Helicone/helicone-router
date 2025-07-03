@@ -303,48 +303,42 @@ impl Dispatcher {
             .extensions_mut()
             .insert(extracted_path_and_query);
 
-        if self.app_state.config().helicone.observability {
-            if self.app_state.config().helicone.authentication {
-                let auth_ctx = req_ctx
-                    .auth_context
-                    .clone()
-                    .ok_or(InternalError::ExtensionNotFound("AuthContext"))?;
-                let start_time = req_ctx.start_time;
+        if self.app_state.config().helicone.is_observability_enabled() {
+            let auth_ctx = req_ctx
+                .auth_context
+                .clone()
+                .ok_or(InternalError::ExtensionNotFound("AuthContext"))?;
+            let start_time = req_ctx.start_time;
 
-                let response_logger = LoggerService::builder()
-                    .app_state(self.app_state.clone())
-                    .auth_ctx(auth_ctx)
-                    .start_time(start_time)
-                    .start_instant(start_instant)
-                    .target_url(target_url)
-                    .request_headers(headers)
-                    .request_body(req_body_bytes)
-                    .response_status(client_response.status())
-                    .response_body(response_body_for_logger)
-                    .provider(target_provider)
-                    .tfft_rx(tfft_rx)
-                    .mapper_ctx(mapper_ctx)
-                    .build();
+            let response_logger = LoggerService::builder()
+                .app_state(self.app_state.clone())
+                .auth_ctx(auth_ctx)
+                .start_time(start_time)
+                .start_instant(start_instant)
+                .target_url(target_url)
+                .request_headers(headers)
+                .request_body(req_body_bytes)
+                .response_status(client_response.status())
+                .response_body(response_body_for_logger)
+                .provider(target_provider)
+                .tfft_rx(tfft_rx)
+                .mapper_ctx(mapper_ctx)
+                .build();
 
-                let app_state = self.app_state.clone();
-                tokio::spawn(
-                    async move {
-                        if let Err(e) = response_logger.log().await {
-                            let error_str = e.as_ref().to_string();
-                            app_state
-                                .0
-                                .metrics
-                                .error_count
-                                .add(1, &[KeyValue::new("type", error_str)]);
-                        }
+            let app_state = self.app_state.clone();
+            tokio::spawn(
+                async move {
+                    if let Err(e) = response_logger.log().await {
+                        let error_str = e.as_ref().to_string();
+                        app_state
+                            .0
+                            .metrics
+                            .error_count
+                            .add(1, &[KeyValue::new("type", error_str)]);
                     }
-                    .instrument(tracing::Span::current()),
-                );
-            } else {
-                tracing::warn!(
-                    "Authentication is disabled, skipping response logging"
-                );
-            }
+                }
+                .instrument(tracing::Span::current()),
+            );
         } else {
             let app_state = self.app_state.clone();
             let model = mapper_ctx.model.as_ref().map_or_else(

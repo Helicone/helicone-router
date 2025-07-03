@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use ai_gateway::{
-    config::Config,
+    config::{Config, helicone::HeliconeFeatures},
     tests::{TestDefault, harness::Harness, mock::MockArgs},
 };
 use http::{Method, Request, StatusCode};
@@ -11,7 +11,7 @@ use tower::Service;
 #[serial_test::serial]
 async fn health_check() {
     let mut config = Config::test_default();
-    config.helicone.authentication = true;
+    config.helicone.features = HeliconeFeatures::Auth;
 
     let mock_args = MockArgs::builder()
         .stubs(HashMap::from([

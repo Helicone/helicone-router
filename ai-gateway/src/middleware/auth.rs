@@ -56,7 +56,7 @@ where
     fn authorize(&mut self, mut request: Request<B>) -> Self::Future {
         let app_state = self.app_state.clone();
         Box::pin(async move {
-            if !app_state.0.config.helicone.authentication {
+            if app_state.0.config.helicone.is_auth_disabled() {
                 tracing::trace!("auth middleware: auth disabled");
                 return Ok(request);
             }

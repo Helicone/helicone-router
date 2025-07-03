@@ -4,6 +4,7 @@ use ai_gateway::{
     config::{
         Config,
         balance::{BalanceConfig, BalanceConfigInner},
+        helicone::HeliconeFeatures,
         router::{RouterConfig, RouterConfigs, RouterRateLimitConfig},
     },
     endpoints::EndpointType,
@@ -43,7 +44,7 @@ fn p2c_config_openai_anthropic_google() -> RouterConfigs {
 async fn openai_slow() {
     let mut config = Config::test_default();
     // Disable auth for this test since we're testing load balancing behavior
-    config.helicone.authentication = false;
+    config.helicone.features = HeliconeFeatures::None;
     // Use p2c balance config with OpenAI, Anthropic, and Google providers
     config.routers = p2c_config_openai_anthropic_google();
     let latency = 100;
@@ -94,7 +95,7 @@ async fn openai_slow() {
 async fn anthropic_slow() {
     let mut config = Config::test_default();
     // Disable auth for this test since we're testing load balancing behavior
-    config.helicone.authentication = false;
+    config.helicone.features = HeliconeFeatures::None;
     // Use p2c balance config with OpenAI, Anthropic, and Google providers
     config.routers = p2c_config_openai_anthropic_google();
     let latency = 10;

@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use ai_gateway::{
-    config::Config,
+    config::{Config, helicone::HeliconeFeatures},
     tests::{TestDefault, harness::Harness, mock::MockArgs},
 };
 use http::{Method, Request, StatusCode};
@@ -13,7 +13,7 @@ use tower::Service;
 #[serial_test::serial]
 async fn require_auth_enabled_with_valid_token() {
     let mut config = Config::test_default();
-    config.helicone.authentication = true;
+    config.helicone.features = HeliconeFeatures::All;
 
     let mock_args = MockArgs::builder()
         .stubs(HashMap::from([
@@ -65,7 +65,7 @@ async fn require_auth_enabled_with_valid_token() {
 #[serial_test::serial]
 async fn require_auth_enabled_without_token() {
     let mut config = Config::test_default();
-    config.helicone.authentication = true;
+    config.helicone.features = HeliconeFeatures::Auth;
 
     let mock_args = MockArgs::builder()
         .stubs(HashMap::from([
@@ -112,7 +112,7 @@ async fn require_auth_enabled_without_token() {
 #[serial_test::serial]
 async fn require_auth_disabled_without_token() {
     let mut config = Config::test_default();
-    config.helicone.authentication = false;
+    config.helicone.features = HeliconeFeatures::None;
 
     let mock_args = MockArgs::builder()
         .stubs(HashMap::from([
@@ -156,7 +156,7 @@ async fn require_auth_disabled_without_token() {
 #[serial_test::serial]
 async fn require_auth_disabled_with_token() {
     let mut config = Config::test_default();
-    config.helicone.authentication = false;
+    config.helicone.features = HeliconeFeatures::None;
 
     let mock_args = MockArgs::builder()
         .stubs(HashMap::from([

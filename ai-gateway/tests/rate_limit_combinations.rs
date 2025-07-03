@@ -3,6 +3,7 @@ use std::{collections::HashMap, time::Duration};
 use ai_gateway::{
     config::{
         Config,
+        helicone::HeliconeFeatures,
         rate_limit::{
             GcraConfig, GlobalRateLimitConfig, LimitsConfig, RateLimitStore,
         },
@@ -119,7 +120,7 @@ async fn make_chat_request_for_router(
 #[serial_test::serial]
 async fn test_global_rate_limit_with_router_none() {
     let mut config = Config::test_default();
-    config.helicone.authentication = true;
+    config.helicone.features = HeliconeFeatures::All;
     config.global.rate_limit = Some(GlobalRateLimitConfig {
         store: RateLimitStore::InMemory,
         // 3 requests per second
@@ -192,7 +193,7 @@ async fn test_global_rate_limit_with_router_none() {
 #[serial_test::serial]
 async fn test_router_specific_with_custom_limits() {
     let mut config = Config::test_default();
-    config.helicone.authentication = true;
+    config.helicone.features = HeliconeFeatures::All;
     config.global.rate_limit = Some(GlobalRateLimitConfig {
         store: RateLimitStore::InMemory,
         limits: None,
@@ -257,7 +258,7 @@ async fn test_router_specific_with_custom_limits() {
 #[serial_test::serial]
 async fn test_global_with_custom_router_override() {
     let mut config = Config::test_default();
-    config.helicone.authentication = true;
+    config.helicone.features = HeliconeFeatures::All;
     config.global.rate_limit = Some(GlobalRateLimitConfig {
         store: RateLimitStore::InMemory,
         // 5 requests per second
@@ -323,7 +324,7 @@ async fn test_global_with_custom_router_override() {
 #[serial_test::serial]
 async fn test_router_independence_different_rate_limits() {
     let mut config = Config::test_default();
-    config.helicone.authentication = true;
+    config.helicone.features = HeliconeFeatures::All;
     config.global.rate_limit = Some(GlobalRateLimitConfig {
         store: RateLimitStore::InMemory,
         limits: None,
@@ -501,7 +502,7 @@ async fn make_chat_request_to_router(
 #[serial_test::serial]
 async fn test_multi_router_different_rate_limits_in_memory() {
     let mut config = Config::test_default();
-    config.helicone.authentication = true;
+    config.helicone.features = HeliconeFeatures::All;
     config.global.rate_limit = Some(GlobalRateLimitConfig {
         store: RateLimitStore::InMemory,
         limits: None,

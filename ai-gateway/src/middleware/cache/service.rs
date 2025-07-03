@@ -259,13 +259,7 @@ async fn check_cache(
                 BodyReader::wrap_stream(stream, false);
             let response = Response::from_parts(resp_parts, user_resp_body);
 
-            if app_state.config().helicone.observability {
-                if !app_state.config().helicone.authentication {
-                    tracing::warn!(
-                        "Authentication is disabled, skipping response logging"
-                    );
-                    return Ok(CacheCheckResult::Fresh(response));
-                }
+            if app_state.config().helicone.is_observability_enabled() {
                 let auth_ctx =
                     req_parts.extensions.get::<AuthContext>().cloned().ok_or(
                         InternalError::ExtensionNotFound("AuthContext"),
