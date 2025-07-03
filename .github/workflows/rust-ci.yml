@@ -6,8 +6,8 @@ on:
   pull_request:
     branches: ["main"]
     paths:
-      - 'crates/**'
-      - 'ai-gateway/**'
+      - "crates/**"
+      - "ai-gateway/**"
 
 env:
   CARGO_TERM_COLOR: always
@@ -17,6 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - run: rustup update
       - name: Use nightly rustfmt
         run: rustup component add --toolchain nightly-x86_64-unknown-linux-gnu rustfmt
       - name: Output rustup and cargo version for educational purposes
