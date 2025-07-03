@@ -34,7 +34,7 @@ impl AiRequest for CreateChatCompletionRequestGemini {
 
     fn model(&self) -> Result<ModelId, MapperError> {
         ModelId::from_str_and_provider(
-            InferenceProvider::GoogleGemini,
+            &InferenceProvider::GoogleGemini,
             &self.0.model,
         )
     }

@@ -4,7 +4,7 @@ use crate::{endpoints::EndpointType, types::provider::InferenceProvider};
 
 pub mod factory;
 
-#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
+#[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub struct WeightedKey {
     pub provider: InferenceProvider,
     pub endpoint_type: EndpointType,

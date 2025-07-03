@@ -80,7 +80,7 @@ impl ApiEndpoint {
 
     pub fn mapped(
         source_endpoint: ApiEndpoint,
-        target_provider: InferenceProvider,
+        target_provider: &InferenceProvider,
     ) -> Result<Self, InvalidRequestError> {
         match (source_endpoint, target_provider) {
             (Self::OpenAI(source), InferenceProvider::Anthropic) => {
@@ -99,8 +99,10 @@ impl ApiEndpoint {
                 Ok(Self::Bedrock(Bedrock::from(source)))
             }
             _ => {
-                // only openai SDK is supported for now
-                Err(InvalidRequestError::UnsupportedProvider(target_provider))
+                // Full support for named providers is coming in a future PR
+                Err(InvalidRequestError::UnsupportedProvider(
+                    target_provider.clone(),
+                ))
             }
         }
     }

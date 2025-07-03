@@ -72,13 +72,14 @@ impl Dispatcher {
         provider: InferenceProvider,
     ) -> Result<DispatcherService, InitError> {
         let client =
-            Client::new_for_router(&app_state, provider, router_id).await?;
+            Client::new_for_router(&app_state, provider.clone(), router_id)
+                .await?;
         let rate_limit_tx = app_state.get_rate_limit_tx(router_id).await?;
 
         let dispatcher = Self {
             client,
             app_state: app_state.clone(),
-            provider,
+            provider: provider.clone(),
             rate_limit_tx: Some(rate_limit_tx),
         };
         let model_mapper = ModelMapper::new_for_router(
@@ -105,12 +106,13 @@ impl Dispatcher {
         app_state: AppState,
         provider: InferenceProvider,
     ) -> Result<DispatcherService, InitError> {
-        let client = Client::new_for_direct_proxy(&app_state, provider)?;
+        let client =
+            Client::new_for_direct_proxy(&app_state, provider.clone())?;
 
         let dispatcher = Self {
             client,
             app_state: app_state.clone(),
-            provider,
+            provider: provider.clone(),
             rate_limit_tx: None,
         };
         let model_mapper = ModelMapper::new(app_state.clone());
@@ -134,12 +136,12 @@ impl Dispatcher {
         app_state: AppState,
         provider: InferenceProvider,
     ) -> Result<DispatcherServiceWithoutMapper, InitError> {
-        let client = Client::new_for_unified_api(&app_state, provider)?;
+        let client = Client::new_for_unified_api(&app_state, provider.clone())?;
 
         let dispatcher = Self {
             client,
             app_state: app_state.clone(),
-            provider,
+            provider: provider.clone(),
             rate_limit_tx: None,
         };
 
@@ -195,11 +197,11 @@ impl Dispatcher {
             .ok_or(InternalError::ExtensionNotFound("RequestContext"))?;
         let auth_ctx = req_ctx.auth_context.as_ref();
         let api_endpoint = req.extensions().get::<ApiEndpoint>().copied();
-        let target_provider = self.provider;
+        let target_provider = &self.provider;
         let config = self.app_state.config();
         let provider_config =
-            config.providers.get(&target_provider).ok_or_else(|| {
-                InternalError::ProviderNotConfigured(target_provider)
+            config.providers.get(target_provider).ok_or_else(|| {
+                InternalError::ProviderNotConfigured(target_provider.clone())
             })?;
         let base_url = provider_config.base_url.clone();
         {
@@ -226,7 +228,7 @@ impl Dispatcher {
         let inference_provider = req
             .extensions()
             .get::<InferenceProvider>()
-            .copied()
+            .cloned()
             .ok_or(InternalError::ExtensionNotFound("InferenceProvider"))?;
         let router_id = req.extensions().get::<RouterId>().cloned();
         let start_instant = req_ctx.start_instant;
@@ -320,7 +322,7 @@ impl Dispatcher {
                 .request_body(req_body_bytes)
                 .response_status(client_response.status())
                 .response_body(response_body_for_logger)
-                .provider(target_provider)
+                .provider(target_provider.clone())
                 .tfft_rx(tfft_rx)
                 .mapper_ctx(mapper_ctx)
                 .build();
@@ -346,6 +348,7 @@ impl Dispatcher {
                 std::string::ToString::to_string,
             );
             let path = target_url.path().to_string();
+            let provider_string = target_provider.to_string();
             tokio::spawn(
                 async move {
                     let tfft_future = TFFTFuture::new(start_instant, tfft_rx);
@@ -354,7 +357,7 @@ impl Dispatcher {
                     if let Ok(tfft_duration) = tfft_duration {
                         tracing::trace!(tfft_duration = ?tfft_duration, "tfft_duration");
                         let attributes = [
-                            KeyValue::new("provider", inference_provider.to_string()),
+                            KeyValue::new("provider", provider_string),
                             KeyValue::new("model", model),
                             KeyValue::new("path", path),
                         ];

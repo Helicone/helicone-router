@@ -146,7 +146,7 @@ impl ProviderMonitorInner<Key> {
                             "Removing rate-limited provider from P2C balancer"
                         );
 
-                        if let Err(e) = self.tx.send(Change::Remove(key)).await {
+                        if let Err(e) = self.tx.send(Change::Remove(key.clone())).await {
                             error!(error = ?e, "Failed to send remove event for rate-limited provider");
                         }
 
@@ -156,7 +156,7 @@ impl ProviderMonitorInner<Key> {
                         ) + RATE_LIMIT_BUFFER_SECONDS;
 
                         let restore = ProviderRestore {
-                            key: Some(key),
+                            key: Some(key.clone()),
                             api_endpoint: event.api_endpoint,
                             timer: tokio::time::sleep(duration),
                         };
@@ -195,7 +195,7 @@ impl ProviderMonitorInner<Key> {
                             );
                         })?;
 
-                    self.tx.send(Change::Insert(key, service)).await.map_err(|e| {
+                    self.tx.send(Change::Insert(key.clone(), service)).await.map_err(|e| {
                         error!(error = ?e, router_id = ?self.router_id, "Failed to send insert event for recovered provider");
                         RuntimeError::ChannelSendFailed
                     })?;
@@ -277,7 +277,7 @@ impl ProviderMonitorInner<WeightedKey> {
                 // Handle incoming rate limit events
                 Some(event) = rx.recv() => {
                     let key = self.create_key_for_endpoint(event.api_endpoint)?;
-                    if let std::collections::hash_map::Entry::Vacant(e) = rate_limited_providers.entry(key) {
+                    if let std::collections::hash_map::Entry::Vacant(e) = rate_limited_providers.entry(key.clone()) {
                         debug!(
                             provider = ?event.api_endpoint.provider(),
                             api_endpoint = ?event.api_endpoint,
@@ -285,7 +285,7 @@ impl ProviderMonitorInner<WeightedKey> {
                             "Removing rate-limited provider from Weighted balancer"
                         );
 
-                        if let Err(e) = self.tx.send(Change::Remove(key)).await {
+                        if let Err(e) = self.tx.send(Change::Remove(key.clone())).await {
                             error!(error = ?e, "Failed to send remove event for rate-limited provider");
                         }
                         e.insert(Instant::now());
@@ -342,7 +342,7 @@ impl ProviderMonitorInner<WeightedKey> {
                             "Failed to create dispatcher for recovered provider"
                         );
                     })?;
-                    self.tx.send(Change::Insert(key, service))
+                    self.tx.send(Change::Insert(key.clone(), service))
                         .await
                         .map_err(|e| {
                             error!(error = ?e, router_id = ?self.router_id, "Failed to send insert event for recovered provider");

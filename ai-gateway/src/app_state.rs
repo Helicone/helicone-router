@@ -125,19 +125,19 @@ impl AppState {
     pub async fn get_provider_api_key_for_router(
         &self,
         router_id: &RouterId,
-        provider: InferenceProvider,
+        provider: &InferenceProvider,
     ) -> Result<Option<ProviderKey>, ProviderError> {
         let provider_keys = self.0.provider_keys.read().await;
         let provider_keys = provider_keys.get(router_id).ok_or_else(|| {
             ProviderError::ProviderKeysNotFound(router_id.clone())
         })?;
-        Ok(provider_keys.get(&provider).cloned())
+        Ok(provider_keys.get(provider).cloned())
     }
 
     pub fn get_provider_api_key_for_direct_proxy(
         &self,
-        provider: InferenceProvider,
+        provider: &InferenceProvider,
     ) -> Result<Option<ProviderKey>, ProviderError> {
-        Ok(self.0.direct_proxy_api_keys.get(&provider).cloned())
+        Ok(self.0.direct_proxy_api_keys.get(provider).cloned())
     }
 }

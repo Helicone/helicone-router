@@ -62,4 +62,6 @@ pub enum InitError {
     MinioNotConfigured,
     /// Database connection error: {0}
     DatabaseConnection(sqlx::Error),
+    /// Provider not yet supported: {0}
+    ProviderNotSupported(InferenceProvider),
 }

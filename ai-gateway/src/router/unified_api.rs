@@ -200,10 +200,8 @@ impl Future for ResponseFuture {
                     let mut parts =
                         parts.take().expect("future polled after completion");
                     let provider = match source_model {
-                        ModelId::OpenAI(_) => InferenceProvider::OpenAI,
-                        ModelId::Anthropic(_) => InferenceProvider::Anthropic,
-                        ModelId::GoogleGemini(_) => {
-                            InferenceProvider::GoogleGemini
+                        ModelId::ModelIdWithVersion { provider, .. } => {
+                            provider
                         }
                         ModelId::Bedrock(_) => InferenceProvider::Bedrock,
                         ModelId::Ollama(_) => InferenceProvider::Ollama,
@@ -219,7 +217,7 @@ impl Future for ResponseFuture {
                             ));
                         }
                     };
-                    parts.extensions.insert(provider);
+                    parts.extensions.insert(provider.clone());
                     let request = Request::from_parts(
                         parts,
                         axum_core::body::Body::from(body),
@@ -234,7 +232,7 @@ impl Future for ResponseFuture {
                         request.take().expect("future polled after completion");
                     let mut direct_proxy = this.direct_proxies.get(provider).ok_or_else(|| {
                         tracing::warn!(provider = %provider, "requested provider is not configured for direct proxy");
-                        InvalidRequestError::UnsupportedProvider(*provider)
+                        InvalidRequestError::UnsupportedProvider(provider.clone())
                     })?.clone();
                     let response_future = direct_proxy.call(request);
                     this.state.set(State::Proxy { response_future });

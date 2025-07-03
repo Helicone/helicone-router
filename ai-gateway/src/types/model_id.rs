@@ -114,10 +114,8 @@ impl<'a> ModelName<'a> {
     #[must_use]
     pub fn from_model(model: &'a ModelId) -> Self {
         match model {
-            ModelId::OpenAI(model_id)
-            | ModelId::Anthropic(model_id)
-            | ModelId::GoogleGemini(model_id) => {
-                Self(Cow::Borrowed(model_id.model.as_str()))
+            ModelId::ModelIdWithVersion { id, .. } => {
+                Self(Cow::Borrowed(id.model.as_str()))
             }
             ModelId::Bedrock(bedrock_model_id) => {
                 Self(Cow::Borrowed(bedrock_model_id.model.as_str()))
@@ -140,9 +138,10 @@ impl std::fmt::Display for ModelName<'_> {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum ModelId {
-    OpenAI(ModelIdWithVersion),
-    Anthropic(ModelIdWithVersion),
-    GoogleGemini(ModelIdWithVersion),
+    ModelIdWithVersion {
+        provider: InferenceProvider,
+        id: ModelIdWithVersion,
+    },
     Bedrock(BedrockModelId),
     Ollama(OllamaModelId),
     Unknown(String),
@@ -154,17 +153,23 @@ impl ModelId {
     /// The `request_style` parameter here is used to determine what format
     /// the model name is in.
     pub(crate) fn from_str_and_provider(
-        request_style: InferenceProvider,
+        request_style: &InferenceProvider,
         s: &str,
     ) -> Result<Self, MapperError> {
         match request_style {
             InferenceProvider::OpenAI => {
                 let model_with_version = ModelIdWithVersion::from_str(s)?;
-                Ok(ModelId::OpenAI(model_with_version))
+                Ok(ModelId::ModelIdWithVersion {
+                    provider: InferenceProvider::OpenAI,
+                    id: model_with_version,
+                })
             }
             InferenceProvider::Anthropic => {
                 let model_with_version = ModelIdWithVersion::from_str(s)?;
-                Ok(ModelId::Anthropic(model_with_version))
+                Ok(ModelId::ModelIdWithVersion {
+                    provider: InferenceProvider::Anthropic,
+                    id: model_with_version,
+                })
             }
             InferenceProvider::Bedrock => {
                 let bedrock_model = BedrockModelId::from_str(s)?;
@@ -176,7 +181,17 @@ impl ModelId {
             }
             InferenceProvider::GoogleGemini => {
                 let model_with_version = ModelIdWithVersion::from_str(s)?;
-                Ok(ModelId::GoogleGemini(model_with_version))
+                Ok(ModelId::ModelIdWithVersion {
+                    provider: InferenceProvider::GoogleGemini,
+                    id: model_with_version,
+                })
+            }
+            InferenceProvider::Named(name) => {
+                let model_with_version = ModelIdWithVersion::from_str(s)?;
+                Ok(ModelId::ModelIdWithVersion {
+                    provider: InferenceProvider::Named(name.clone()),
+                    id: model_with_version,
+                })
             }
         }
     }
@@ -184,9 +199,9 @@ impl ModelId {
     #[must_use]
     pub fn inference_provider(&self) -> Option<InferenceProvider> {
         match self {
-            ModelId::OpenAI(_) => Some(InferenceProvider::OpenAI),
-            ModelId::Anthropic(_) => Some(InferenceProvider::Anthropic),
-            ModelId::GoogleGemini(_) => Some(InferenceProvider::GoogleGemini),
+            ModelId::ModelIdWithVersion { provider, .. } => {
+                Some(provider.clone())
+            }
             ModelId::Bedrock(_) => Some(InferenceProvider::Bedrock),
             ModelId::Ollama(_) => Some(InferenceProvider::Ollama),
             ModelId::Unknown(_) => None,
@@ -236,7 +251,7 @@ impl FromStr for ModelId {
                         )
                     })?;
 
-                Self::from_str_and_provider(provider, model_name)
+                Self::from_str_and_provider(&provider, model_name)
             }
             _ => Err(MapperError::InvalidModelName(format!(
                 "Model string must be in format \
@@ -249,10 +264,8 @@ impl FromStr for ModelId {
 impl Display for ModelId {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            ModelId::OpenAI(model)
-            | ModelId::Anthropic(model)
-            | ModelId::GoogleGemini(model) => {
-                write!(f, "{model}")
+            ModelId::ModelIdWithVersion { id, .. } => {
+                write!(f, "{id}")
             }
             ModelId::Bedrock(model) => write!(f, "{model}"),
             ModelId::Ollama(model) => write!(f, "{model}"),
@@ -538,13 +551,18 @@ mod tests {
     fn test_openai_o1_snapshot_model() {
         let model_id_str = "o1-2024-12-17";
         let result = ModelId::from_str_and_provider(
-            InferenceProvider::OpenAI,
+            &InferenceProvider::OpenAI,
             model_id_str,
         )
         .unwrap();
-        let ModelId::OpenAI(model_with_version) = &result else {
-            panic!("Expected OpenAI ModelId with version");
+        let ModelId::ModelIdWithVersion {
+            provider,
+            id: model_with_version,
+        } = &result
+        else {
+            panic!("Expected ModelIdWithVersion with OpenAI provider");
         };
+        assert!(matches!(provider, InferenceProvider::OpenAI));
         assert_eq!(model_with_version.model, "o1");
         let Version::Date { date, .. } = &model_with_version.version else {
             panic!("Expected date version");
@@ -560,13 +578,18 @@ mod tests {
     fn test_openai_o1_preview_snapshot_model() {
         let model_id_str = "o1-preview-2024-09-12";
         let result = ModelId::from_str_and_provider(
-            InferenceProvider::OpenAI,
+            &InferenceProvider::OpenAI,
             model_id_str,
         )
         .unwrap();
-        let ModelId::OpenAI(model_with_version) = &result else {
-            panic!("Expected OpenAI ModelId with preview version");
+        let ModelId::ModelIdWithVersion {
+            provider,
+            id: model_with_version,
+        } = &result
+        else {
+            panic!("Expected ModelIdWithVersion with OpenAI provider");
         };
+        assert!(matches!(provider, InferenceProvider::OpenAI));
         assert_eq!(model_with_version.model, "o1");
         let Version::DateVersionedPreview { date, .. } =
             &model_with_version.version
@@ -584,13 +607,18 @@ mod tests {
     fn test_openai_gpt4_snapshot_model() {
         let model_id_str = "gpt-4-2024-08-15";
         let result = ModelId::from_str_and_provider(
-            InferenceProvider::OpenAI,
+            &InferenceProvider::OpenAI,
             model_id_str,
         )
         .unwrap();
-        let ModelId::OpenAI(model_with_version) = &result else {
-            panic!("Expected OpenAI ModelId with version");
+        let ModelId::ModelIdWithVersion {
+            provider,
+            id: model_with_version,
+        } = &result
+        else {
+            panic!("Expected ModelIdWithVersion with OpenAI provider");
         };
+        assert!(matches!(provider, InferenceProvider::OpenAI));
         assert_eq!(model_with_version.model, "gpt-4");
         let Version::Date { date, .. } = &model_with_version.version else {
             panic!("Expected date version");
@@ -606,13 +634,18 @@ mod tests {
     fn test_openai_gpt35_turbo_snapshot_model() {
         let model_id_str = "gpt-3.5-turbo-2024-01-25";
         let result = ModelId::from_str_and_provider(
-            InferenceProvider::OpenAI,
+            &InferenceProvider::OpenAI,
             model_id_str,
         )
         .unwrap();
-        let ModelId::OpenAI(model_with_version) = &result else {
-            panic!("Expected OpenAI ModelId with version");
+        let ModelId::ModelIdWithVersion {
+            provider,
+            id: model_with_version,
+        } = &result
+        else {
+            panic!("Expected ModelIdWithVersion with OpenAI provider");
         };
+        assert!(matches!(provider, InferenceProvider::OpenAI));
         assert_eq!(model_with_version.model, "gpt-3.5-turbo");
         let Version::Date { date, .. } = &model_with_version.version else {
             panic!("Expected date version");
@@ -628,13 +661,18 @@ mod tests {
     fn test_openai_o1_alias_model() {
         let model_id_str = "o1";
         let result = ModelId::from_str_and_provider(
-            InferenceProvider::OpenAI,
+            &InferenceProvider::OpenAI,
             model_id_str,
         )
         .unwrap();
-        let ModelId::OpenAI(model_with_version) = &result else {
-            panic!("Expected OpenAI ModelId with implicit latest version");
+        let ModelId::ModelIdWithVersion {
+            provider,
+            id: model_with_version,
+        } = &result
+        else {
+            panic!("Expected ModelIdWithVersion with OpenAI provider");
         };
+        assert!(matches!(provider, InferenceProvider::OpenAI));
         assert_eq!(model_with_version.model, "o1");
         assert!(matches!(
             model_with_version.version,
@@ -648,13 +686,18 @@ mod tests {
     fn test_openai_o1_preview_alias_model() {
         let model_id_str = "o1-preview";
         let result = ModelId::from_str_and_provider(
-            InferenceProvider::OpenAI,
+            &InferenceProvider::OpenAI,
             model_id_str,
         )
         .unwrap();
-        let ModelId::OpenAI(model_with_version) = &result else {
-            panic!("Expected OpenAI ModelId with preview version");
+        let ModelId::ModelIdWithVersion {
+            provider,
+            id: model_with_version,
+        } = &result
+        else {
+            panic!("Expected ModelIdWithVersion with OpenAI provider");
         };
+        assert!(matches!(provider, InferenceProvider::OpenAI));
         assert_eq!(model_with_version.model, "o1");
         assert!(matches!(model_with_version.version, Version::Preview));
 
@@ -665,13 +708,18 @@ mod tests {
     fn test_openai_gpt4_alias_model() {
         let model_id_str = "gpt-4";
         let result = ModelId::from_str_and_provider(
-            InferenceProvider::OpenAI,
+            &InferenceProvider::OpenAI,
             model_id_str,
         )
         .unwrap();
-        let ModelId::OpenAI(model_with_version) = &result else {
-            panic!("Expected OpenAI ModelId with implicit latest version");
+        let ModelId::ModelIdWithVersion {
+            provider,
+            id: model_with_version,
+        } = &result
+        else {
+            panic!("Expected ModelIdWithVersion with OpenAI provider");
         };
+        assert!(matches!(provider, InferenceProvider::OpenAI));
         assert_eq!(model_with_version.model, "gpt-4");
         assert!(matches!(
             model_with_version.version,
@@ -685,13 +733,18 @@ mod tests {
     fn test_openai_gpt35_turbo_alias_model() {
         let model_id_str = "gpt-3.5-turbo";
         let result = ModelId::from_str_and_provider(
-            InferenceProvider::OpenAI,
+            &InferenceProvider::OpenAI,
             model_id_str,
         )
         .unwrap();
-        let ModelId::OpenAI(model_with_version) = &result else {
-            panic!("Expected OpenAI ModelId with implicit latest version");
+        let ModelId::ModelIdWithVersion {
+            provider,
+            id: model_with_version,
+        } = &result
+        else {
+            panic!("Expected ModelIdWithVersion with OpenAI provider");
         };
+        assert!(matches!(provider, InferenceProvider::OpenAI));
         assert_eq!(model_with_version.model, "gpt-3.5-turbo");
         assert!(matches!(
             model_with_version.version,
@@ -705,13 +758,18 @@ mod tests {
     fn test_anthropic_claude_opus_4_dated_model() {
         let model_id_str = "claude-opus-4-20250514";
         let result = ModelId::from_str_and_provider(
-            InferenceProvider::Anthropic,
+            &InferenceProvider::Anthropic,
             model_id_str,
         )
         .unwrap();
-        let ModelId::Anthropic(model_with_version) = &result else {
-            panic!("Expected Anthropic ModelId with date version");
+        let ModelId::ModelIdWithVersion {
+            provider,
+            id: model_with_version,
+        } = &result
+        else {
+            panic!("Expected ModelIdWithVersion with Anthropic provider");
         };
+        assert!(matches!(provider, InferenceProvider::Anthropic));
         assert_eq!(model_with_version.model, "claude-opus-4");
         let Version::Date { date, .. } = model_with_version.version else {
             panic!("Expected date version");
@@ -727,13 +785,18 @@ mod tests {
     fn test_anthropic_claude_sonnet_4_dated_model() {
         let model_id_str = "claude-sonnet-4-20250514";
         let result = ModelId::from_str_and_provider(
-            InferenceProvider::Anthropic,
+            &InferenceProvider::Anthropic,
             model_id_str,
         )
         .unwrap();
-        let ModelId::Anthropic(model_with_version) = &result else {
-            panic!("Expected Anthropic ModelId with date version");
+        let ModelId::ModelIdWithVersion {
+            provider,
+            id: model_with_version,
+        } = &result
+        else {
+            panic!("Expected ModelIdWithVersion with Anthropic provider");
         };
+        assert!(matches!(provider, InferenceProvider::Anthropic));
         assert_eq!(model_with_version.model, "claude-sonnet-4");
         let Version::Date { date, .. } = &model_with_version.version else {
             panic!("Expected date version");
@@ -749,13 +812,18 @@ mod tests {
     fn test_anthropic_claude_3_7_sonnet_dated_model() {
         let model_id_str = "claude-3-7-sonnet-20250219";
         let result = ModelId::from_str_and_provider(
-            InferenceProvider::Anthropic,
+            &InferenceProvider::Anthropic,
             model_id_str,
         )
         .unwrap();
-        let ModelId::Anthropic(model_with_version) = &result else {
-            panic!("Expected Anthropic ModelId with date version");
+        let ModelId::ModelIdWithVersion {
+            provider,
+            id: model_with_version,
+        } = &result
+        else {
+            panic!("Expected ModelIdWithVersion with Anthropic provider");
         };
+        assert!(matches!(provider, InferenceProvider::Anthropic));
         assert_eq!(model_with_version.model, "claude-3-7-sonnet");
         let Version::Date { date, .. } = &model_with_version.version else {
             panic!("Expected date version");
@@ -771,13 +839,18 @@ mod tests {
     fn test_anthropic_claude_3_haiku_dated_model() {
         let model_id_str = "claude-3-haiku-20240307";
         let result = ModelId::from_str_and_provider(
-            InferenceProvider::Anthropic,
+            &InferenceProvider::Anthropic,
             model_id_str,
         )
         .unwrap();
-        let ModelId::Anthropic(model_with_version) = &result else {
-            panic!("Expected Anthropic ModelId with date version");
+        let ModelId::ModelIdWithVersion {
+            provider,
+            id: model_with_version,
+        } = &result
+        else {
+            panic!("Expected ModelIdWithVersion with Anthropic provider");
         };
+        assert!(matches!(provider, InferenceProvider::Anthropic));
         assert_eq!(model_with_version.model, "claude-3-haiku");
         let Version::Date { date, .. } = &model_with_version.version else {
             panic!("Expected date version");
@@ -793,13 +866,18 @@ mod tests {
     fn test_anthropic_claude_3_7_sonnet_latest_alias() {
         let model_id_str = "claude-3-7-sonnet-latest";
         let result = ModelId::from_str_and_provider(
-            InferenceProvider::Anthropic,
+            &InferenceProvider::Anthropic,
             model_id_str,
         )
         .unwrap();
-        let ModelId::Anthropic(model_with_version) = &result else {
-            panic!("Expected Anthropic ModelId with latest version");
+        let ModelId::ModelIdWithVersion {
+            provider,
+            id: model_with_version,
+        } = &result
+        else {
+            panic!("Expected ModelIdWithVersion with Anthropic provider");
         };
+        assert!(matches!(provider, InferenceProvider::Anthropic));
         assert_eq!(model_with_version.model, "claude-3-7-sonnet");
         assert!(matches!(model_with_version.version, Version::Latest));
 
@@ -811,13 +889,18 @@ mod tests {
     fn test_anthropic_claude_sonnet_4_latest_alias() {
         let model_id_str = "claude-sonnet-4-latest";
         let result = ModelId::from_str_and_provider(
-            InferenceProvider::Anthropic,
+            &InferenceProvider::Anthropic,
             model_id_str,
         )
         .unwrap();
-        let ModelId::Anthropic(model_with_version) = &result else {
-            panic!("Expected Anthropic ModelId with latest version");
+        let ModelId::ModelIdWithVersion {
+            provider,
+            id: model_with_version,
+        } = &result
+        else {
+            panic!("Expected ModelIdWithVersion with Anthropic provider");
         };
+        assert!(matches!(provider, InferenceProvider::Anthropic));
         assert_eq!(model_with_version.model, "claude-sonnet-4");
         assert!(matches!(model_with_version.version, Version::Latest));
 
@@ -829,13 +912,18 @@ mod tests {
     fn test_anthropic_claude_opus_4_0_implicit_latest() {
         let model_id_str = "claude-opus-4-0";
         let result = ModelId::from_str_and_provider(
-            InferenceProvider::Anthropic,
+            &InferenceProvider::Anthropic,
             model_id_str,
         )
         .unwrap();
-        let ModelId::Anthropic(model_with_version) = &result else {
-            panic!("Expected Anthropic ModelId with implicit latest version");
+        let ModelId::ModelIdWithVersion {
+            provider,
+            id: model_with_version,
+        } = &result
+        else {
+            panic!("Expected ModelIdWithVersion with Anthropic provider");
         };
+        assert!(matches!(provider, InferenceProvider::Anthropic));
         assert_eq!(model_with_version.model, "claude-opus-4-0");
         assert!(matches!(
             model_with_version.version,
@@ -849,13 +937,18 @@ mod tests {
     fn test_anthropic_claude_sonnet_4_0_implicit_latest() {
         let model_id_str = "claude-sonnet-4-0";
         let result = ModelId::from_str_and_provider(
-            InferenceProvider::Anthropic,
+            &InferenceProvider::Anthropic,
             model_id_str,
         )
         .unwrap();
-        let ModelId::Anthropic(model_with_version) = &result else {
-            panic!("Expected Anthropic ModelId with implicit latest version");
+        let ModelId::ModelIdWithVersion {
+            provider,
+            id: model_with_version,
+        } = &result
+        else {
+            panic!("Expected ModelIdWithVersion with Anthropic provider");
         };
+        assert!(matches!(provider, InferenceProvider::Anthropic));
         assert_eq!(model_with_version.model, "claude-sonnet-4-0");
         assert!(matches!(
             model_with_version.version,
@@ -868,7 +961,7 @@ mod tests {
     #[test]
     fn test_bedrock_amazon_titan_valid_provider() {
         let result = ModelId::from_str_and_provider(
-            InferenceProvider::Bedrock,
+            &InferenceProvider::Bedrock,
             "amazon.titan-embed-text-v1:0",
         );
         assert!(result.is_ok());
@@ -877,7 +970,7 @@ mod tests {
     #[test]
     fn test_bedrock_ai21_jamba_valid_provider() {
         let result = ModelId::from_str_and_provider(
-            InferenceProvider::Bedrock,
+            &InferenceProvider::Bedrock,
             "ai21.jamba-1-5-large-v1:0",
         );
         assert!(result.is_ok());
@@ -886,7 +979,7 @@ mod tests {
     #[test]
     fn test_bedrock_meta_llama_valid_provider() {
         let result = ModelId::from_str_and_provider(
-            InferenceProvider::Bedrock,
+            &InferenceProvider::Bedrock,
             "meta.llama3-8b-instruct-v1:0",
         );
         assert!(result.is_ok());
@@ -895,7 +988,7 @@ mod tests {
     #[test]
     fn test_bedrock_openai_invalid_format() {
         let result = ModelId::from_str_and_provider(
-            InferenceProvider::Bedrock,
+            &InferenceProvider::Bedrock,
             "openai.gpt-4:1",
         );
         assert!(result.is_err());
@@ -915,7 +1008,7 @@ mod tests {
     fn test_bedrock_anthropic_claude_opus_4_model() {
         let model_id_str = "anthropic.claude-opus-4-20250514-v1:0";
         let result = ModelId::from_str_and_provider(
-            InferenceProvider::Bedrock,
+            &InferenceProvider::Bedrock,
             model_id_str,
         );
         assert!(result.is_ok());
@@ -945,7 +1038,7 @@ mod tests {
     fn test_bedrock_anthropic_claude_3_7_sonnet_model() {
         let model_id_str = "anthropic.claude-3-7-sonnet-20250219-v1:0";
         let result = ModelId::from_str_and_provider(
-            InferenceProvider::Bedrock,
+            &InferenceProvider::Bedrock,
             model_id_str,
         );
         assert!(result.is_ok());
@@ -974,7 +1067,7 @@ mod tests {
     fn test_bedrock_anthropic_claude_3_haiku_model() {
         let model_id_str = "anthropic.claude-3-haiku-20240307-v1:0";
         let result = ModelId::from_str_and_provider(
-            InferenceProvider::Bedrock,
+            &InferenceProvider::Bedrock,
             model_id_str,
         );
         assert!(result.is_ok());
@@ -1003,7 +1096,7 @@ mod tests {
     fn test_bedrock_anthropic_claude_3_sonnet_valid_provider() {
         let model_id_str = "anthropic.claude-3-sonnet-20240229-v1:0";
         let result = ModelId::from_str_and_provider(
-            InferenceProvider::Bedrock,
+            &InferenceProvider::Bedrock,
             model_id_str,
         );
         assert!(result.is_ok());
@@ -1032,7 +1125,7 @@ mod tests {
     fn test_bedrock_anthropic_claude_3_5_sonnet_model() {
         let model_id_str = "anthropic.claude-3-5-sonnet-20241022-v2:0";
         let result = ModelId::from_str_and_provider(
-            InferenceProvider::Bedrock,
+            &InferenceProvider::Bedrock,
             model_id_str,
         );
         assert!(result.is_ok());
@@ -1061,7 +1154,7 @@ mod tests {
     fn test_bedrock_anthropic_claude_sonnet_4_model_proper_format() {
         let model_id_str = "anthropic.claude-sonnet-4-20250514-v1:0";
         let result = ModelId::from_str_and_provider(
-            InferenceProvider::Bedrock,
+            &InferenceProvider::Bedrock,
             model_id_str,
         );
         assert!(result.is_ok());
@@ -1090,7 +1183,7 @@ mod tests {
     fn test_ollama_gemma3_basic_model() {
         let model_id_str = "gemma3";
         let result = ModelId::from_str_and_provider(
-            InferenceProvider::Ollama,
+            &InferenceProvider::Ollama,
             model_id_str,
         );
         assert!(result.is_ok());
@@ -1108,7 +1201,7 @@ mod tests {
     fn test_ollama_llama32_basic_model() {
         let model_id_str = "llama3.2";
         let result = ModelId::from_str_and_provider(
-            InferenceProvider::Ollama,
+            &InferenceProvider::Ollama,
             model_id_str,
         );
         assert!(result.is_ok());
@@ -1125,7 +1218,7 @@ mod tests {
     fn test_ollama_phi4_mini_basic_model() {
         let model_id_str = "phi4-mini";
         let result = ModelId::from_str_and_provider(
-            InferenceProvider::Ollama,
+            &InferenceProvider::Ollama,
             model_id_str,
         );
         assert!(result.is_ok());
@@ -1142,7 +1235,7 @@ mod tests {
     fn test_ollama_llama32_vision_basic_model() {
         let model_id_str = "llama3.2-vision";
         let result = ModelId::from_str_and_provider(
-            InferenceProvider::Ollama,
+            &InferenceProvider::Ollama,
             model_id_str,
         );
         assert!(result.is_ok());
@@ -1159,7 +1252,7 @@ mod tests {
     fn test_ollama_deepseek_r1_basic_model() {
         let model_id_str = "deepseek-r1";
         let result = ModelId::from_str_and_provider(
-            InferenceProvider::Ollama,
+            &InferenceProvider::Ollama,
             model_id_str,
         );
         assert!(result.is_ok());
@@ -1176,7 +1269,7 @@ mod tests {
     fn test_ollama_gemma3_1b_tagged_model() {
         let model_id_str = "gemma3:1b";
         let result = ModelId::from_str_and_provider(
-            InferenceProvider::Ollama,
+            &InferenceProvider::Ollama,
             model_id_str,
         );
         assert!(result.is_ok());
@@ -1194,7 +1287,7 @@ mod tests {
     fn test_ollama_gemma3_12b_tagged_model() {
         let model_id_str = "gemma3:12b";
         let result = ModelId::from_str_and_provider(
-            InferenceProvider::Ollama,
+            &InferenceProvider::Ollama,
             model_id_str,
         );
         assert!(result.is_ok());
@@ -1211,7 +1304,7 @@ mod tests {
     fn test_ollama_deepseek_r1_671b_tagged_model() {
         let model_id_str = "deepseek-r1:671b";
         let result = ModelId::from_str_and_provider(
-            InferenceProvider::Ollama,
+            &InferenceProvider::Ollama,
             model_id_str,
         );
         assert!(result.is_ok());
@@ -1228,7 +1321,7 @@ mod tests {
     fn test_ollama_llama4_scout_tagged_model() {
         let model_id_str = "llama4:scout";
         let result = ModelId::from_str_and_provider(
-            InferenceProvider::Ollama,
+            &InferenceProvider::Ollama,
             model_id_str,
         );
         assert!(result.is_ok());
@@ -1245,7 +1338,7 @@ mod tests {
     fn test_ollama_llama4_maverick_tagged_model() {
         let model_id_str = "llama4:maverick";
         let result = ModelId::from_str_and_provider(
-            InferenceProvider::Ollama,
+            &InferenceProvider::Ollama,
             model_id_str,
         );
         assert!(result.is_ok());
@@ -1262,7 +1355,7 @@ mod tests {
     fn test_ollama_llama_2_uncensored_freeform() {
         let model_id_str = "Llama 2 Uncensored";
         let result = ModelId::from_str_and_provider(
-            InferenceProvider::Ollama,
+            &InferenceProvider::Ollama,
             model_id_str,
         );
         assert!(result.is_ok());
@@ -1278,7 +1371,7 @@ mod tests {
     #[test]
     fn test_invalid_bedrock_unknown_provider_model() {
         let result = ModelId::from_str_and_provider(
-            InferenceProvider::Bedrock,
+            &InferenceProvider::Bedrock,
             "some-unknown-provider.model",
         );
 
@@ -1293,7 +1386,7 @@ mod tests {
     #[test]
     fn test_invalid_bedrock_no_dot_separator() {
         let result = ModelId::from_str_and_provider(
-            InferenceProvider::Bedrock,
+            &InferenceProvider::Bedrock,
             "custom-local-model",
         );
         assert!(result.is_err());
@@ -1310,7 +1403,7 @@ mod tests {
     #[test]
     fn test_invalid_bedrock_malformed_format() {
         let result = ModelId::from_str_and_provider(
-            InferenceProvider::Bedrock,
+            &InferenceProvider::Bedrock,
             "experimental@format#unknown",
         );
         assert!(result.is_err());
@@ -1324,7 +1417,7 @@ mod tests {
     #[test]
     fn test_edge_case_empty_string() {
         let result =
-            ModelId::from_str_and_provider(InferenceProvider::OpenAI, "");
+            ModelId::from_str_and_provider(&InferenceProvider::OpenAI, "");
         assert!(result.is_err());
         if let Err(MapperError::InvalidModelName(msg)) = result {
             assert_eq!(msg, "Model name cannot be empty");
@@ -1337,11 +1430,16 @@ mod tests {
     fn test_edge_case_single_char() {
         let model_id_str = "a";
         let result = ModelId::from_str_and_provider(
-            InferenceProvider::OpenAI,
+            &InferenceProvider::OpenAI,
             model_id_str,
         );
         assert!(result.is_ok());
-        if let Ok(ModelId::OpenAI(model_with_version)) = &result {
+        if let Ok(ModelId::ModelIdWithVersion {
+            provider,
+            id: model_with_version,
+        }) = &result
+        {
+            assert!(matches!(provider, InferenceProvider::OpenAI));
             assert_eq!(model_with_version.model, "a");
             assert!(matches!(
                 model_with_version.version,
@@ -1356,8 +1454,10 @@ mod tests {
 
     #[test]
     fn test_edge_case_trailing_dash() {
-        let result =
-            ModelId::from_str_and_provider(InferenceProvider::OpenAI, "model-");
+        let result = ModelId::from_str_and_provider(
+            &InferenceProvider::OpenAI,
+            "model-",
+        );
         assert!(result.is_err());
         if let Err(MapperError::InvalidModelName(msg)) = result {
             assert_eq!(msg, "Model name cannot end with dash");
@@ -1368,8 +1468,10 @@ mod tests {
 
     #[test]
     fn test_edge_case_at_symbol() {
-        let result =
-            ModelId::from_str_and_provider(InferenceProvider::OpenAI, "model@");
+        let result = ModelId::from_str_and_provider(
+            &InferenceProvider::OpenAI,
+            "model@",
+        );
         assert!(result.is_err());
         if let Err(MapperError::InvalidModelName(msg)) = result {
             assert_eq!(msg, "Model name cannot end with @ symbol");
@@ -1381,7 +1483,7 @@ mod tests {
     #[test]
     fn test_edge_case_trailing_dot() {
         let result = ModelId::from_str_and_provider(
-            InferenceProvider::OpenAI,
+            &InferenceProvider::OpenAI,
             "provider.",
         );
         assert!(result.is_err());
@@ -1395,7 +1497,7 @@ mod tests {
     #[test]
     fn test_edge_case_at_only() {
         let result =
-            ModelId::from_str_and_provider(InferenceProvider::OpenAI, "@");
+            ModelId::from_str_and_provider(&InferenceProvider::OpenAI, "@");
         assert!(result.is_err());
         if let Err(MapperError::InvalidModelName(msg)) = result {
             assert_eq!(msg, "Model name cannot end with @ symbol");
@@ -1407,7 +1509,7 @@ mod tests {
     #[test]
     fn test_edge_case_dash_only() {
         let result =
-            ModelId::from_str_and_provider(InferenceProvider::OpenAI, "-");
+            ModelId::from_str_and_provider(&InferenceProvider::OpenAI, "-");
         assert!(result.is_err());
         if let Err(MapperError::InvalidModelName(msg)) = result {
             assert_eq!(msg, "Model name cannot end with dash");
@@ -1419,23 +1521,37 @@ mod tests {
     #[test]
     fn test_provider_specific_model_variants() {
         let openai_result =
-            ModelId::from_str_and_provider(InferenceProvider::OpenAI, "gpt-4");
-        assert!(matches!(openai_result, Ok(ModelId::OpenAI(_))));
+            ModelId::from_str_and_provider(&InferenceProvider::OpenAI, "gpt-4");
+        assert!(matches!(
+            openai_result,
+            Ok(ModelId::ModelIdWithVersion {
+                provider: InferenceProvider::OpenAI,
+                ..
+            })
+        ));
 
         let anthropic_result = ModelId::from_str_and_provider(
-            InferenceProvider::Anthropic,
+            &InferenceProvider::Anthropic,
             "claude-3-sonnet",
         );
-        assert!(matches!(anthropic_result, Ok(ModelId::Anthropic(_))));
+        assert!(matches!(
+            anthropic_result,
+            Ok(ModelId::ModelIdWithVersion {
+                provider: InferenceProvider::Anthropic,
+                ..
+            })
+        ));
 
         let bedrock_result = ModelId::from_str_and_provider(
-            InferenceProvider::Bedrock,
+            &InferenceProvider::Bedrock,
             "anthropic.claude-3-sonnet-20240229-v1:0",
         );
         assert!(matches!(bedrock_result, Ok(ModelId::Bedrock(_))));
 
-        let ollama_result =
-            ModelId::from_str_and_provider(InferenceProvider::Ollama, "llama3");
+        let ollama_result = ModelId::from_str_and_provider(
+            &InferenceProvider::Ollama,
+            "llama3",
+        );
         assert!(matches!(ollama_result, Ok(ModelId::Ollama(_))));
     }
 
@@ -1444,14 +1560,19 @@ mod tests {
         let model_str = "openai/gpt-4";
         let result = ModelId::from_str(model_str).unwrap();
 
-        if let ModelId::OpenAI(model_with_version) = result {
+        if let ModelId::ModelIdWithVersion {
+            provider,
+            id: model_with_version,
+        } = result
+        {
+            assert!(matches!(provider, InferenceProvider::OpenAI));
             assert_eq!(model_with_version.model, "gpt-4");
             assert!(matches!(
                 model_with_version.version,
                 Version::ImplicitLatest
             ));
         } else {
-            panic!("Expected OpenAI ModelId");
+            panic!("Expected ModelIdWithVersion with OpenAI provider");
         }
     }
 
@@ -1460,7 +1581,12 @@ mod tests {
         let model_str = "anthropic/claude-3-sonnet-20240229";
         let result = ModelId::from_str(model_str).unwrap();
 
-        if let ModelId::Anthropic(model_with_version) = result {
+        if let ModelId::ModelIdWithVersion {
+            provider,
+            id: model_with_version,
+        } = result
+        {
+            assert!(matches!(provider, InferenceProvider::Anthropic));
             assert_eq!(model_with_version.model, "claude-3-sonnet");
             if let Version::Date { date, .. } = model_with_version.version {
                 let expected_dt: DateTime<Utc> =
@@ -1470,7 +1596,7 @@ mod tests {
                 panic!("Expected date version");
             }
         } else {
-            panic!("Expected Anthropic ModelId");
+            panic!("Expected ModelIdWithVersion with Anthropic provider");
         }
     }
 
@@ -1479,14 +1605,19 @@ mod tests {
         let model_str = "anthropic/claude-opus-4-0";
         let result = ModelId::from_str(model_str).unwrap();
 
-        if let ModelId::Anthropic(model_with_version) = result {
+        if let ModelId::ModelIdWithVersion {
+            provider,
+            id: model_with_version,
+        } = result
+        {
+            assert!(matches!(provider, InferenceProvider::Anthropic));
             assert_eq!(model_with_version.model, "claude-opus-4-0");
             assert!(matches!(
                 model_with_version.version,
                 Version::ImplicitLatest
             ));
         } else {
-            panic!("Expected Anthropic ModelId");
+            panic!("Expected ModelIdWithVersion with Anthropic provider");
         }
     }
 
@@ -1495,14 +1626,19 @@ mod tests {
         let model_str = "anthropic/claude-sonnet-4-0";
         let result = ModelId::from_str(model_str).unwrap();
 
-        if let ModelId::Anthropic(model_with_version) = result {
+        if let ModelId::ModelIdWithVersion {
+            provider,
+            id: model_with_version,
+        } = result
+        {
+            assert!(matches!(provider, InferenceProvider::Anthropic));
             assert_eq!(model_with_version.model, "claude-sonnet-4-0");
             assert!(matches!(
                 model_with_version.version,
                 Version::ImplicitLatest
             ));
         } else {
-            panic!("Expected Anthropic ModelId");
+            panic!("Expected ModelIdWithVersion with Anthropic provider");
         }
     }
 
@@ -1541,14 +1677,19 @@ mod tests {
         let model_str = "gemini/gemini-pro";
         let result = ModelId::from_str(model_str).unwrap();
 
-        if let ModelId::GoogleGemini(model_with_version) = result {
+        if let ModelId::ModelIdWithVersion {
+            provider,
+            id: model_with_version,
+        } = result
+        {
+            assert!(matches!(provider, InferenceProvider::GoogleGemini));
             assert_eq!(model_with_version.model, "gemini-pro");
             assert!(matches!(
                 model_with_version.version,
                 Version::ImplicitLatest
             ));
         } else {
-            panic!("Expected GoogleGemini ModelId");
+            panic!("Expected ModelIdWithVersion with GoogleGemini provider");
         }
     }
 
@@ -1580,12 +1721,16 @@ mod tests {
 
     #[test]
     fn test_from_str_invalid_provider() {
-        let result = ModelId::from_str("invalid-provider/gpt-4");
-        assert!(result.is_err());
-        if let Err(MapperError::ProviderNotSupported(provider)) = result {
-            assert_eq!(provider, "invalid-provider");
+        let result = ModelId::from_str("unknown-provider/gpt-4");
+        assert!(result.is_ok());
+        if let Ok(ModelId::ModelIdWithVersion { provider, id }) = result {
+            assert!(
+                matches!(provider, InferenceProvider::Named(name) if name == "unknown-provider")
+            );
+            assert_eq!(id.model, "gpt-4");
+            assert!(matches!(id.version, Version::ImplicitLatest));
         } else {
-            panic!("Expected ProviderNotSupported error");
+            panic!("Expected ModelIdWithVersion with Named provider");
         }
     }
 

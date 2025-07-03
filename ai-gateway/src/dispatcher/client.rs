@@ -106,6 +106,10 @@ impl Client {
             InferenceProvider::Ollama => {
                 Ok(Self::Ollama(OllamaClient::new(app_state, base_client)?))
             }
+            // will be implemented in future PR
+            InferenceProvider::Named(_) => {
+                Err(InitError::ProviderNotSupported(inference_provider))
+            }
         }
     }
 
@@ -118,7 +122,7 @@ impl Client {
             return Self::new_inner(app_state, inference_provider, None);
         }
         let api_key = &app_state
-            .get_provider_api_key_for_router(router_id, inference_provider)
+            .get_provider_api_key_for_router(router_id, &inference_provider)
             .await?;
 
         Self::new_inner(app_state, inference_provider, api_key.as_ref())
@@ -132,7 +136,7 @@ impl Client {
             return Self::new_inner(app_state, inference_provider, None);
         }
         let api_key = &app_state
-            .get_provider_api_key_for_direct_proxy(inference_provider)?;
+            .get_provider_api_key_for_direct_proxy(&inference_provider)?;
 
         Self::new_inner(app_state, inference_provider, api_key.as_ref())
     }
@@ -147,7 +151,7 @@ impl Client {
         // we're cheating here but this will be changed soon for cloud hosted
         // version
         let api_key = &app_state
-            .get_provider_api_key_for_direct_proxy(inference_provider)?;
+            .get_provider_api_key_for_direct_proxy(&inference_provider)?;
 
         Self::new_inner(app_state, inference_provider, api_key.as_ref())
     }

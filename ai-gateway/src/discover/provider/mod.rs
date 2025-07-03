@@ -4,7 +4,7 @@ pub mod factory;
 
 use crate::{endpoints::EndpointType, types::provider::InferenceProvider};
 
-#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
+#[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub struct Key {
     pub provider: InferenceProvider,
     pub endpoint_type: EndpointType,

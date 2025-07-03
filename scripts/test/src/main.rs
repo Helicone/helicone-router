@@ -138,9 +138,7 @@ async fn test(
     let url = match request_type {
         RequestType::Direct => {
             let provider = match model_id {
-                ModelId::OpenAI(_) => InferenceProvider::OpenAI,
-                ModelId::Anthropic(_) => InferenceProvider::Anthropic,
-                ModelId::GoogleGemini(_) => InferenceProvider::GoogleGemini,
+                ModelId::ModelIdWithVersion { provider, .. } => provider,
                 ModelId::Bedrock(_) => InferenceProvider::Bedrock,
                 ModelId::Ollama(_) => InferenceProvider::Ollama,
                 ModelId::Unknown(_) => InferenceProvider::OpenAI,

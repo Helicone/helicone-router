@@ -40,11 +40,10 @@ impl
     > {
         use anthropic_ai_sdk::types::message as anthropic;
         use async_openai::types as openai;
-        let target_provider = InferenceProvider::OpenAI;
         let source_model = ModelId::from_str(&value.model)?;
         let target_model = self
             .model_mapper
-            .map_model(&source_model, &target_provider)?;
+            .map_model(&source_model, &InferenceProvider::OpenAI)?;
 
         tracing::trace!(source_model = ?source_model, target_model = ?target_model, "mapped model");
         let reasoning_effort = if let Some(thinking) = value.thinking {

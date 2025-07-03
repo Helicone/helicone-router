@@ -42,12 +42,11 @@ impl
     > {
         use async_openai::types as openai;
         use aws_sdk_bedrockruntime::types as bedrock;
-        let target_provider = InferenceProvider::Bedrock;
         let source_model = ModelId::from_str(&value.model)?;
 
         let target_model = self
             .model_mapper
-            .map_model(&source_model, &target_provider)?;
+            .map_model(&source_model, &InferenceProvider::Bedrock)?;
 
         tracing::trace!(source_model = ?source_model, target_model = ?target_model, "mapped model");
 

@@ -120,9 +120,9 @@ impl BalanceConfigInner {
     pub fn providers(&self) -> IndexSet<InferenceProvider> {
         match self {
             Self::Weighted { providers } => {
-                providers.iter().map(|t| t.provider).collect()
+                providers.iter().map(|t| t.provider.clone()).collect()
             }
-            Self::Latency { providers } => providers.iter().copied().collect(),
+            Self::Latency { providers } => providers.iter().cloned().collect(),
         }
     }
 }

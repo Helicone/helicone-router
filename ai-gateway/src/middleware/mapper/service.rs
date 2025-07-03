@@ -69,12 +69,15 @@ where
         let converter_registry = self.endpoint_converter_registry.clone();
         std::mem::swap(&mut self.inner, &mut inner);
         Box::pin(async move {
-            let target_provider = *req
-                .extensions_mut()
+            let target_provider = req
+                .extensions()
                 .get::<InferenceProvider>()
-                .ok_or(ApiError::Internal(InternalError::ExtensionNotFound(
-                    "InferenceProvider",
-                )))?;
+                .cloned()
+                .ok_or_else(|| {
+                    ApiError::Internal(InternalError::ExtensionNotFound(
+                        "InferenceProvider",
+                    ))
+                })?;
             let extracted_path_and_query = req
                 .extensions_mut()
                 .remove::<PathAndQuery>()
@@ -87,7 +90,7 @@ where
                 InternalError::ExtensionNotFound("ApiEndpoint"),
             ))?;
             let target_endpoint =
-                ApiEndpoint::mapped(source_endpoint, target_provider)?;
+                ApiEndpoint::mapped(source_endpoint, &target_provider)?;
             // serialization/deserialization should be done on a dedicated
             // thread
             let converter_registry_cloned = converter_registry.clone();

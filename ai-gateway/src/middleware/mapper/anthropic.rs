@@ -47,18 +47,21 @@ impl
     > {
         use anthropic_ai_sdk::types::message as anthropic;
         use async_openai::types as openai;
-        let target_provider = InferenceProvider::Anthropic;
         let source_model = ModelId::from_str(&value.model)?;
         let mut target_model = self
             .model_mapper
-            .map_model(&source_model, &target_provider)?;
+            .map_model(&source_model, &InferenceProvider::Anthropic)?;
         tracing::trace!(source_model = ?source_model, target_model = ?target_model, "mapped model");
 
         // for claude 3-x, anthropic required an explicit `-latest` suffix for
         // aliases but for claude 4-x, the aliases must be implicit, ie they
         // must not have the `-latest` suffix
 
-        if let ModelId::Anthropic(model) = &mut target_model {
+        if let ModelId::ModelIdWithVersion {
+            provider: InferenceProvider::Anthropic,
+            id: model,
+        } = &mut target_model
+        {
             if model.model.contains("claude-3") {
                 model.version = Version::Latest;
             } else {

@@ -98,7 +98,7 @@ where
         };
         if this.config.provider {
             let inference_provider =
-                response.extensions().get::<InferenceProvider>().copied();
+                response.extensions().get::<InferenceProvider>();
             if let Some(inference_provider) = inference_provider {
                 if let Ok(header_value) =
                     http::HeaderValue::from_str(inference_provider.as_ref())
