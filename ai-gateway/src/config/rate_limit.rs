@@ -115,7 +115,7 @@ pub fn store_enabled_for_test_in_memory() -> RateLimitStore {
 pub fn store_enabled_for_test_redis() -> RateLimitStore {
     use crate::types::secret::Secret;
     RateLimitStore::Redis(RedisConfig {
-        url: Secret::from(
+        host_url: Secret::from(
             "redis://localhost:6379".parse::<url::Url>().unwrap(),
         ),
         connection_timeout: Duration::from_secs(1),

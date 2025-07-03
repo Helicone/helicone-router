@@ -8,7 +8,7 @@ use crate::types::secret::Secret;
 #[serde(deny_unknown_fields, rename_all = "kebab-case")]
 pub struct RedisConfig {
     #[serde(default = "default_url")]
-    pub url: Secret<url::Url>,
+    pub host_url: Secret<url::Url>,
     #[serde(
         with = "humantime_serde",
         default = "default_connection_timeout",
@@ -20,7 +20,7 @@ pub struct RedisConfig {
 impl Default for RedisConfig {
     fn default() -> Self {
         Self {
-            url: default_url(),
+            host_url: default_url(),
             connection_timeout: default_connection_timeout(),
         }
     }

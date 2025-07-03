@@ -56,7 +56,7 @@ impl Layer {
             {
                 Self::new_redis_inner(
                     rate_limit_config.limits.clone(),
-                    redis_config.url.expose().clone(),
+                    redis_config.host_url.expose().clone(),
                 )
             } else {
                 Self::new_in_memory_inner(app_state.0.global_rate_limit.clone())
@@ -122,7 +122,7 @@ impl Layer {
                     && let RateLimitStore::Redis(redis_config) = store
                     && let Ok(layer) = RedisRateLimitLayer::new(
                         Arc::new(limits.clone()),
-                        redis_config.url.expose().clone(),
+                        redis_config.host_url.expose().clone(),
                         Some(router_id.clone()),
                     )
                 {

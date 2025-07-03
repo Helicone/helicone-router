@@ -130,7 +130,7 @@ async fn test_global_rate_limit_with_router_none() {
         cleanup_interval: Duration::from_secs(60),
     });
     config.rate_limit_store = RateLimitStore::Redis(RedisConfig {
-        url: Secret::from(REDIS_URL.parse::<url::Url>().unwrap()),
+        host_url: Secret::from(REDIS_URL.parse::<url::Url>().unwrap()),
         connection_timeout: Duration::from_secs(10),
     });
 
@@ -205,7 +205,7 @@ async fn test_router_specific_with_custom_limits() {
         cleanup_interval: Duration::from_secs(60),
     });
     config.rate_limit_store = RateLimitStore::Redis(RedisConfig {
-        url: Secret::from(REDIS_URL.parse::<url::Url>().unwrap()),
+        host_url: Secret::from(REDIS_URL.parse::<url::Url>().unwrap()),
         connection_timeout: Duration::from_secs(1),
     });
 
@@ -215,7 +215,9 @@ async fn test_router_specific_with_custom_limits() {
         RouterConfig {
             rate_limit: RouterRateLimitConfig::Custom {
                 store: Some(RateLimitStore::Redis(RedisConfig {
-                    url: Secret::from(REDIS_URL.parse::<url::Url>().unwrap()),
+                    host_url: Secret::from(
+                        REDIS_URL.parse::<url::Url>().unwrap(),
+                    ),
                     connection_timeout: Duration::from_secs(1),
                 })),
                 limits: create_test_limits(2, 1000), // 2 requests per second
@@ -278,7 +280,7 @@ async fn test_global_with_custom_router_override() {
         cleanup_interval: Duration::from_secs(60),
     });
     config.rate_limit_store = RateLimitStore::Redis(RedisConfig {
-        url: Secret::from(REDIS_URL.parse::<url::Url>().unwrap()),
+        host_url: Secret::from(REDIS_URL.parse::<url::Url>().unwrap()),
         connection_timeout: Duration::from_secs(1),
     });
 
@@ -288,7 +290,9 @@ async fn test_global_with_custom_router_override() {
         RouterConfig {
             rate_limit: RouterRateLimitConfig::Custom {
                 store: Some(RateLimitStore::Redis(RedisConfig {
-                    url: Secret::from(REDIS_URL.parse::<url::Url>().unwrap()),
+                    host_url: Secret::from(
+                        REDIS_URL.parse::<url::Url>().unwrap(),
+                    ),
                     connection_timeout: Duration::from_secs(1),
                 })),
                 limits: create_test_limits(2, 1000), /* 2 requests per second
@@ -350,7 +354,7 @@ async fn test_router_independence_different_rate_limits() {
         cleanup_interval: Duration::from_secs(60),
     });
     config.rate_limit_store = RateLimitStore::Redis(RedisConfig {
-        url: Secret::from(REDIS_URL.parse::<url::Url>().unwrap()),
+        host_url: Secret::from(REDIS_URL.parse::<url::Url>().unwrap()),
         connection_timeout: Duration::from_secs(1),
     });
 
@@ -364,7 +368,7 @@ async fn test_router_independence_different_rate_limits() {
             RouterConfig {
                 rate_limit: RouterRateLimitConfig::Custom {
                     store: Some(RateLimitStore::Redis(RedisConfig {
-                        url: Secret::from(
+                        host_url: Secret::from(
                             REDIS_URL.parse::<url::Url>().unwrap(),
                         ),
                         connection_timeout: Duration::from_secs(1),
@@ -382,7 +386,7 @@ async fn test_router_independence_different_rate_limits() {
             RouterConfig {
                 rate_limit: RouterRateLimitConfig::Custom {
                     store: Some(RateLimitStore::Redis(RedisConfig {
-                        url: Secret::from(
+                        host_url: Secret::from(
                             REDIS_URL.parse::<url::Url>().unwrap(),
                         ),
                         connection_timeout: Duration::from_secs(1),
@@ -543,7 +547,7 @@ async fn test_multi_router_different_rate_limits_in_memory() {
         cleanup_interval: Duration::from_secs(60),
     });
     config.rate_limit_store = RateLimitStore::Redis(RedisConfig {
-        url: Secret::from(REDIS_URL.parse::<url::Url>().unwrap()),
+        host_url: Secret::from(REDIS_URL.parse::<url::Url>().unwrap()),
         connection_timeout: Duration::from_secs(1),
     });
     let router_a_id = RouterId::Named(CompactString::from("router-a"));
@@ -557,7 +561,7 @@ async fn test_multi_router_different_rate_limits_in_memory() {
             RouterConfig {
                 rate_limit: RouterRateLimitConfig::Custom {
                     store: Some(RateLimitStore::Redis(RedisConfig {
-                        url: Secret::from(
+                        host_url: Secret::from(
                             REDIS_URL.parse::<url::Url>().unwrap(),
                         ),
                         connection_timeout: Duration::from_secs(1),
@@ -574,7 +578,7 @@ async fn test_multi_router_different_rate_limits_in_memory() {
             RouterConfig {
                 rate_limit: RouterRateLimitConfig::Custom {
                     store: Some(RateLimitStore::Redis(RedisConfig {
-                        url: Secret::from(
+                        host_url: Secret::from(
                             REDIS_URL.parse::<url::Url>().unwrap(),
                         ),
                         connection_timeout: Duration::from_secs(1),
