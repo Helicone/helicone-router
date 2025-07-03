@@ -17,7 +17,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: rustup update
       - name: Use nightly rustfmt
         run: rustup component add --toolchain nightly-x86_64-unknown-linux-gnu rustfmt
       - name: Output rustup and cargo version for educational purposes
@@ -28,6 +27,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Update rust version
+        run: rustup update
       - name: print version
         run: cargo --version
       - name: Clippy
@@ -43,5 +44,7 @@ jobs:
           - 6340:6379
     steps:
       - uses: actions/checkout@v4
+      - name: Update rust version
+        run: rustup update
       - name: Test
         run: cargo +stable test --tests --all-features
