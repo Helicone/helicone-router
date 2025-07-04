@@ -29,3 +29,9 @@ npm-package = "ai-gateway"
 formula = "ai-gateway"
 # Which actions to run on pull requests
 pr-run-mode = "skip"
+
+[dist.github-custom-runners]
+aarch64-apple-darwin = "macos-13"
+x86_64-apple-darwin = "macos-13"
+x86_64-unknown-linux-gnu = "ubuntu-24.04"
+global = "ubuntu-24.04"
