@@ -122,11 +122,11 @@ async fn test_global_rate_limit_with_router_none() {
     let mut config = Config::test_default();
     config.helicone.features = HeliconeFeatures::All;
     config.global.rate_limit = Some(GlobalRateLimitConfig {
-        store: RateLimitStore::InMemory,
         // 3 requests per second
         limits: Some(create_test_limits(3, 1000)),
         cleanup_interval: Duration::from_secs(60),
     });
+    config.rate_limit_store = RateLimitStore::InMemory;
 
     // Router doesn't override rate limiting
     config.routers = RouterConfigs::new(HashMap::from([(
@@ -195,10 +195,10 @@ async fn test_router_specific_with_custom_limits() {
     let mut config = Config::test_default();
     config.helicone.features = HeliconeFeatures::All;
     config.global.rate_limit = Some(GlobalRateLimitConfig {
-        store: RateLimitStore::InMemory,
         limits: None,
         cleanup_interval: Duration::from_secs(60),
     });
+    config.rate_limit_store = RateLimitStore::InMemory;
 
     // Router provides its own custom rate limits
     config.routers = RouterConfigs::new(HashMap::from([(
@@ -261,12 +261,11 @@ async fn test_global_with_custom_router_override() {
     let mut config = Config::test_default();
     config.helicone.features = HeliconeFeatures::All;
     config.global.rate_limit = Some(GlobalRateLimitConfig {
-        store: RateLimitStore::InMemory,
         // 5 requests per second
         limits: Some(create_test_limits(5, 1000)),
         cleanup_interval: Duration::from_secs(60),
     });
-
+    config.rate_limit_store = RateLimitStore::InMemory;
     // Router overrides with stricter custom limits
     config.routers = RouterConfigs::new(HashMap::from([(
         RouterId::Default,
@@ -328,11 +327,10 @@ async fn test_router_independence_different_rate_limits() {
     let mut config = Config::test_default();
     config.helicone.features = HeliconeFeatures::All;
     config.global.rate_limit = Some(GlobalRateLimitConfig {
-        store: RateLimitStore::InMemory,
         limits: None,
         cleanup_interval: Duration::from_secs(60),
     });
-
+    config.rate_limit_store = RateLimitStore::InMemory;
     let strict_router_id = RouterId::Named(CompactString::from("strict"));
     let lenient_router_id = RouterId::Named(CompactString::from("lenient"));
 
@@ -508,10 +506,10 @@ async fn test_multi_router_different_rate_limits_in_memory() {
     let mut config = Config::test_default();
     config.helicone.features = HeliconeFeatures::All;
     config.global.rate_limit = Some(GlobalRateLimitConfig {
-        store: RateLimitStore::InMemory,
         limits: None,
         cleanup_interval: Duration::from_secs(60),
     });
+    config.rate_limit_store = RateLimitStore::InMemory;
     let router_a_id = RouterId::Named(CompactString::from("router-a"));
     let router_b_id = RouterId::Named(CompactString::from("router-b"));
     let router_c_id = RouterId::Default;
