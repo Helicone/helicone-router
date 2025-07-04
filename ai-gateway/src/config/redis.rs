@@ -9,11 +9,7 @@ use crate::types::secret::Secret;
 pub struct RedisConfig {
     #[serde(default = "default_url")]
     pub host_url: Secret<url::Url>,
-    #[serde(
-        with = "humantime_serde",
-        default = "default_connection_timeout",
-        rename = "connection-timeout"
-    )]
+    #[serde(with = "humantime_serde", default = "default_connection_timeout")]
     pub connection_timeout: Duration,
 }
 
