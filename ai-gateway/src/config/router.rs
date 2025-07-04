@@ -92,7 +92,8 @@ pub enum RouterRateLimitConfig {
     None,
     /// Routers must configure their own rate limit settings.
     Custom {
-        /// If not specific, the store from the rate-limit-store config will be used.
+        /// If not specific, the store from the rate-limit-store config will be
+        /// used.
         store: Option<RateLimitStore>,
         #[serde(default, flatten)]
         limits: LimitsConfig,
