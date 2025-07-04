@@ -9,6 +9,7 @@ FROM chef AS builder
 # Install OpenSSL development libraries and pkg-config for Debian
 RUN apt-get update && apt-get install -y pkg-config libssl-dev && rm -rf /var/lib/apt/lists/*
 COPY --from=planner /app/recipe.json recipe.json
+RUN rustup update
 # Build dependencies - this is the caching Docker layer!
 RUN cargo chef cook --release --recipe-path recipe.json
 # Build application
