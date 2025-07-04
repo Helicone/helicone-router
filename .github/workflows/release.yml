@@ -127,7 +127,8 @@ jobs:
             curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
             echo "$HOME/.cargo/bin" >> $GITHUB_PATH
           fi
-      - run: rustup update
+      - name: Update Rust version
+        run: rustup update
       - name: Install dist
         run: ${{ matrix.install_dist.run }}
       # Get the dist-manifest
@@ -193,7 +194,8 @@ jobs:
           pattern: artifacts-*
           path: target/distrib/
           merge-multiple: true
-      - run: rustup update
+      - name: Update Rust version
+        run: rustup update
       - id: cargo-dist
         shell: bash
         run: |

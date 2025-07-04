@@ -1,4 +1,4 @@
-FROM lukemathwalker/cargo-chef:0.1.71-rust-1.87-bookworm AS chef
+FROM lukemathwalker/cargo-chef:0.1.71-rust-1.88-bookworm AS chef
 WORKDIR /app
 
 FROM chef AS planner
@@ -9,7 +9,6 @@ FROM chef AS builder
 # Install OpenSSL development libraries and pkg-config for Debian
 RUN apt-get update && apt-get install -y pkg-config libssl-dev && rm -rf /var/lib/apt/lists/*
 COPY --from=planner /app/recipe.json recipe.json
-RUN rustup update
 # Build dependencies - this is the caching Docker layer!
 RUN cargo chef cook --release --recipe-path recipe.json
 # Build application
