@@ -42,7 +42,7 @@ permissions:
 on:
   push:
     tags:
-      - '**[0-9]+.[0-9]+.[0-9]+*'
+      - "**[0-9]+.[0-9]+.[0-9]+*"
 
 jobs:
   # Run 'dist plan' (or host) to determine what tasks we need to do
@@ -127,6 +127,8 @@ jobs:
             curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
             echo "$HOME/.cargo/bin" >> $GITHUB_PATH
           fi
+      - name: Update Rust version
+        run: rustup update
       - name: Install dist
         run: ${{ matrix.install_dist.run }}
       # Get the dist-manifest
@@ -192,6 +194,8 @@ jobs:
           pattern: artifacts-*
           path: target/distrib/
           merge-multiple: true
+      - name: Update Rust version
+        run: rustup update
       - id: cargo-dist
         shell: bash
         run: |
@@ -235,6 +239,8 @@ jobs:
           name: cargo-dist-cache
           path: ~/.cargo/bin/
       - run: chmod +x ~/.cargo/bin/dist
+      - name: Update Rust version
+        run: rustup update
       # Fetch artifacts from scratch-storage
       - name: Fetch artifacts
         uses: actions/download-artifact@v4
@@ -296,8 +302,8 @@ jobs:
           merge-multiple: true
       - uses: actions/setup-node@v4
         with:
-          node-version: '20.x'
-          registry-url: 'https://registry.npmjs.org'
+          node-version: "20.x"
+          registry-url: "https://registry.npmjs.org"
       - run: |
           for release in $(echo "$PLAN" | jq --compact-output '.releases[] | select([.artifacts[] | endswith("-npm-package.tar.gz")] | any)'); do
             pkg=$(echo "$release" | jq '.artifacts[] | select(endswith("-npm-package.tar.gz"))' --raw-output)

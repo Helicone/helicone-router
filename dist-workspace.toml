@@ -29,6 +29,8 @@ npm-package = "ai-gateway"
 formula = "ai-gateway"
 # Which actions to run on pull requests
 pr-run-mode = "skip"
+# allow manual edit on ci for `rustup update` - TEMPORARY FIX
+allow-dirty = ["ci"]
 
 [dist.github-custom-runners]
 aarch64-apple-darwin = "macos-13"
